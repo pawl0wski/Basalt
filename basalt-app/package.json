@@ -11,7 +11,8 @@
         "build": "npm run build -w packages/app",
         "preview": "npm run preview -w packages/app",
         "lint": "eslint . --max-warnings 0",
-        "typecheck": "npm run typecheck --workspaces --if-present",
+        "typecheck": "npm run typecheck --workspaces --if-present && tsc -p e2e",
+        "test:e2e": "playwright test",
         "test": "vitest run",
         "rust:fmt": "cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check",
         "rust:lint": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings",
@@ -23,6 +24,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.39.1",
+        "@playwright/test": "^1.64.1",
         "@tauri-apps/cli": "^2",
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^16.3.3",
