@@ -1,7 +1,14 @@
-# Tauri + React + Typescript
+# basalt-app
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+This is the monorepo root for the Basalt application source code.
 
-## Recommended IDE Setup
+See the [project-level README](../README.md) for overall project documentation.
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## Package Architecture
+
+See `packages/` for the monorepo packages:
+
+- `packages/app` — main application (Vite + React)
+- `packages/core` — shared logic and types
+- `packages/ui` — shared UI components
+- `packages/api` — backend API client

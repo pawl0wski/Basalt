@@ -19,12 +19,59 @@ This is not another minimalist notebook. Basalt is designed for people who need 
 - **Offline-first** — fully functional without an internet connection.
 - **Dark mode** — plus full theming support.
 
----
-
 Data is encrypted on the client before leaving the device. The server stores only encrypted blobs and minimal metadata required for sync.
 
+The sync backend is open-source and fully self-hostable. You can deploy it on your own infrastructure for complete control over your data.
+
 ---
 
-## Backend
+## Architecture
 
-The sync backend is open-source and fully self-hostable. You can deploy it on your own infrastructure for complete control over your data.
+### Tech Stack
+
+| Layer | Choice |
+|---|---|
+| Desktop/Mobile shell | **Tauri v2** (targets: desktop + Android) |
+| Frontend framework | **React 19** with **TypeScript** |
+| UI components | **shadcn/ui** (Radix primitives + Tailwind CSS) |
+| State management | **Zustand** |
+| Build tool | **Vite** |
+| Monorepo | npm workspaces under `packages/` |
+
+### Workspace Model
+
+Users create a workspace at a directory of their choosing (default: `~/Basalt`). Inside that directory, notes are stored as plain **Markdown files** (`.md`) alongside other attachments. The app reads and writes files directly on the local filesystem — there is no custom file format or database. This is similar to the Obsidian vault model.
+
+### Package Architecture
+
+```
+basalt-app/
+├── src-tauri/              # Tauri Rust backend
+├── packages/
+│   ├── app/                # Main app: routing, pages, layout, Tauri integration
+│   ├── core/               # Shared logic: file ops, markdown parsing, encryption, types
+│   ├── ui/                 # Shared UI: shadcn components, themes, design system
+│   └── api/                # Backend API client for future sync server
+├── package.json            # Workspace root
+└── tauri.conf.json
+```
+
+- **`@basalt/app`** — the main application. Contains pages, routing, layout, and direct Tauri API integration (file system, dialogs, window management).
+- **`@basalt/core`** — framework-agnostic shared logic. Markdown parsing, encryption primitives, file operations, shared TypeScript types, and utility functions.
+- **`@basalt/ui`** — the design system. shadcn/ui components, theme tokens, layout primitives, and reusable UI patterns. Depends only on `@basalt/core` for types.
+- **`@basalt/api`** — HTTP client and data layer for future sync server communication. Authentication, API types, and request handling.
+
+### Development
+
+```bash
+# Install dependencies (from basalt-app/)
+npm install
+
+# Run in development mode
+npm run dev          # Vite dev server
+npm run tauri dev    # Tauri desktop dev
+npm run tauri android dev  # Android dev
+
+# Build for production
+npm run tauri build
+```

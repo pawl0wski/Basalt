@@ -1,18 +1,18 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "basalt-app",
+  "productName": "Basalt",
   "version": "0.1.0",
-  "identifier": "pl.pawl0wski.basalt",
+  "identifier": "com.basalt.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
+    "frontendDist": "../packages/app/dist"
   },
   "app": {
     "windows": [
       {
-        "title": "basalt-app",
+        "title": "Basalt",
         "width": 800,
         "height": 600
       }

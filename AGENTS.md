@@ -4,7 +4,7 @@ Instructions for AI agents working in the Basalt repository.
 
 ## Project Overview
 
-Basalt is a note-taking application built with **Tauri** (Rust backend + web frontend) with end-to-end encryption, multi-platform sync, and rich editing capabilities. The app lives in `basalt-app/`.
+Basalt is a note-taking application. See `README.md` for the project architecture, technology choices, and workspace model.
 
 ## AI Workspace Conventions
 
@@ -43,7 +43,7 @@ All AI-generated artifacts (specifications, run logs, and lessons) live under th
    - Append a one-line summary to `.ai/lessons.md` (dated, with a link to the full entry).
    - Write the full detail to a new file in `.ai/lessons/` following the naming convention.
    - Lessons are the LLM's long-term memory: record findings, improvements, and pitfalls so future runs don't repeat mistakes.
-4. **Metadata** — Every file in `.ai/` must start with a YAML front-matter block documenting:
+4. **Metadata** — Every spec, run log, and detailed lesson file in `.ai/` must start with a YAML front-matter block documenting:
    - `date:` — the YYYY-MM-DD creation date
    - `slug:` — the kebab-case slug used in the filename
    - `type:` — one of `spec`, `run`, `lesson`
@@ -63,17 +63,11 @@ tags: [sync, e2ee]
 ---
 ```
 
-## Workflow Principles
-
-- **Plan before implementing** — For any complex task, outline the approach (ideally a spec in `.ai/specs/`) before writing code. If the task goes off-track, stop and re-plan instead of pushing through.
-- **Write detailed, unambiguous specs** — The more specific the spec, the better the output. Reduce ambiguity before starting.
-- **Verify changes** — After implementing a fix or feature, verify it actually works: run the relevant tests, then lint/typecheck. Never assume correctness.
-- **Record lessons after corrections** — After any correction or bug fix, record a lesson (see Rules above) so the mistake is not repeated.
-- **Use subagents for independent work** — Delegate parallel or self-contained tasks to subagents to keep the main context window clean.
-
 ## Engineering Guidelines
 
+- For complex tasks, plan before implementation and write a specific spec in `.ai/specs/`. If work goes off track, stop and re-plan.
 - Follow existing code conventions in `basalt-app/`; check neighboring files before writing new code.
 - Do not add comments to code unless asked.
-- Run the project's lint/typecheck commands before considering a task complete.
+- Verify changes with relevant tests, lint, and typecheck before considering the task complete.
+- After a correction or bug fix, record reusable findings in `.ai/lessons.md` and `.ai/lessons/`.
 - Never commit secrets or keys. Never log or expose credentials.
