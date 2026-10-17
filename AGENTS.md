@@ -73,6 +73,7 @@ tags: [sync, e2ee]
 - In React, separate presentational components from containers/integration hooks where that improves clarity: presentational components render from typed props and emit callbacks; containers connect state/actions. Do not add a container when a component has no application integration needs.
 - Name React component files and component folders in PascalCase (for example, `Button.tsx` and `WorkspaceStatus/`); do not use lowercase filenames for components. Non-component files follow their package's established naming convention.
 - Prefer straightforward, readable TypeScript with strict types. Validate untrusted data at runtime, avoid unjustified `any`/assertions, keep state minimal, derive values when possible, and avoid unnecessary abstractions or memoization.
+- Minimize Rust: implement features in TypeScript using official Tauri plugins. `basalt-app/src-tauri/` stays a thin host (bootstrap, plugin registration). Add custom Rust code or commands only when a plugin or TypeScript cannot do the job, and document the justification in a spec.
 - Do not add comments to code unless asked.
 - Verify changes with relevant tests, lint, and typecheck before considering the task complete.
 - After a correction or bug fix, record reusable findings in `.ai/lessons.md` and `.ai/lessons/`.
