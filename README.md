@@ -31,7 +31,8 @@ The sync backend is open-source and fully self-hostable. You can deploy it on yo
 
 | Layer | Choice |
 |---|---|
-| Desktop/Mobile shell | **Tauri v2** (targets: desktop + Android) |
+| Desktop/Mobile shell | **Tauri v2** (targets: desktop + Android); Rust limited to a thin, logic-free host |
+| Native capabilities | Official Tauri plugins (filesystem, dialog, opener) called from TypeScript |
 | Frontend framework | **React 19** with **TypeScript** |
 | UI components | **shadcn/ui** (Radix primitives + Tailwind CSS) |
 | State management | **Zustand** |
@@ -46,7 +47,7 @@ Users create a workspace at a directory of their choosing (default: `~/Basalt`).
 
 ```
 basalt-app/
-├── src-tauri/              # Tauri Rust backend
+├── src-tauri/              # Minimal Tauri host: bootstrap + plugin registration only
 ├── packages/
 │   ├── app/                # Main app: routing, pages, layout, Tauri integration
 │   ├── core/               # Shared logic: file ops, markdown parsing, encryption, types
@@ -56,7 +57,7 @@ basalt-app/
 └── tauri.conf.json
 ```
 
-- **`@basalt/app`** — the main application. Contains pages, routing, layout, and direct Tauri API integration (file system, dialogs, window management).
+- **`@basalt/app`** — the main application. Contains pages, routing, layout, and Tauri plugin integration through app-owned adapters (file system, dialogs, window management).
 - **`@basalt/core`** — framework-agnostic shared logic. Markdown parsing, encryption primitives, file operations, shared TypeScript types, and utility functions.
 - **`@basalt/ui`** — the design system. shadcn/ui components, theme tokens, layout primitives, and reusable UI patterns. Depends only on `@basalt/core` for types.
 - **`@basalt/api`** — HTTP client and data layer for future sync server communication. Authentication, API types, and request handling.
@@ -75,3 +76,12 @@ npm run tauri android dev  # Android dev
 # Build for production
 npm run tauri build
 ```
+
+### Rust Policy
+
+Basalt is a TypeScript-first project. Rust is kept to the minimum that Tauri requires:
+
+- `src-tauri/` only bootstraps the app and registers official Tauri plugins. It contains no business logic, no custom commands, and no crypto/sync/parsing code.
+- All domain logic (Markdown, E2EE via Web Crypto or a vetted WASM/JS library, sync, file workflows) lives in `@basalt/core` and `@basalt/app`.
+- Native capabilities are reached through official Tauri plugins with least-privilege capabilities and scopes, wrapped in app-owned TypeScript adapters.
+- A custom Rust command is a last resort: it needs a documented reason why a plugin or TypeScript cannot do the job, and its own spec.

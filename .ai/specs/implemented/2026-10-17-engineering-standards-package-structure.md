@@ -24,7 +24,7 @@ The specification is concerned with code organization and development practice. 
 
 ## Context and constraints
 
-- Basalt is a Tauri 2 application using React and TypeScript, with Rust for native functionality.
+- Basalt is a Tauri 2 application using React and TypeScript. Rust is minimized: it is limited to the thin Tauri host, and all application logic is written in TypeScript.
 - The JavaScript workspace is managed with npm workspaces under `basalt-app/packages/`.
 - The current package layout is `app`, `core`, `ui`, and `api`.
 - Markdown files in a user-selected workspace are the intended source of truth for note content. They must remain ordinary user-readable files rather than becoming dependent on a proprietary database format.
@@ -35,7 +35,7 @@ The specification is concerned with code organization and development practice. 
 
 ```text
 basalt-app/
-├── src-tauri/                  # Tauri host, Rust commands, capabilities, native integrations
+├── src-tauri/                  # Minimal Tauri host: bootstrap, plugin registration, capabilities
 ├── packages/
 │   ├── app/                    # Composition root: routes, screens, app state, platform adapters
 │   ├── core/                   # Framework-independent domain types and use cases
@@ -81,9 +81,9 @@ Keep this layout small until a real need justifies another package. A new packag
 
 #### `src-tauri/`
 
-- Owns native application startup, Rust commands, plugin registration, and platform-specific operations.
-- Exposes a narrow, typed IPC surface. Commands validate inputs and return explicit serializable results/errors.
-- Keeps Rust command handlers small; move reusable behavior into Rust modules/services when that behavior is native-only and warrants isolation.
+- Owns native application startup, official plugin registration, and capability configuration. It is a thin host without business logic.
+- Does not define custom commands by default. A custom command requires a documented justification (a plugin or TypeScript cannot do the job); it must then validate inputs and return explicit serializable results/errors.
+- Keeps any Rust code small; do not implement crypto, sync, Markdown parsing, or workspace workflows in Rust.
 - Does not expose arbitrary filesystem or shell access to the WebView.
 - Capability and permission configuration follows least privilege and is scoped to the windows and operations that require it.
 
@@ -177,10 +177,11 @@ These principles should guide engineering decisions and maintenance, not encoura
 
 ### Rust and Tauri
 
+- Minimize Rust. Implement features in TypeScript on top of official Tauri plugins; keep `src-tauri/` as a thin host.
 - Keep command inputs and outputs serializable, bounded, and explicit. Return structured errors suitable for safe display/logging; do not leak secrets or full sensitive note contents into logs.
 - Treat frontend/WebView code as a separate trust domain. Expose only the commands and plugin permissions required by the current feature.
 - Do not grant broad filesystem scopes as a convenience. Workspace access must be tied to a user-selected/authorized workspace and constrained to that root, including protection against path traversal and unsafe symlink resolution.
-- Prefer Rust filesystem operations or a narrowly scoped command boundary for workspace operations when frontend plugin scopes cannot safely express the required authorization. If the filesystem plugin is used, define explicit capabilities and scopes and test them on target platforms.
+- Prefer official Tauri plugins (for example filesystem and dialog) with explicit capabilities and scopes, called from TypeScript through app-owned adapters; test scopes on target platforms. Fall back to a narrowly scoped custom Rust command only when plugin scopes cannot safely express the required authorization, and document why.
 - Keep platform-specific differences isolated and document any unavoidable differences in behavior.
 
 ### Markdown and workspace data
@@ -335,7 +336,7 @@ Tests should follow the same dependency boundaries as production code:
 - **Core unit tests:** domain rules, validation, transformations, parsing/serialization behavior, and error cases; no filesystem/network/Tauri runtime required.
 - **UI tests:** observable rendering and interactions, including accessibility-relevant behavior; avoid tests coupled to implementation details.
 - **App integration tests:** critical workflows wired through adapters, with external effects mocked or provided by controlled test fixtures.
-- **Rust tests:** native/domain helpers, path validation, command input validation, and error mapping.
+- **Rust tests:** required only for custom Rust code (path validation, command input validation, error mapping). A host without custom logic needs no Rust tests.
 - **Cross-platform smoke checks:** Tauri build/startup and workspace access on supported release platforms, especially where filesystem permissions differ.
 - **Regression tests:** every bug fix should add a test at the lowest practical layer that reproduces the failure.
 - **Browser integration tests (Playwright):** every new user-facing feature or workflow is covered by tests in `basalt-app/e2e/` that drive the real app in a browser and assert user-visible behavior. They run in CI.
@@ -403,7 +404,7 @@ The CI workflow should run on every PR and on changes to the default branch. Req
 5. **Tests:** all unit and integration tests available for the affected code.
    - **Integration tests:** Playwright tests (`npm run test:e2e`) run in a dedicated job on a hosted Ubuntu runner (Playwright Chromium does not support Alpine/musl); the HTML report is uploaded on failure.
 6. **Frontend build:** production TypeScript/Vite build for the app.
-7. **Rust checks:** `cargo fmt --check`, `cargo clippy` with warnings treated as failures where practical, and `cargo test` for the Tauri Rust package.
+7. **Rust checks:** `cargo fmt --check` and `cargo clippy` with warnings treated as failures. `cargo test` runs only when custom Rust code with tests exists.
 8. **Tauri validation:** validate Tauri configuration/capability files and build at least one representative desktop target. Platform matrix builds should run on relevant branches/releases where runner availability permits.
 
 CI reports check results for pull requests and default-branch changes. Merge enforcement through repository branch protection or required status checks is intentionally not used by this project.
@@ -421,7 +422,7 @@ CI reports check results for pull requests and default-branch changes. Merge enf
 
 ### CI implementation note
 
-The GitHub Actions workflow runs frontend formatting, lint, typecheck, tests, and build in a Node.js Alpine container; Rust formatting/lint/tests and the Linux Tauri build run in Alpine containers with the required native toolchain packages. Windows Tauri builds run on a native hosted runner. macOS builds are not included because macOS is not currently a supported target. These jobs provide feedback but are not configured as repository-enforced merge requirements.
+The GitHub Actions workflow runs frontend formatting, lint, typecheck, tests, and build in a Node.js Alpine container; Rust formatting/lint (no Rust tests while the host has no custom logic) and the Linux Tauri build run in Alpine containers with the required native toolchain packages. Windows Tauri builds run on a native hosted runner. macOS builds are not included because macOS is not currently a supported target. These jobs provide feedback but are not configured as repository-enforced merge requirements.
 
 ## Definition of done
 

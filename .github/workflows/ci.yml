@@ -64,7 +64,6 @@ jobs:
       - uses: actions/checkout@v4
       - run: cargo fmt --manifest-path basalt-app/src-tauri/Cargo.toml --all -- --check
       - run: cargo clippy --manifest-path basalt-app/src-tauri/Cargo.toml --all-targets --all-features -- -D warnings
-      - run: cargo test --manifest-path basalt-app/src-tauri/Cargo.toml --all-targets --all-features
 
   tauri-build-linux:
     name: Tauri desktop build (Linux/Alpine)
