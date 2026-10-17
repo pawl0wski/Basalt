@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "baseBranch": "auto",
+  "tracker": "github",
+  "browser": { "provider": "playwright" },
+  "validation": {
+    "commands": [
+      "cd basalt-app && npm run format:check",
+      "cd basalt-app && npm run lint",
+      "cd basalt-app && npm run typecheck",
+      "cd basalt-app && npm test",
+      "cd basalt-app && npm run build",
+      "cd basalt-app && npm run rust:fmt",
+      "cd basalt-app && npm run rust:lint"
+    ]
+  },
+  "labels": {
+    "enabled": false,
+    "pipeline": ["review", "changes-requested", "qa", "qa-failed", "merge-queue", "blocked", "do-not-merge"],
+    "category": ["bug", "feature", "refactor", "security", "dependencies", "documentation"],
+    "meta": ["needs-qa", "skip-qa", "qa-approved", "qa-self-verified", "in-progress", "ci-monitoring"],
+    "priority": ["priority-low", "priority-medium", "priority-high", "priority-extreme"],
+    "risk": ["risk-low", "risk-medium", "risk-high"]
+  },
+  "qaGate": false,
+  "ci": { "maxWaitMinutes": 40 },
+  "engine": { "loopStepThreshold": 20, "executorTier": "standard", "stepReview": "final" },
+  "paths": {
+    "runs": ".ai/runs",
+    "analysis": ".ai/analysis",
+    "specs": ".ai/specs",
+    "dataModel": ".ai/data-model",
+    "prototypes": ".ai/prototypes",
+    "scripts": ".ai/scripts",
+    "qa": ".ai/qa"
+  },
+  "reviewChecklist": null,
+  "closeKeywords": []
+}
