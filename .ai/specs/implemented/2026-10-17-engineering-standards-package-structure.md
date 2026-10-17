@@ -338,6 +338,8 @@ Tests should follow the same dependency boundaries as production code:
 - **Rust tests:** native/domain helpers, path validation, command input validation, and error mapping.
 - **Cross-platform smoke checks:** Tauri build/startup and workspace access on supported release platforms, especially where filesystem permissions differ.
 - **Regression tests:** every bug fix should add a test at the lowest practical layer that reproduces the failure.
+- **Browser integration tests (Playwright):** every new user-facing feature or workflow is covered by tests in `basalt-app/e2e/` that drive the real app in a browser and assert user-visible behavior. They run in CI.
+- **Unit tests for every change:** each change ships with deliberate unit tests that catch regressions: meaningful behavior, edge cases, and error paths, asserting observable outcomes, not tests written only to raise coverage.
 
 Tests must be deterministic, isolated, and must not access a developer's real workspace or credentials. Temporary test data must be uniquely created and reliably cleaned up.
 
@@ -399,6 +401,7 @@ The CI workflow should run on every PR and on changes to the default branch. Req
 3. **Lint:** static lint checks for TypeScript/React and Rust where configured.
 4. **Typecheck:** TypeScript checks for all affected workspaces (and preferably all workspaces while the repository is small).
 5. **Tests:** all unit and integration tests available for the affected code.
+   - **Integration tests:** Playwright tests (`npm run test:e2e`) run in a dedicated job on a hosted Ubuntu runner (Playwright Chromium does not support Alpine/musl); the HTML report is uploaded on failure.
 6. **Frontend build:** production TypeScript/Vite build for the app.
 7. **Rust checks:** `cargo fmt --check`, `cargo clippy` with warnings treated as failures where practical, and `cargo test` for the Tauri Rust package.
 8. **Tauri validation:** validate Tauri configuration/capability files and build at least one representative desktop target. Platform matrix builds should run on relevant branches/releases where runner availability permits.
