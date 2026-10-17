@@ -8,7 +8,7 @@ import {
     LockKeyhole,
     Sparkles,
 } from "lucide-react";
-import { Button } from "@/../../ui/src";
+import { Button } from "@basalt/ui";
 
 const features = [
     {

@@ -2,7 +2,7 @@
 date: 2026-10-17
 slug: engineering-standards-package-structure
 type: spec
-status: draft
+status: implemented
 approval: approved
 current: true
 tags: [architecture, engineering-standards, packages, tauri, ci]
@@ -12,11 +12,13 @@ tags: [architecture, engineering-standards, packages, tauri, ci]
 
 ## Status
 
-**Current and approved.** This is the authoritative engineering standards specification for Basalt. The `draft` status is retained because some requirements, especially CI checks and enforcement, still need implementation. Move it to `implemented` once those requirements are in place.
+**Current and implemented.** This is the authoritative engineering standards specification for Basalt. Package quality scripts and CI workflows are implemented. Linux CI runs in an Alpine container; Windows Tauri builds use a native runner. macOS is not currently a supported target. CI checks are advisory workflow results; repository branch protection and required status checks are not part of this project's workflow.
 
 ## Goal
 
 Define a maintainable engineering baseline for the Basalt application so that contributors can add functionality without creating unnecessary coupling between the React application, shared TypeScript packages, and the Tauri/Rust host.
+
+All repository documentation and specification content is written in English. User-facing application text follows the product's localization requirements.
 
 The specification is concerned with code organization and development practice. Markdown-first storage is an existing product constraint and informs the package boundaries, but detailed note behavior, synchronization, encryption, and product roadmap are out of scope.
 
@@ -111,14 +113,67 @@ Rules:
 
 ## Engineering standards
 
+### Code design principles
+
+These principles should guide engineering decisions and maintenance, not encourage abstractions for their own sake. Apply them in proportion to the problem's scale.
+
+#### YAGNI — implement current requirements
+
+- Implement behavior required by the accepted task, not hypothetical future needs.
+- Do not add extensibility points, configuration, adapter layers, or generic frameworks unless they solve a current problem.
+- This does not mean neglecting clear architecture or refactoring. Keep code easy to change, but do not include unused capabilities.
+- Extract shared abstractions when a real second use case appears and concrete examples demonstrate the common need.
+
+#### DRY — one source of truth for shared knowledge
+
+- Do not duplicate the same domain rule, validation, or mapping in multiple places. Keep it in the layer that owns that knowledge.
+- Share types and functions when they represent the same contract or rule, not merely because two code fragments look similar.
+- Do not force a shared abstraction onto code that happens to look similar but represents independent behavior. False abstractions increase coupling and make independent changes harder.
+- In React, keep state minimal and derive values from props/state instead of maintaining multiple copies of the same information.
+
+#### SRP — one responsibility and one reason to change
+
+- Each module, function, and component should have a clear responsibility.
+- A presentational component renders UI and emits user intent; a container or integration hook connects the view to state and actions; domain logic belongs in `@basalt/core`; platform effects belong in app adapters or Rust/Tauri.
+- Separate code when parts have independent reasons to change, require different tests, or become harder to understand when combined.
+- Do not split a small, cohesive component into multiple files just to satisfy an arbitrary size rule.
+
+#### Simplicity and readability
+
+- Prefer the simplest solution that meets the requirement and fits the existing architectural boundaries.
+- Readability for the next person matters more than terseness, clever types, or minimizing line count.
+- Avoid deeply nested conditions and overly long functions when steps can be named and extracted into focused functions.
+- Do not introduce a design pattern, library, or layer just because it is popular. Justify it with a concrete need.
+
+#### Explicitness and type safety
+
+- Dependencies, inputs, side effects, and possible errors should be visible in a function or module's interface.
+- Prefer types that describe valid states and values, such as discriminated unions for operation states, over loose strings or multiple conflicting flags.
+- Do not use `any`, type assertions, or the `!` operator to silence the compiler without a justified, local, verified guarantee. Validate external data at runtime.
+- Use TypeScript inference when a type is obvious; add annotations where they improve public contracts, readability, or diagnostics.
+- Functions should have clear inputs and outputs; prefer small functions with as few side effects as practical.
+
+#### Dependencies and data flow
+
+- Maintain unidirectional dependencies in accordance with the package diagram; compose features in the `app` layer.
+- Pass dependencies explicitly to functions and components rather than reading them from hidden global context, except when the framework provides an appropriate mechanism (for example, a React provider).
+- Do not import private files from another feature. Move shared elements to the appropriate layer only when a real shared need exists.
+- Isolate side effects at system boundaries. Pure logic should be testable without Tauri, network access, or the real filesystem.
+
 ### TypeScript and JavaScript
 
-- Use TypeScript for application and package source. JavaScript is permitted only for tooling/configuration that does not reasonably support TypeScript.
-- Keep strict type checking enabled. Do not use `any` to bypass a boundary; prefer `unknown` plus validation or a precise type.
-- Validate untrusted inputs at system boundaries: IPC payloads, filesystem contents, and HTTP responses. TypeScript annotations alone do not validate runtime data.
-- Make async operations explicit and handle expected failures. Do not silently swallow errors or return success-shaped placeholder values after a failed operation.
-- Use named, intention-revealing exports and stable package entry points.
-- Avoid premature generic frameworks and abstractions. Add an abstraction when it clarifies a current responsibility, enables a required test seam, or prevents a known dependency leak.
+- Use TypeScript for application and package source. JavaScript is permitted for tooling and configuration that do not reasonably support TypeScript.
+- Keep strict type checking enabled. Do not use `any` to bypass type boundaries; prefer `unknown` with validation or a precise type.
+- Validate untrusted data at system boundaries: IPC payloads, file contents, and HTTP responses. TypeScript annotations do not validate runtime data.
+- Handle asynchronous operations explicitly and expected errors in a controlled way. Do not ignore errors or return success-shaped values after a failed operation.
+- Use named, descriptive exports and stable package entry points.
+- Avoid premature generic frameworks and abstractions. Add an abstraction when it clarifies a current responsibility, creates a needed test seam, or prevents a concrete boundary violation.
+- Use TypeScript inference for local variables when the type is obvious. Annotate function inputs, public contracts, and non-obvious return types when it improves clarity.
+- Prefer `interface` for extendable object contracts and `type` for unions, intersections, and other type compositions. Clarity and consistency take precedence over this heuristic.
+- Avoid unsafe type assertions and the `!` operator. If they are necessary at a validated boundary, keep them narrow and provide a test or clear justification for the runtime guarantee.
+- Use `import type` when it clarifies a type-only dependency or prevents an unnecessary runtime import.
+- Update application state immutably. Do not mutate objects or arrays held in shared state.
+- Keep state minimal and derive values such as filtered lists, counts, and flags from source data rather than storing copies.
 
 ### Rust and Tauri
 
@@ -156,6 +211,7 @@ React code should separate **presentational components** from the container/hook
 - Keep store subscriptions narrow: select the specific state fields needed by the container rather than subscribing to an entire store when that would cause unrelated re-renders.
 - Keep event handlers named for the user intent (`handleSave`, `handleOpenNote`). If an action needs asynchronous work, error mapping, or multiple coordinated effects, delegate it to an app-level action/service/hook rather than expanding the JSX container into a workflow implementation.
 - Use a container only when a component needs application state or behavior. A purely presentational component does not need a wrapper just to conform mechanically to the pattern.
+- Keep a component focused on one UI responsibility. Extract a child component when it has an independent purpose, meaningful reuse, or a separate state/interaction boundary—not simply because the parent has reached an arbitrary line count.
 
 #### Pages and composition
 
@@ -168,13 +224,15 @@ React code should separate **presentational components** from the container/hook
 
 - Use local React state for transient state owned by one component. Use the shared store only for state genuinely shared across screens or application workflows.
 - Keep domain rules in `@basalt/core`, not in JSX, render callbacks, or Zustand selectors.
+- Keep state as the minimal source of truth. Derive filtered/sorted/display values during render or in selectors; do not store duplicated derived values that can become inconsistent.
+- Avoid mutating objects or arrays from props or shared state. Create new values when updating application state.
 - Compute simple display values directly. Use `useMemo` and `useCallback` only when there is a measured/rendering reason, stable identity is required by a consumer, or the computation is meaningfully expensive; do not add memoization by default.
 - Effects are for synchronizing with external systems. Do not use effects to derive values that can be calculated during render, and ensure subscriptions/listeners are cleaned up.
 - Components must provide accessible names, keyboard interaction, focus behavior, and semantic structure appropriate to their function.
 
 #### Feature folder and file layout
 
-Group a feature's related components, tests, and styles together. Use PascalCase names for React component files and folders, and keep test/style files adjacent to the implementation:
+Group a feature's related components, tests, and styles together. Use PascalCase names for React component files and component folders (for example, `Button.tsx` and `Button/`), and keep test/style files adjacent to the implementation. Non-component modules should use the naming convention already established by their package; do not force component casing onto utilities, hooks, or configuration files.
 
 ```text
 packages/app/src/
@@ -200,21 +258,21 @@ Do not create empty subfolders or all possible file types pre-emptively. Use the
 ```tsx
 // WorkspaceStatus.tsx
 export interface WorkspaceStatusProps {
-    name: string;
-    isAvailable: boolean;
-    onOpen: () => void;
+  name: string;
+  isAvailable: boolean;
+  onOpen: () => void;
 }
 
 export function WorkspaceStatus({
-    name,
-    isAvailable,
-    onOpen,
+  name,
+  isAvailable,
+  onOpen,
 }: WorkspaceStatusProps) {
-    return (
-        <button type="button" onClick={onOpen} disabled={!isAvailable}>
-            {isAvailable ? `Open ${name}` : `${name} is unavailable`}
-        </button>
-    );
+  return (
+    <button type="button" onClick={onOpen} disabled={!isAvailable}>
+      {isAvailable ? `Open ${name}` : `${name} is unavailable`}
+    </button>
+  );
 }
 ```
 
@@ -224,17 +282,17 @@ import { useWorkspaceStore } from "../../store/workspaceStore";
 import { WorkspaceStatus } from "./WorkspaceStatus";
 
 export function WorkspaceStatusContainer() {
-    const name = useWorkspaceStore((state) => state.activeWorkspaceName);
-    const isAvailable = useWorkspaceStore((state) => state.isWorkspaceAvailable);
-    const openWorkspace = useWorkspaceStore((state) => state.openWorkspace);
+  const name = useWorkspaceStore((state) => state.activeWorkspaceName);
+  const isAvailable = useWorkspaceStore((state) => state.isWorkspaceAvailable);
+  const openWorkspace = useWorkspaceStore((state) => state.openWorkspace);
 
-    return (
-        <WorkspaceStatus
-            name={name}
-            isAvailable={isAvailable}
-            onOpen={openWorkspace}
-        />
-    );
+  return (
+    <WorkspaceStatus
+      name={name}
+      isAvailable={isAvailable}
+      onOpen={openWorkspace}
+    />
+  );
 }
 ```
 
@@ -242,7 +300,7 @@ The example illustrates the boundary, not a requirement to use a store as the ac
 
 #### Naming and exports
 
-- Use PascalCase for component names and files; use camelCase for functions, props, hooks, and variables.
+- Use PascalCase for React component names and component files/folders (for example, `Button.tsx`, `WorkspaceStatus.tsx`, and `WorkspaceStatus/`). Use camelCase for functions, props, hooks, and variables; non-component files follow their package's established naming convention.
 - Name custom hooks with the `use` prefix and keep them in a feature-local `hooks/` folder unless broadly shared.
 - Prefer named exports for new React components and hooks so imports are explicit and refactoring is easier. Follow neighboring code during incremental migration rather than changing unrelated exports.
 - Use `ComponentNameProps` for component prop types. Keep the public prop API minimal and avoid passing entire stores/services into presentational components.
@@ -310,19 +368,23 @@ Every PR must:
 
 ```markdown
 ## Summary
+
 - What changed and why
 
 ## Affected areas
+
 - Packages/platforms:
 - Data/security impact:
 
 ## Verification
+
 - [ ] Tests
 - [ ] Typecheck/build
 - [ ] Lint/format checks
 - [ ] Desktop/Android check as applicable
 
 ## UI evidence
+
 <!-- Screenshots/recording, or N/A -->
 ```
 
@@ -341,7 +403,7 @@ The CI workflow should run on every PR and on changes to the default branch. Req
 7. **Rust checks:** `cargo fmt --check`, `cargo clippy` with warnings treated as failures where practical, and `cargo test` for the Tauri Rust package.
 8. **Tauri validation:** validate Tauri configuration/capability files and build at least one representative desktop target. Platform matrix builds should run on relevant branches/releases where runner availability permits.
 
-The exact scripts and tooling are to be selected in a follow-up implementation. Do not claim a check is required until it is actually configured as a branch protection/required status check.
+CI reports check results for pull requests and default-branch changes. Merge enforcement through repository branch protection or required status checks is intentionally not used by this project.
 
 ### CI behavior
 
@@ -356,7 +418,7 @@ The exact scripts and tooling are to be selected in a follow-up implementation. 
 
 ### CI implementation note
 
-At the time this draft was written, the repository did not contain a Basalt GitHub Actions workflow. Existing package scripts provide the app build and some package-level TypeScript checks, but lint/test scripts are not consistently defined across all workspaces. The standards above are target requirements; CI configuration and missing scripts need to be implemented in a separate, reviewed change.
+The GitHub Actions workflow runs frontend formatting, lint, typecheck, tests, and build in a Node.js Alpine container; Rust formatting/lint/tests and the Linux Tauri build run in Alpine containers with the required native toolchain packages. Windows Tauri builds run on a native hosted runner. macOS builds are not included because macOS is not currently a supported target. These jobs provide feedback but are not configured as repository-enforced merge requirements.
 
 ## Definition of done
 
@@ -371,12 +433,18 @@ A change is ready to merge when:
 - Documentation and PR description explain material architectural/security decisions.
 - Required review is complete and no required CI checks are failing or bypassed.
 
-## Research references
+## References
 
-These references informed the proposed boundaries and practices; they are not requirements to clone another project's architecture.
+These references inform the guidelines above; Basalt's requirements are the rules in this document, not a mandate to adopt another project's complete architecture.
 
+- React, Thinking in React: <https://react.dev/learn/thinking-in-react>
+- Bulletproof React, project structure: <https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md>
+- TypeScript Handbook, Everyday Types: <https://www.typescriptlang.org/docs/handbook/2/everyday-types.html>
+- Google TypeScript Style Guide: <https://google.github.io/styleguide/tsguide.html>
+- Redux Style Guide, state minimalism, feature organization, selectors and side effects: <https://redux.js.org/style-guide/>
+- Martin Fowler, YAGNI: <https://martinfowler.com/bliki/Yagni.html>
 - Tauri 2 security model: <https://v2.tauri.app/security/>
 - Tauri 2 filesystem plugin security, permissions, and scopes: <https://v2.tauri.app/plugin/file-system/>
-- Logseq project and plugin API overview: <https://github.com/logseq/logseq>
-- Standard Notes application architecture and extension context: <https://github.com/standardnotes/app>
-- Trilium Notes feature and developer documentation: <https://github.com/TriliumNext/Trilium>
+- GitHub Actions, running jobs in a container: <https://docs.github.com/en/actions/using-jobs/running-jobs-in-a-container>
+- Tauri prerequisites for Alpine Linux (musl/static-library considerations): <https://v2.tauri.app/start/prerequisites/>
+- Official Node.js Alpine image and musl compatibility notes: <https://hub.docker.com/_/node>
