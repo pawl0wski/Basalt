@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+    container:
+      image: node:22-alpine3.24
+    steps:
+      - run: apk add --no-cache bash gcc gcompat git libgcc libstdc++
+      - uses: actions/checkout@v4
+      - run: npm ci
+        working-directory: basalt-app
+      - run: npm run format:check
+        working-directory: basalt-app
+      - run: npx prettier --check AGENTS.md .ai/specs/2026-10-17-engineering-standards-package-structure.md .github/workflows/ci.yml
+      - run: npm run lint
+        working-directory: basalt-app
+      - run: npm run typecheck
+        working-directory: basalt-app
+      - run: npm test
+        working-directory: basalt-app
+      - run: npm run build
+        working-directory: basalt-app
+
+  rust:
+    name: Rust checks
+    runs-on: ubuntu-latest
+    container:
+      image: node:22-alpine3.24
+    steps:
+      - run: apk add --no-cache bash build-base cargo curl file gcc gcompat git libayatana-appindicator-dev libgcc libstdc++ librsvg-dev openssl-dev pkgconf rust rust-clippy rustfmt webkit2gtk-4.1-dev wget
+      - uses: actions/checkout@v4
+      - run: cargo fmt --manifest-path basalt-app/src-tauri/Cargo.toml --all -- --check
+      - run: cargo clippy --manifest-path basalt-app/src-tauri/Cargo.toml --all-targets --all-features -- -D warnings
+      - run: cargo test --manifest-path basalt-app/src-tauri/Cargo.toml --all-targets --all-features
+
+  tauri-build-linux:
+    name: Tauri desktop build (Linux/Alpine)
+    runs-on: ubuntu-latest
+    container:
+      image: node:22-alpine3.24
+    steps:
+      - run: apk add --no-cache bash build-base cargo cairo-static curl file font-dejavu gcc gcompat git glib-static harfbuzz-static libayatana-appindicator-dev libgcc libstdc++ librsvg-dev openssl-dev openssl-libs-static pkgconf rust rust-clippy rustfmt wayland-static webkit2gtk-4.1-dev wget zlib-static
+      - uses: actions/checkout@v4
+      - run: npm ci
+        working-directory: basalt-app
+      - run: npm run tauri build -- --no-bundle
+        working-directory: basalt-app
+
+  tauri-build-native:
+    name: Tauri desktop build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: basalt-app/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+        working-directory: basalt-app
+      - run: npm run tauri build -- --no-bundle
+        working-directory: basalt-app
