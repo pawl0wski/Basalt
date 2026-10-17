@@ -20,7 +20,7 @@ Implement the approved current engineering standards specification at `.ai/specs
 - Added strict TypeScript configurations for the shared packages and typecheck/test scripts to every package.
 - Updated the app to import the UI component through the `@basalt/ui` package API.
 - Renamed the React component file `button.tsx` to `Button.tsx`; moved the non-component variant helper to `buttonVariants.ts`.
-- Added GitHub Actions CI for formatting, lint, typecheck, tests, frontend build, Rust checks, and desktop builds. Linux checks and the Linux Tauri build use Alpine containers; Windows and macOS builds use native runners.
+- Added GitHub Actions CI for formatting, lint, typecheck, tests, frontend build, Rust checks, and desktop builds. Linux checks and the Linux Tauri build use Alpine containers; Windows builds use a native runner. macOS builds are not included because macOS is not currently supported.
 - Configured Alpine Linux CI jobs to use `node:22-alpine3.24`; installed the Node compatibility package for GitHub JavaScript actions and Alpine packages for Rust/Tauri WebKitGTK builds.
 - Updated the specification's implementation status notes.
 

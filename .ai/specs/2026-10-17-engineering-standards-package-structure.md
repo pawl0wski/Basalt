@@ -12,7 +12,7 @@ tags: [architecture, engineering-standards, packages, tauri, ci]
 
 ## Status
 
-**Current and implemented.** This is the authoritative engineering standards specification for Basalt. Package quality scripts and CI workflows are implemented. Linux CI runs in an Alpine container; Windows and macOS Tauri builds use native runners. CI checks are advisory workflow results; repository branch protection and required status checks are not part of this project's workflow.
+**Current and implemented.** This is the authoritative engineering standards specification for Basalt. Package quality scripts and CI workflows are implemented. Linux CI runs in an Alpine container; Windows Tauri builds use a native runner. macOS is not currently a supported target. CI checks are advisory workflow results; repository branch protection and required status checks are not part of this project's workflow.
 
 ## Goal
 
@@ -418,7 +418,7 @@ CI reports check results for pull requests and default-branch changes. Merge enf
 
 ### CI implementation note
 
-The GitHub Actions workflow runs frontend formatting, lint, typecheck, tests, and build in a Node.js Alpine container; Rust formatting/lint/tests and the Linux Tauri build run in Alpine containers with the required native toolchain packages. Windows and macOS Tauri builds run on native hosted runners. These jobs provide feedback but are not configured as repository-enforced merge requirements.
+The GitHub Actions workflow runs frontend formatting, lint, typecheck, tests, and build in a Node.js Alpine container; Rust formatting/lint/tests and the Linux Tauri build run in Alpine containers with the required native toolchain packages. Windows Tauri builds run on a native hosted runner. macOS builds are not included because macOS is not currently a supported target. These jobs provide feedback but are not configured as repository-enforced merge requirements.
 
 ## Definition of done
 
