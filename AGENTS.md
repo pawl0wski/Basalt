@@ -68,12 +68,14 @@ tags: [sync, e2ee]
 - For complex tasks, plan before implementation and write a specific spec in `.ai/specs/`. If work goes off track, stop and re-plan.
 - Follow existing code conventions in `basalt-app/`; check neighboring files before writing new code.
 - Write and maintain repository documentation, specifications, and AI-generated artifacts in English. User-facing application text should follow the product's localization requirements.
-- Follow the current engineering standards specification at `.ai/specs/2026-10-17-engineering-standards-package-structure.md` for package boundaries, coding principles, React component/presentation patterns, testing, PRs, and CI.
+- Follow the current engineering standards specification at `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` for package boundaries, coding principles, React component/presentation patterns, testing, PRs, and CI.
 - Apply YAGNI, DRY, and SRP pragmatically: build current requirements, share genuinely common rules rather than superficial similarities, and keep modules/components focused without splitting cohesive code mechanically.
 - In React, separate presentational components from containers/integration hooks where that improves clarity: presentational components render from typed props and emit callbacks; containers connect state/actions. Do not add a container when a component has no application integration needs.
 - Name React component files and component folders in PascalCase (for example, `Button.tsx` and `WorkspaceStatus/`); do not use lowercase filenames for components. Non-component files follow their package's established naming convention.
 - Prefer straightforward, readable TypeScript with strict types. Validate untrusted data at runtime, avoid unjustified `any`/assertions, keep state minimal, derive values when possible, and avoid unnecessary abstractions or memoization.
 - Do not add comments to code unless asked.
+- Every change must ship with unit tests (Vitest; Rust tests for native code) that guard against regressions. Write them deliberately, not to satisfy a checklist: cover the behavior that matters, including edge cases, error paths, and the exact scenario of a fixed bug; assert observable outcomes rather than implementation details; and make sure the test fails when the behavior it protects is broken. Do not add trivial tests that only exercise code without verifying anything meaningful.
+- Every new user-facing feature or workflow must also be covered by Playwright integration tests in `basalt-app/e2e/` (`npm run test:e2e`). Update the existing e2e tests when behavior changes. Integration tests run in CI and must pass there.
 - Verify changes with relevant tests, lint, and typecheck before considering the task complete.
 - After a correction or bug fix, record reusable findings in `.ai/lessons.md` and `.ai/lessons/`.
 - Never commit secrets or keys. Never log or expose credentials.

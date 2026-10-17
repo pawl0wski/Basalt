@@ -4,3 +4,6 @@ src-tauri/target
 src-tauri/gen
 package-lock.json
 **/Cargo.lock
+coverage
+playwright-report
+test-results

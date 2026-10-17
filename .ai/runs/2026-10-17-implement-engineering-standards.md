@@ -10,7 +10,7 @@ tags: [engineering-standards, ci, typescript, react, tauri]
 
 ## Goal
 
-Implement the approved current engineering standards specification at `.ai/specs/2026-10-17-engineering-standards-package-structure.md`.
+Implement the approved current engineering standards specification at `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md`.
 
 ## Work done
 
