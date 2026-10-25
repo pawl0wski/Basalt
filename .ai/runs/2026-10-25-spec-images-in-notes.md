@@ -30,4 +30,5 @@ Write a specification for E01-S03 on top of the S01 spec (`2026-10-24-markdown-n
 ## Open issues
 
 - Clipboard and drop behavior on WebKitGTK/WebView2 is unverified until the Phase 2 spike.
+- The fresh-context scope-cohesion review was not run; self-review only.
 - Depends on S01 Phase 2b, which is not implemented yet.
