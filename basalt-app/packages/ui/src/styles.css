@@ -1,3 +1,5 @@
+@layer theme, base, components, utilities;
+
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 @import "./tokens/index.css";
@@ -31,6 +33,25 @@
     textarea {
         font: inherit;
         color: inherit;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    figure,
+    fieldset,
+    legend {
+        margin: 0;
+        padding: 0;
+    }
+
+    button {
+        padding: 0;
+        background-color: transparent;
     }
 
     :focus-visible {

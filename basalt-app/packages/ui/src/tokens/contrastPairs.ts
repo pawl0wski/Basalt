@@ -78,7 +78,14 @@ export const contrastPairs: ContrastPair[] = [
     ),
     ...textOn(
         "status-danger",
-        ["surface-frame", "surface-editor", "surface-raised"],
+        [
+            "surface-frame",
+            "surface-editor",
+            "surface-card",
+            "surface-raised",
+            "state-hover",
+            "state-selected",
+        ],
         "AB3, WCAG 1.4.3",
     ),
     ...textOn(

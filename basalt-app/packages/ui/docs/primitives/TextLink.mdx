@@ -1,0 +1,147 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { DoDont } from "../../.storybook/blocks";
+import { Button } from "../../src/components/Button";
+import { TextLink } from "../../src/components/TextLink";
+import * as TextLinkStories from "../../src/components/TextLink.stories";
+
+<Meta of={TextLinkStories} />
+
+# TextLink
+
+## 1. What it is for
+
+A text link takes the user to another place: a settings page, a note, or documentation.
+
+<Canvas of={TextLinkStories.Playground} />
+
+## 2. When to use
+
+- A destination inside a sentence ("change the folder in Settings").
+- A short navigation item that sits alone, such as "Learn how notes are stored".
+- A link to a note inside interface text.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The action changes data or starts a task. | [Button](?path=/docs/primitives-button--docs). |
+| The control has only an icon. | [IconButton](?path=/docs/primitives-iconbutton--docs). |
+| The target is a button-like call to action. | Button with `asChild` around the link. |
+
+## 4. Anatomy
+
+1. Text in `text-link` (a light tint of the accent, 6.76:1 on `surface-frame`).
+2. Underline: always for `inline`, on hover for `standalone`.
+3. Focus outline: 2 px `focus-ring` with a 2 px offset.
+
+## 5. Variants
+
+| Variant | Use it for | Why |
+|---|---|---|
+| `inline` (default) | Links inside a sentence or paragraph. | Always underlined: color alone is not enough to see a link inside text (WCAG 1.4.1). |
+| `standalone` | Links on their own line or in a group of links. | Position makes them recognizable, so the underline appears on hover only. Proposal. |
+
+The accent is used on links (R01.2). It is never a background (tokens.md `text-link`).
+
+<Controls of={TextLinkStories.Playground} />
+
+<Canvas of={TextLinkStories.InText} />
+
+## 6. States
+
+<Canvas of={TextLinkStories.States} />
+
+| State | What the user sees | Notes |
+|---|---|---|
+| Default | `text-link`. | |
+| Hover | Text changes to `text-note`; `standalone` also gets the underline. | Proposal: no source defines link hover. |
+| Focus | 2 px `focus-ring` outline. | |
+| Visited | Not styled. | Notes are local files, the browser history is not meaningful. Proposal. |
+| Disabled | Not supported. A link that is not available is plain text. | |
+| Selected text | Inside an editor selection the link takes `text-note` (4:1 fails otherwise). | tokens.md rule 16 |
+
+## 7. Behavior and accessibility
+
+- Native `a` element. A real `href` is required; use `Button` for actions without a URL.
+- Keyboard: Tab to focus, Enter to follow.
+- The link text must make sense out of context: "Open settings", not "click here".
+- For a link that opens another window or leaves the app, say so in the text.
+- With `asChild` the child keeps its own semantics, for example a router link.
+- A text link has no minimum target size in WCAG 2.5.8 when it is inline in a sentence; standalone links should be at least 24 px high through their container.
+
+## 8. Content
+
+- Name the destination or the result: "Settings", "How notes are stored".
+- Sentence case, no final period inside the link.
+- Do not use a full URL as link text.
+- Do not wrap a whole sentence in a link.
+
+## 9. Responsiveness
+
+Links wrap with the text. At 320 px a long standalone link wraps on several lines; it does not truncate.
+
+<Canvas of={TextLinkStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `variant` | `"inline" \| "standalone"` | `"inline"` | Underline behavior. |
+| `asChild` | `boolean` | `false` | Render the child element with the link styles. |
+| `href` | `string` | | Destination. |
+| ...rest | `AnchorHTMLAttributes` | | Passed to the element. |
+
+## 11. Code
+
+```tsx
+import { TextLink } from "@basalt/ui";
+
+<p>
+    Notes are plain Markdown files. Change the folder in{" "}
+    <TextLink href="#settings">Settings</TextLink>.
+</p>
+```
+
+```tsx
+<TextLink variant="standalone" href="#storage">Learn how notes are stored</TextLink>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: (
+                <p className="m-none text-text-ui">
+                    Change the folder in <TextLink href="#settings">Settings</TextLink>.
+                </p>
+            ),
+            reason: "The link text names the destination.",
+        }}
+        bad={{
+            children: (
+                <p className="m-none text-text-ui">
+                    To change the folder <TextLink href="#settings">click here</TextLink>.
+                </p>
+            ),
+            reason: "'Click here' means nothing out of context.",
+        }}
+    />
+</Unstyled>
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: <TextLink asChild><a href="#notes">Open notes</a></TextLink>,
+            reason: "Navigation is a link.",
+        }}
+        bad={{
+            children: <Button variant="ghost">Open notes</Button>,
+            reason: "A button without a URL cannot be opened in a new tab or copied.",
+        }}
+    />
+</Unstyled>
+
+## 13. Related
+
+[Button](?path=/docs/primitives-button--docs), [IconButton](?path=/docs/primitives-iconbutton--docs), [Color](?path=/docs/foundations-color--docs).

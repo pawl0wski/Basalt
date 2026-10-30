@@ -1,0 +1,159 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { DoDont } from "../../.storybook/blocks";
+import { Field } from "../../src/components/Field";
+import { Input } from "../../src/components/Input";
+import * as FieldStories from "../../src/components/Field.stories";
+
+<Meta of={FieldStories} />
+
+# Label and Field
+
+## 1. What it is for
+
+A label tells the user what a control is for, and a field joins the label, the control, a hint and an error message so that sighted users and screen readers get the same information.
+
+<Canvas of={FieldStories.Playground} />
+
+## 2. When to use
+
+- Every form control that takes input: [Input](?path=/docs/primitives-input--docs) and later Select and text areas.
+- `Label` on its own when a control cannot be wrapped by a Field (for example a custom layout).
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| A [Checkbox](?path=/docs/primitives-checkbox--docs) or switch. | The control has its own label on its right. |
+| A group of radios or checkboxes. | A `fieldset` with a `legend` (RadioGroup, Batch 3). |
+| A message about the whole form. | Alert (Batch 2). |
+| A message that is not about one control. | Alert or Toast, not a field error. |
+
+## 4. Anatomy
+
+1. Label: always visible, above the control, `text-size-ui` in `text-ui`. Required.
+2. Control: any Basalt form control inside the field.
+3. Hint: `text-size-ui-small` in `text-muted`, below the control. Optional.
+4. Error: `text-size-ui-small` in `status-danger`, below the hint. Optional.
+
+Spacing between the parts is `gap-in-group` (4 px): they belong to one group (R01.7).
+
+## 5. Variants
+
+One layout (label above). A label beside the control is not needed yet.
+
+Requirement marking (proposal, no source defines one):
+
+| Case | Marking |
+|---|---|
+| Required field | No visible mark. `aria-required` is set. Most fields in a form are required, so marking them adds noise. |
+| Optional field | The text "(optional)" after the label. Text is read by every screen reader and needs no legend. |
+
+Do not use an asterisk without explaining it (WCAG 3.3.2).
+
+<Controls of={FieldStories.Playground} />
+
+<Canvas of={FieldStories.Required} />
+<Canvas of={FieldStories.Optional} />
+
+## 6. States
+
+| State | What the user sees | Notes |
+|---|---|---|
+| Default | Label, control, optional hint. | |
+| Focus | The control shows the focus ring. The label does not change. | |
+| Invalid | The control gets a `status-danger` border and the error message appears below. The control has `aria-invalid="true"`. | |
+| Disabled | Comes from the control. Use the hint to say why. | |
+| Loading, selected | Not applicable: the field only arranges its parts. | |
+
+<Canvas of={FieldStories.WithError} />
+
+Validation timing (proposal, from the form pattern): validate when the user leaves the field and when the form is submitted, never while the user is typing the first time. Once a field shows an error, re-validate on every change so the error disappears as soon as it is fixed.
+
+<Canvas of={FieldStories.ValidatesOnBlur} />
+
+## 7. Behavior and accessibility
+
+- Field generates an `id` with `useId` and connects the label to the control through `htmlFor`. Clicking the label focuses the control.
+- The control receives `aria-describedby` with the ids of the hint and the error, so a screen reader reads them after the name.
+- `aria-invalid="true"` is set only when there is an error. `aria-required="true"` is set when `required`.
+- The error is not a live region: it is read when the control receives focus. After a failed submit, move focus to the first invalid control so the error is announced (WCAG 3.3.1).
+- Error text names the problem and the fix (WCAG 3.3.3). Color is never the only signal (WCAG 1.4.1).
+- Label and hint contrast: `text-ui` and `text-muted` are at least 4.5:1 on `surface-frame`, `surface-editor`, `surface-card` and `surface-raised`, and `status-danger` as well (WCAG 1.4.3, measured in `contrast.test.ts`).
+
+## 8. Content
+
+- Label: a noun phrase, 1 to 4 words ("Workspace name"). No colon, no final period.
+- Hint: what the value is used for or the format, one sentence ("Shown in the window title.").
+- Error: what is wrong and what to do ("Enter a name for the workspace."). Do not blame the user and do not use "Invalid".
+- A long label or message wraps; it never truncates.
+
+<Canvas of={FieldStories.LongText} />
+
+## 9. Responsiveness
+
+The field fills its container. At 320 px the label, hint and error wrap and the control keeps its height. Wide forms are limited by the container (`max-w-prose`).
+
+<Canvas of={FieldStories.NarrowScreen} />
+
+## 10. API
+
+`Field`:
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | `ReactNode` | required | Visible label. |
+| `children` | `ReactNode` | required | The control. |
+| `hint` | `ReactNode` | | Help text. |
+| `error` | `ReactNode` | | Error text. Setting it also marks the control invalid. |
+| `required` | `boolean` | `false` | Sets `aria-required` on the control. |
+| `optional` | `boolean` | `false` | Adds "(optional)" to the label. |
+| `className` | `string` | | Layout only. |
+
+`Label`: a styled `label` element, accepts all `label` props.
+
+## 11. Code
+
+```tsx
+import { Field, Input } from "@basalt/ui";
+
+<Field label="Workspace name" required error={errors.name}>
+    <Input value={name} onChange={onNameChange} onBlur={onNameBlur} />
+</Field>
+```
+
+```tsx
+<Field label="Description" optional hint="Visible only to you.">
+    <Input />
+</Field>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: (
+                <div className="w-full">
+                    <Field label="Workspace name" error="Enter a name for the workspace.">
+                        <Input />
+                    </Field>
+                </div>
+            ),
+            reason: "The message says what to do, in words.",
+        }}
+        bad={{
+            children: (
+                <div className="w-full">
+                    <Field label="Workspace name" error="Invalid">
+                        <Input />
+                    </Field>
+                </div>
+            ),
+            reason: "'Invalid' does not say what is wrong or how to fix it.",
+        }}
+    />
+</Unstyled>
+
+## 13. Related
+
+[Input](?path=/docs/primitives-input--docs), [Checkbox](?path=/docs/primitives-checkbox--docs), [Button](?path=/docs/primitives-button--docs).

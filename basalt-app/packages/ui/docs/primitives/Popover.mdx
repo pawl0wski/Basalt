@@ -1,0 +1,97 @@
+import { Canvas, Controls, Meta } from "@storybook/addon-docs/blocks";
+import * as PopoverStories from "../../src/components/Popover.stories";
+
+<Meta of={PopoverStories} />
+
+# Popover
+
+## 1. What it is for
+
+A popover shows a small panel with controls next to the button that opened it, such as choosing the accent color, without leaving the screen. Approved by the owner in Stage 0.
+
+<Canvas of={PopoverStories.Open} />
+
+## 2. When to use
+
+- A few related controls that apply to the current screen: accent color, sort order.
+- Content that needs interaction (links, radios), which a tooltip cannot hold.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| A name for an icon. | [Tooltip](?path=/docs/primitives-tooltip--docs). |
+| A list of actions. | [Menu](?path=/docs/primitives-menu--docs). |
+| A task that needs the user's full attention. | [Dialog](?path=/docs/primitives-dialog--docs). |
+| A long form. | A page. |
+
+## 4. Anatomy
+
+1. Trigger: any button; it gets `aria-expanded`.
+2. Panel: `surface-raised`, 1 px `border-divider`, `rounded-container`, padding `panel` (12 px), at most 300 px wide (`max-w-sidebar`), no shadow.
+3. Content: any controls.
+
+## 5. Variants
+
+One variant. `align` aligns the panel to the trigger.
+
+<Controls of={PopoverStories.Playground} />
+
+## 6. States
+
+| State | Notes |
+|---|---|
+| Closed / Open | Opens on click or Enter, closes on Escape, outside click or by the trigger. |
+| Hover, focus, pressed | Belong to the trigger and the controls inside. |
+| Loading, error | Show them inside the panel with the standard components. |
+
+Switches and checkboxes do not stand on `surface-raised` (tokens.md rule 15); radios follow the same rule, so keep the panel for items that are labelled buttons, or put the group on a card.
+
+## 7. Behavior and accessibility
+
+- Built on the Radix popover: the trigger has `aria-expanded` and `aria-controls`; the panel is `role="dialog"` named by `label` (required).
+- Focus moves into the panel on open and returns to the trigger on close. Tab leaves the panel in the page order and closes it.
+- Escape closes it.
+- The page behind is not inert (non-modal).
+- Contrast: `text-ui` on `surface-raised` is at least 4.5:1.
+
+## 8. Content
+
+- `label`: the same words as the trigger ("Accent color").
+- Keep the panel short: a heading is not needed when the label equals the trigger.
+
+## 9. Responsiveness
+
+The panel is at most 300 px wide, flips and shifts to stay in the viewport at 320 px.
+
+<Canvas of={PopoverStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `trigger` | `ReactNode` | required | Element that opens it. |
+| `label` | `string` | required | Accessible name of the panel. |
+| `children` | `ReactNode` | required | Content. |
+| `align` | `"start" \| "center" \| "end"` | `"start"` | Alignment. |
+| `open`, `defaultOpen`, `onOpenChange` | | | Controlled or uncontrolled state. |
+
+## 11. Code
+
+```tsx
+import { Button, Popover } from "@basalt/ui";
+
+<Popover label="Accent color" trigger={<Button variant="secondary">Accent color</Button>}>
+    <AccentPicker />
+</Popover>
+```
+
+## 12. Do and don't
+
+- Do keep it small and related to its trigger.
+- Don't open a popover from a popover.
+- Don't use it for information the user must read; use text on the screen.
+
+## 13. Related
+
+[Tooltip](?path=/docs/primitives-tooltip--docs), [Menu](?path=/docs/primitives-menu--docs), [Dialog](?path=/docs/primitives-dialog--docs), [RadioGroup](?path=/docs/primitives-radiogroup--docs).

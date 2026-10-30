@@ -91,7 +91,6 @@ export const ignoredPaths = [
     /(^|\/)src\/tokens\/(raw|semantic|component|theme|accents)\.css$/,
     /\.test\.(ts|tsx)$/,
     /(^|\/)scripts\//,
-    /(^|\/)src\/components\/buttonVariants\.ts$/,
 ];
 
 export const scannedExtensions = /\.(ts|tsx|js|jsx|mjs|css|mdx|html)$/;

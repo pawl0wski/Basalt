@@ -1,0 +1,107 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { DoDont } from "../../.storybook/blocks";
+import { Skeleton } from "../../src/components/Skeleton";
+import * as SkeletonStories from "../../src/components/Skeleton.stories";
+
+<Meta of={SkeletonStories} />
+
+# Skeleton
+
+## 1. What it is for
+
+A skeleton holds the place of content that is still loading, so the layout does not jump when it arrives, for example an image in a note (E01-S03) or a note that is being opened.
+
+<Canvas of={SkeletonStories.NoteLoading} />
+
+## 2. When to use
+
+- Content that takes noticeable time to load and has a known shape: an image, a list of notes, the note body.
+- Only when the loading takes longer than about 300 ms. Shorter loads need nothing (proposal).
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The load failed. | [Alert](?path=/docs/primitives-alert--docs) or an error state (Batch 3). |
+| There is nothing to show. | An empty state (Batch 3). |
+| A button waits for a result. | Disable the button and change its label ("Saving..."). |
+| Decoration. | Nothing. |
+
+## 4. Anatomy
+
+1. Block: `state-hover` fill, `rounded-control` (4 px), no border, no shadow, no gradient.
+2. Default size: one line high (`h-icon`, 16 px) and full width. The caller sets the size with tokens (`h-tree-row`, `w-sidebar`).
+
+## 5. Variants
+
+One variant: a plain block. Compose several to match the shape of the final content. There is no shimmer: the sources define no loading animation and the interface avoids decorative motion (A01, Motion). Adding a pulse is a proposal that needs a decision.
+
+<Controls of={SkeletonStories.Playground} />
+
+## 6. States
+
+None. A skeleton is replaced by the real content or by an error. It has no hover, focus, pressed, disabled, selected, error or loading state of its own.
+
+## 7. Behavior and accessibility
+
+- Every block has `aria-hidden="true"`: screen readers skip them.
+- The loading state is announced once by the parent: give the wrapper `role="status"` and `aria-busy="true"` and a visually hidden text ("Loading note"). Remove them when the content arrives.
+- Keep focus where it was; do not move it into the placeholder.
+- Skeleton blocks are not interactive and not focusable.
+- Contrast: the blocks are decorative; they only need to be visible against `surface-editor`.
+
+## 8. Content
+
+The skeleton contains no text. The hidden text names what is loading ("Loading note", "Loading image"), as a short noun phrase.
+
+## 9. Responsiveness
+
+Blocks are full width by default and shrink with the container. Keep the same height at every width so the real content replaces them without a jump.
+
+<Canvas of={SkeletonStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `className` | `string` | | Size and layout with token classes. |
+
+## 11. Code
+
+```tsx
+import { Skeleton } from "@basalt/ui";
+
+<div role="status" aria-busy="true">
+    <span className="sr-only">Loading note</span>
+    <Skeleton />
+    <Skeleton className="w-sidebar" />
+</div>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: (
+                <div className="flex w-full flex-col gap-in-group">
+                    <Skeleton />
+                    <Skeleton className="w-sidebar" />
+                </div>
+            ),
+            reason: "Plain blocks that match the shape of the text.",
+        }}
+        bad={{
+            children: (
+                <div className="flex w-full flex-col gap-in-group">
+                    <Skeleton className="h-sidebar" />
+                </div>
+            ),
+            reason: "A big block that does not match the content makes the page jump.",
+        }}
+    />
+</Unstyled>
+
+## 13. Related
+
+[Alert](?path=/docs/primitives-alert--docs), [Motion](?path=/docs/foundations-motion--docs), [Spacing and layout](?path=/docs/foundations-spacing-and-layout--docs).

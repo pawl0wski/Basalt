@@ -9,3 +9,6 @@ Long-term memory index for AI agents. Each entry links to a full lesson file in 
 - 2026-10-17 — Keep Rust minimal: thin Tauri host, logic in TypeScript, official plugins first — [detail](lessons/2026-10-17-minimize-rust.md)
 - 2026-10-17 — Resolve PR conflicts by rebasing onto origin/master (force-with-lease), not by merging master into the branch — [detail](lessons/2026-10-17-resolve-conflicts-with-rebase.md)
 - 2026-10-25 — `pathKey` (NFC + case fold) only detects name collisions; file identity (cache keys, equality, link rewriting) is exact `WorkspacePath` — [detail](lessons/2026-10-25-pathkey-is-not-identity.md)
+- 2026-10-30 — Basalt token classes need `extendTailwindMerge` and `@layer` order theme, base, components, utilities, or utilities are silently dropped/overridden — [detail](lessons/2026-10-30-tailwind-merge-and-layer-order.md)
+- 2026-10-30 — Without Tailwind preflight, reset margins on `p`/headings/`figure`/`fieldset` and button background in `styles.css`; verify new components visually, not only by tests — [detail](lessons/2026-10-30-tailwind-merge-and-layer-order.md)
+- 2026-10-30 — Radix overlays: tooltip opens on autofocus, state-hover = surface-raised, modal menu fails axe, radio arrow selection needs a held key in tests — [detail](lessons/2026-10-30-radix-overlays-gotchas.md)

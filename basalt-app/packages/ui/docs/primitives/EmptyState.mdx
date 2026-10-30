@@ -1,0 +1,123 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { FilePlus } from "lucide-react";
+import { DoDont } from "../../.storybook/blocks";
+import { Button } from "../../src/components/Button";
+import { EmptyState } from "../../src/components/EmptyState";
+import * as EmptyStateStories from "../../src/components/EmptyState.stories";
+
+<Meta of={EmptyStateStories} />
+
+# EmptyState
+
+## 1. What it is for
+
+An empty state tells the user why a place is empty and what to do next, such as an empty notes list or a search with no results.
+
+<Canvas of={EmptyStateStories.Playground} />
+
+## 2. When to use
+
+- A list, folder or view with no content yet ("No notes yet").
+- A search or filter with no match ("No notes match ..."), with an action to clear it.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| Loading. | [Skeleton](?path=/docs/primitives-skeleton--docs). |
+| The load failed. | [ErrorState](?path=/docs/primitives-errorstate--docs). |
+| A field with no value. | The field's placeholder or hint. |
+| A note with no text. | The editor itself. |
+
+Two different empty cases get two different messages: "nothing is here yet" (action: create) and "nothing matches your filter" (action: clear the filter).
+
+## 4. Anatomy
+
+1. Icon (optional): 20 px (`size-activity-icon`), `icon-default`, decorative.
+2. Title: `font-ui-strong`. Required.
+3. Description: `text-muted`, why it is empty. Optional but recommended.
+4. Action: a Button that solves it. Optional.
+
+The block is left-aligned in a column of at most 65 characters (`max-w-prose`); it is not centered on the page (centering everything is an anti-pattern, A01).
+
+## 5. Variants
+
+One layout. The content distinguishes the cases.
+
+<Controls of={EmptyStateStories.Playground} />
+
+<Canvas of={EmptyStateStories.NoResults} />
+
+## 6. States
+
+An empty state is a state of the surrounding view. It has no own states; its action button has the Button states.
+
+## 7. Behavior and accessibility
+
+- The title is a heading (`h2` by default, `headingAs` to fit the page outline), so screen reader users can find it.
+- It is not a live region. When a search changes to no results, announce it through the results count in the surrounding view.
+- Icons are decorative.
+- Contrast: `text-ui` and `text-muted` on `surface-editor` are at least 4.5:1.
+
+## 8. Content
+
+- Title: what is empty, in plain words ("No notes yet").
+- Description: why, and what to do ("Notes you create are saved as Markdown files in your workspace folder.").
+- Action: a verb and an object ("New note").
+- No jokes, no illustrations of sad faces, no exclamation marks.
+
+<Canvas of={EmptyStateStories.LongText} />
+
+## 9. Responsiveness
+
+The block fills the width at 320 px (text wraps) and stops at 65 characters on wide screens.
+
+<Canvas of={EmptyStateStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `title` | `ReactNode` | required | What is empty. |
+| `description` | `ReactNode` | | Why and what next. |
+| `action` | `ReactNode` | | Button that solves it. |
+| `icon` | `ReactNode` | | Decorative icon. |
+| `headingAs` | `"h2" \| "h3" \| "h4"` | `"h2"` | Heading level. |
+| `role` | `"alert" \| "status"` | | Live region role, for dynamic cases. |
+
+## 11. Code
+
+```tsx
+import { Button, EmptyState } from "@basalt/ui";
+
+<EmptyState
+    title="No notes yet"
+    description="Notes you create are saved as Markdown files in your workspace folder."
+    action={<Button>New note</Button>}
+/>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: (
+                <EmptyState
+                    title="No notes yet"
+                    description="Create your first note."
+                    action={<Button>New note</Button>}
+                />
+            ),
+            reason: "It says what is empty and offers the next step.",
+        }}
+        bad={{
+            children: <EmptyState title="Nothing here" />,
+            reason: "The user is told nothing about why or what to do.",
+        }}
+    />
+</Unstyled>
+
+## 13. Related
+
+[ErrorState](?path=/docs/primitives-errorstate--docs), [Skeleton](?path=/docs/primitives-skeleton--docs), [Button](?path=/docs/primitives-button--docs).

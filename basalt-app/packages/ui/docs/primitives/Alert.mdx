@@ -1,0 +1,145 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { DoDont } from "../../.storybook/blocks";
+import { Alert } from "../../src/components/Alert";
+import { Button } from "../../src/components/Button";
+import * as AlertStories from "../../src/components/Alert.stories";
+
+<Meta of={AlertStories} />
+
+# Alert
+
+## 1. What it is for
+
+An alert shows a message about the current view that stays on the screen until the problem is solved or the user has read it, such as a sync conflict or a folder that cannot be written to.
+
+<Canvas of={AlertStories.Playground} />
+
+## 2. When to use
+
+- A problem that needs the user's attention and an action (read-only folder, sync conflict).
+- Standing information about the screen ("Markdown files and attachments stay in your folder").
+- A failure that needs action. These never go into a Toast (Batch 3).
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The error belongs to one field. | The error message of a [Field](?path=/docs/primitives-field--docs). |
+| A short result that disappears ("Note saved"). | Toast (Batch 3). |
+| A decision before a destructive step. | ConfirmDialog (Batch 3). |
+| Only the sync state. | [StatusIndicator](?path=/docs/primitives-statusindicator--docs). |
+
+## 4. Anatomy
+
+1. Container: `surface-raised`, 1 px `border-divider`, `rounded-container` (8 px), padding `panel` (12 px). No shadow.
+2. Icon: 16 px, decorative. Color by variant.
+3. Title (optional): `font-ui-strong`.
+4. Message: `text-ui`. Required.
+5. Action (optional): a [Button](?path=/docs/primitives-button--docs), `secondary` as a rule.
+
+## 5. Variants
+
+| Variant | Use it for | Icon color | Role |
+|---|---|---|---|
+| `info` | Standing information. | `icon-default` | `status` (polite) |
+| `warning` | Something needs attention but nothing is lost. | `status-warning` | `status` (polite) |
+| `danger` | Something failed or cannot work. | `status-danger` | `alert` (assertive) |
+
+The layout of the alert is a proposal; the sources define the status colors only (tokens.md `status-warning`, `status-danger`). Colors are used on the icon, never as the background (tokens.md: status colors are not for large surfaces).
+
+<Controls of={AlertStories.Playground} />
+
+<Canvas of={AlertStories.Variants} />
+
+## 6. States
+
+An alert has no interactive state of its own. It is either shown or not. Its action button has the Button states.
+
+| State | Notes |
+|---|---|
+| Shown | The only state. Remove the alert when the cause is gone. |
+| Dismissed | Not supported. A dismiss button is added when a use needs it (YAGNI). |
+| Hover, focus, pressed, disabled, loading | Not applicable. |
+
+## 7. Behavior and accessibility
+
+- `danger` uses `role="alert"`: screen readers announce it at once. `info` and `warning` use `role="status"`: announced when the user is idle.
+- An alert that is on the page at load is not announced by `role`; the first heading or the text is read in order. Use it for changes after load, and make sure the message is also in reading order.
+- The meaning is in the words and the icon, not in color alone (WCAG 1.4.1).
+- Contrast: `text-ui`, `status-warning` and `status-danger` on `surface-raised` are at least 4.5:1 (measured in `contrast.test.ts`).
+- Move keyboard focus to the alert only when the user must act before continuing.
+
+## 8. Content
+
+- Title: what happened, up to 6 words ("Could not save the note").
+- Message: why and what to do ("The folder is read-only. Choose a folder you can write to.").
+- Do not blame the user. Do not use "Oops" or an exclamation mark.
+- Long titles and messages wrap.
+
+<Canvas of={AlertStories.LongText} />
+
+## 9. Responsiveness
+
+The alert fills its container. At 320 px text wraps and the action sits below the message.
+
+<Canvas of={AlertStories.WithAction} />
+<Canvas of={AlertStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `variant` | `"info" \| "warning" \| "danger"` | `"info"` | Meaning and announcement. |
+| `title` | `ReactNode` | | Short heading. |
+| `children` | `ReactNode` | required | Message. |
+| `action` | `ReactNode` | | Button or link. |
+| `className` | `string` | | Layout only. |
+
+## 11. Code
+
+```tsx
+import { Alert, Button } from "@basalt/ui";
+
+<Alert variant="danger" title="Could not save the note">
+    The folder is read-only. Choose a folder you can write to.
+</Alert>
+```
+
+```tsx
+<Alert
+    variant="warning"
+    title="Sync conflict"
+    action={<Button variant="secondary">Review changes</Button>}
+>
+    Two devices changed this note.
+</Alert>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: (
+                <div className="w-full">
+                    <Alert variant="danger" title="Could not save the note">
+                        The folder is read-only. Choose a folder you can write to.
+                    </Alert>
+                </div>
+            ),
+            reason: "It says what failed and what to do next.",
+        }}
+        bad={{
+            children: (
+                <div className="w-full">
+                    <Alert variant="danger">Oops! Something went wrong.</Alert>
+                </div>
+            ),
+            reason: "The user cannot tell what failed or what to do.",
+        }}
+    />
+</Unstyled>
+
+## 13. Related
+
+[StatusIndicator](?path=/docs/primitives-statusindicator--docs), [Field](?path=/docs/primitives-field--docs), [Button](?path=/docs/primitives-button--docs), [Color](?path=/docs/foundations-color--docs).

@@ -10,12 +10,12 @@ Materiały źródłowe: `lekcja6/referencje.md`, `lekcja6/tokeny.md`, `.ai/specs
 |---|---|
 | 0. Inwentaryzacja i plan | wykonany, decyzje zatwierdzone przez właściciela (2026-10-25) |
 | 1. Fundamenty | wykonany, zweryfikowany, czeka na zatwierdzenie Partii 1 i „dalej” do Etapu 2 |
-| 2. Komponenty bazowe | przygotowana Partia 1 (zestawienie różnic od bazy), czeka na start |
+| 2. Komponenty bazowe | Partie 1, 2 i 3 zbudowane i zweryfikowane (2026-10-30), czekają na przegląd właściciela; Etap 3 po „dalej” |
 | 3. Komponenty produktu, wzorce, ekrany | nie zaczęty |
 | 4. Strony, które uczą | nie zaczęty |
 | 5. Sprawdzenie i raport | nie zaczęty |
 
-**Następny krok:** Właściciel zatwierdza specyfikację różnic wyglądu od bazy dla Partii 1 komponentów bazowych (Button, IconButton, TextLink, Input, Label+Field, Checkbox) i podaje „dalej” do Etapu 2.
+**Następny krok:** Właściciel ogląda Partie 1-3 (Primitives w Storybooku), rozstrzyga pytania i propozycje poniżej i podaje „dalej” do Etapu 3 (komponenty produktu, wzorce, ekrany).
 
 ---
 
@@ -132,3 +132,76 @@ Zgodnie z wymogiem Etapu 2, przed rozpoczęciem pierwszej partii przedstawiamy z
 - **2026-10-25 (Etap 0):** Inwentaryzacja repozytorium, analiza referencji, tokenów i specyfikacji. Zgłoszenie 5 pytań do właściciela.
 - **2026-10-25 (Decyzje):** Właściciel zatwierdził ciemny motyw (jasny do What is missing), dodanie Toast/RadioGroup/Popover, realizację wzorców jako propozycje, Vitest 5 w ui oraz zasady migracji istniejącego kodu.
 - **2026-10-25 (Etap 1):** Zbudowano pełne fundamenty: Storybook 10.6.3 z a11y i Vitest browser runnerem, 3 warstwy tokenów CSS, Tailwind inline theme, przełączniki motywu i akcentu, 7 stron Foundations w MDX ze zmierzonym kontrastem, skrypt `check:tokens` weryfikujący zgodność z tokenami. Wszystkie testy (unit, a11y browser, checkTokens, lint, typecheck) zakończone sukcesem.
+
+
+---
+
+## Etap 2, Partia 1. Wykonane (2026-10-30)
+
+Zbudowane: Button, IconButton, TextLink, Input, Label+Field, Checkbox (`src/components/`), stories z macierzą stanów i testami `play`, strony `docs/primitives/*.mdx` (13 sekcji), testy jednostkowe.
+
+Wyniki: `check:tokens` 0 naruszeń, `test` 96/96, `test:stories:themes` 45/45 (motyw ciemny, a11y), `lint` 0, `typecheck` 0, `build-storybook` OK.
+
+Znalezione i naprawione: `tailwind-merge` nie znał tokenów (gubił `text-size-ui`), kolejność warstw CSS (base nadpisywało utilities), brak resetu tła przycisku. Szczegóły: `.ai/lessons/2026-10-30-tailwind-merge-and-layer-order.md`.
+
+### Propozycje do decyzji (pytania z `lekcja6/TODO.md`, przyjęte tymczasowo wg rekomendacji)
+1. Button: nazwy Basalt + aliasy `default`/`outline` i rozmiar `lg` (zgodność z `packages/app/src/App.tsx`).
+2. Rozmiar `lg` = 36 px (`activity-button`), tylko jako propozycja dla pojedynczej wyraźnej akcji.
+3. Disabled: `text-muted` na `state-hover`, bez `opacity`.
+4. IconButton: natywny `title` do czasu Tooltip (Partia 3).
+5. Checkbox: pole 16 px w wierszu 28 px, bez stanu pośredniego.
+6. Komponenty pisane ręcznie, bez CLI shadcn.
+Dodatkowe propozycje: link `inline` zawsze podkreślony, `standalone` na hover; pole opcjonalne oznaczone „(optional)”, wymagane bez oznaczenia; hover linku i pola wyboru bez źródła w materiałach.
+
+### Niesprawdzone
+Szerokości 320/768/1440 px w przeglądarce poza stories „Narrow screen”, nawigacja klawiaturą po zbudowanych stronach, akcenty zielony/bursztynowy/fioletowy dla nowych komponentów, `npm run test:e2e`.
+
+
+---
+
+## Etap 2, Partia 2. Wykonane (2026-10-30)
+
+Zbudowane: Select, Switch, Card (+ CardRow), StatusIndicator, Alert, Skeleton, ze stories (stany zamrożone, `play`, wąski ekran), testami jednostkowymi i stronami `docs/primitives/*.mdx` (13 sekcji).
+
+Wyniki: `check:tokens` 0 naruszeń, `test` 121/121, `test:stories:themes` 70/70 (motyw ciemny, a11y), `lint` 0, `typecheck` 0, `build-storybook` OK.
+
+Naprawione po drodze: brak resetu marginesów `p`, nagłówków, `figure`, `fieldset` (bez preflightu Tailwinda; dodany do `styles.css`); `status-danger` dodany do par kontrastu na `surface-card`, `state-hover`, `state-selected`.
+
+### Propozycje do decyzji
+1. Select to natywny `select` (bez nowej zależności); otwarta lista jest rysowana przez system i nie podlega tokenom.
+2. Switch pisany ręcznie (`role="switch"`, bez `@radix-ui/react-switch`); rozmiary toru 36 x 20 px i kółka 16 px używają istniejących tokenów (`activity-button`, `activity-icon`, `icon`, `tab-indicator`), osobny token tylko jeśli rozmiary mają się rozjechać.
+3. StatusIndicator: słowa „Sync conflict” i „Sync error” oraz ikony są propozycją (źródła: „Synced”, „Syncing”, błąd w `status-danger`); bez animacji ikony „Syncing”.
+4. Alert: układ (ikona, tytuł, akcja) jest propozycją; źródła określają tylko kolory statusów. Bez przycisku zamknięcia.
+5. Skeleton: bez animacji (brak źródła), próg 300 ms jest propozycją.
+6. Card: nagłówek poza kontenerem, `headingAs` ustawia poziom; wiersz kontrolki zawija się pod tytuł poniżej 768 px.
+
+### Niesprawdzone
+Szerokości 320/768/1440 px w przeglądarce poza stories „Narrow screen”, nawigacja klawiaturą po stronach docs, akcenty zielony/bursztynowy/fioletowy, `npm run test:e2e`.
+
+
+---
+
+## Etap 2, Partia 3. Wykonane (2026-10-30)
+
+Zbudowane: Tooltip, Dialog, ConfirmDialog, Menu (dropdown), Popover, RadioGroup, Toast (`ToastProvider` + `useToast`), Tabs, EmptyState, ErrorState, ze stories (`play`, wąski ekran), testami jednostkowymi i stronami `docs/primitives/*.mdx` (13 sekcji). IconButton używa teraz Tooltip zamiast natywnego `title` (rozstrzygnięte pytanie 4), z `tooltip={false}` dla przycisków zamykania.
+
+Nowe zależności (Radix, wszystkie z zatwierdzonej listy komponentów): `react-dialog`, `react-dropdown-menu`, `react-popover`, `react-radio-group`, `react-tabs`, `react-toast`; `react-tooltip` przeniesiony z `devDependencies` do `dependencies`.
+
+Wyniki: `check:tokens` 0 naruszeń, `test` 163/163, `test:stories:themes` 110/110 (motyw ciemny, a11y), `lint` 0, `typecheck` 0, `build-storybook` OK.
+
+Znaleziska (szczegóły: `.ai/lessons/2026-10-30-radix-overlays-gotchas.md`): tooltip otwierał się na autofokusie przycisku zamykania dialogu; `state-hover` = `surface-raised`, więc podświetlenie pozycji menu używa `state-selected`; modalne menu psuło a11y (`modal={false}`).
+
+### Propozycje do decyzji
+1. Zasłona (scrim) dialogu: `surface-frame` z `opacity-80`; brak w źródłach.
+2. Dialog nie przewija zawartości wyższej niż ekran (do rozważenia przy pierwszym długim dialogu).
+3. Menu: tylko dropdown. Menu kontekstowe (prawy przycisk) nie zbudowane, czeka na drugie użycie (drzewo plików); do „What is missing”. Menu nazywa trigger, nie osobna etykieta.
+4. Tooltip: opóźnienie 400 ms; bez strzałki.
+5. Toast: tylko wariant neutralny, jedna akcja, 5 s, pozycja prawy dolny róg / pełna szerokość na 320 px; błędy wymagające działania celowo poza toastem.
+6. RadioGroup: kółko 16 px z kropką 4 px (`rounded-switch` jako jedyny drugi pełny promień); tylko układ pionowy.
+7. Tabs: tylko poziome, wskaźnik 2 px `tab-indicator` w `action-primary`.
+8. ConfirmDialog: fokus na „Cancel”, Escape nie potwierdza; wzorzec jest propozycją dla E01-S04.
+9. EmptyState wyrównany do lewej (nie wyśrodkowany, A01); ErrorState z opcjonalnym blokiem szczegółów technicznych.
+10. Dokumentacja Dialog/Menu/Popover/Tabs itd. ma w sekcji 12 listę zasad zamiast par „dobrze/źle”, gdzie para wymagałaby otwartej nakładki.
+
+### Niesprawdzone
+Szerokości 320/768/1440 px w przeglądarce poza stories „Narrow screen”, nawigacja klawiaturą po zbudowanych stronach docs, akcenty zielony/bursztynowy/fioletowy, czytniki ekranu (tylko role i nazwy z testów), `npm run test:e2e`.

@@ -1,0 +1,136 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { DoDont } from "../../.storybook/blocks";
+import { Field } from "../../src/components/Field";
+import { Select } from "../../src/components/Select";
+import * as SelectStories from "../../src/components/Select.stories";
+
+<Meta of={SelectStories} />
+
+# Select
+
+## 1. What it is for
+
+A select lets the user choose one value from a list of about 4 to 12 options, such as the interface text size.
+
+<Canvas of={SelectStories.Playground} />
+
+## 2. When to use
+
+- One value from a known, short list that does not need search.
+- A settings row where a list of radio buttons would take too much room.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| Two options. | Switch or [Checkbox](?path=/docs/primitives-checkbox--docs). |
+| Three or fewer options the user should compare at once. | RadioGroup (Batch 3). |
+| The user types to find an item. | A search field with results. It is not in the current plan; see "What is missing". |
+| Free text. | [Input](?path=/docs/primitives-input--docs). |
+
+## 4. Anatomy
+
+1. Field box: same as [Input](?path=/docs/primitives-input--docs): 28 px, `rounded-control`, 1 px `border-control`, `surface-frame`.
+2. Value text: `text-size-ui`, `text-ui`.
+3. Chevron: 16 px `icon-default`, decorative, on the right.
+4. Options: native `option` elements.
+
+## 5. Variants
+
+One variant. It is a styled native `select` (proposal, no new dependency). The open list is drawn by the operating system, so its look cannot follow the tokens. If the product needs searchable or styled lists, a Menu-based picker is built later from Batch 3 parts.
+
+<Controls of={SelectStories.Playground} />
+
+## 6. States
+
+<Canvas of={SelectStories.States} />
+
+| State | What the user sees | Notes |
+|---|---|---|
+| Default | `border-control` outline. | |
+| Hover | No change. | Proposal. |
+| Focus | 2 px `focus-ring` outline. | |
+| Invalid | `status-danger` border plus an error message in a Field. | |
+| Disabled | `text-muted` on `state-hover`. Say why in the hint. | Proposal (open question 3). |
+| Loading | Not supported. | |
+
+<Canvas of={SelectStories.WithError} />
+
+## 7. Behavior and accessibility
+
+- Native `select`: role combobox/listbox, full keyboard support (arrows, type-ahead, Enter, Escape) and mobile pickers come from the platform.
+- The name must come from a visible label (Field) or `aria-label`.
+- Inside a Field it receives `id`, `aria-describedby`, `aria-invalid` and `aria-required`.
+- Always preselect a real value or add an explicit placeholder option ("Choose a size") as the first option; do not leave the first option as an accidental default.
+- Height 28 px (WCAG 2.5.8).
+
+## 8. Content
+
+- Option labels are short nouns or values, sentence case, no final period.
+- Put the most common option first or order logically; do not sort alphabetically a list that has a natural order (small, large).
+- A default that means "follow the system" is named "System default".
+
+## 9. Responsiveness
+
+The select fills its container; limit the container (`max-w-prose`). On touch devices the platform picker opens.
+
+<Canvas of={SelectStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `children` | `<option>` elements | required | The options. |
+| `value`, `defaultValue`, `onChange` | native | | Same as a `select`. |
+| `aria-invalid` | `boolean` | set by Field | Error style. |
+| `disabled` | `boolean` | `false` | Blocks interaction. |
+| ...rest | `SelectHTMLAttributes` | | Passed to the `select`. |
+
+## 11. Code
+
+```tsx
+import { Field, Select } from "@basalt/ui";
+
+<Field label="Interface text size" hint="Applies to menus and settings, not to notes.">
+    <Select defaultValue="system">
+        <option value="system">System default</option>
+        <option value="small">Small</option>
+        <option value="large">Large</option>
+    </Select>
+</Field>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: (
+                <div className="w-full">
+                    <Field label="Interface text size">
+                        <Select defaultValue="system">
+                            <option value="system">System default</option>
+                            <option value="small">Small</option>
+                        </Select>
+                    </Field>
+                </div>
+            ),
+            reason: "The label is visible and a real value is selected.",
+        }}
+        bad={{
+            children: (
+                <div className="w-full">
+                    <Select aria-label="Interface text size">
+                        <option>Select...</option>
+                        <option>System default</option>
+                    </Select>
+                </div>
+            ),
+            reason: "The placeholder acts as the label and the field has no visible name.",
+        }}
+    />
+</Unstyled>
+
+## 13. Related
+
+[Field](?path=/docs/primitives-field--docs), [Input](?path=/docs/primitives-input--docs), [Switch](?path=/docs/primitives-switch--docs).
