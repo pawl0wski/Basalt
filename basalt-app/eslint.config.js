@@ -9,6 +9,7 @@ export default tseslint.config(
         ignores: [
             "**/dist/**",
             "**/node_modules/**",
+            "**/storybook-static/**",
             "src-tauri/gen/**",
             "src-tauri/target/**",
             "coverage/**",
@@ -36,7 +37,12 @@ export default tseslint.config(
         },
     },
     {
-        files: ["*.config.{js,ts}", "eslint.config.js", "setupTests.ts"],
+        files: [
+            "*.config.{js,ts}",
+            "eslint.config.js",
+            "setupTests.ts",
+            "**/scripts/**/*.{js,mjs,ts}",
+        ],
         languageOptions: {
             globals: globals.node,
         },

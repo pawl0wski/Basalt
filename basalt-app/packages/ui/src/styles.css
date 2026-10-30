@@ -1,0 +1,40 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./tokens/index.css";
+
+@layer base {
+    html {
+        min-width: 320px;
+        background: var(--bs-surface-editor);
+        color: var(--bs-text-ui);
+        font-family: var(--bs-font-text);
+        font-size: var(--bs-text-size-ui);
+        line-height: var(--bs-text-size-ui-line-height);
+    }
+
+    *,
+    ::before,
+    ::after {
+        box-sizing: border-box;
+        border-color: var(--bs-border-divider);
+        border-style: solid;
+        border-width: 0;
+    }
+
+    body {
+        margin: 0;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        font: inherit;
+        color: inherit;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--bs-focus-ring);
+        outline-offset: 2px;
+    }
+}

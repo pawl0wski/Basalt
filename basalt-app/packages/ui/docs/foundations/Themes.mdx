@@ -1,0 +1,19 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Foundations/Themes" tags={["!autodocs"]} />
+
+# Themes
+
+Basalt has one theme: dark. A light theme is an open gap in the references: every positive reference is dark and the only light one is the anti-reference A02. It is listed in What is missing, and it can become an epic in the distant future (owner decision, 2026-10-25).
+
+## How the theme works
+
+- Tokens come in three layers: raw values (`--raw-*`), role tokens (`--bs-*`, used by components) and component tokens. Components only see the role layer, so a theme is a second set of role values.
+- The theme is the `data-theme` attribute on the document root (`<html>`). Menus, dialogs and popovers render in a portal outside the story, so they must inherit it from the root, not from the story wrapper.
+- The role tokens are defined for `:root` and `[data-theme="dark"]`. A future theme adds a `[data-theme="light"]` block with the same names. No component changes.
+- The Storybook toolbar sets the theme on the root, and it currently has one value, `dark`.
+- The accent is set by the user (R01.2). `action-primary`, `text-link`, `focus-ring` and the related tokens are recalculated from it, so components never contain the accent value (tokens.md rule 5).
+
+## Storybook tests per theme
+
+`npm run test:stories:themes` runs every story as a test, with the accessibility checks set to fail, once per theme. There is one theme, so it runs once.

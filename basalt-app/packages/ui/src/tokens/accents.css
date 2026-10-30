@@ -1,0 +1,27 @@
+/* User accent presets (R01.2: accent set by the user) */
+:root[data-accent="green"],
+[data-theme="dark"][data-accent="green"] {
+    --bs-action-primary: var(--raw-green-600);
+    --bs-action-primary-hover: var(--raw-green-700);
+    --bs-focus-ring: var(--raw-green-300);
+    --bs-text-link: var(--raw-green-300);
+    --bs-editor-selection: var(--raw-green-900);
+}
+
+:root[data-accent="amber"],
+[data-theme="dark"][data-accent="amber"] {
+    --bs-action-primary: var(--raw-amber-600);
+    --bs-action-primary-hover: var(--raw-amber-700);
+    --bs-focus-ring: var(--raw-amber-300);
+    --bs-text-link: var(--raw-amber-300);
+    --bs-editor-selection: var(--raw-amber-900);
+}
+
+:root[data-accent="purple"],
+[data-theme="dark"][data-accent="purple"] {
+    --bs-action-primary: var(--raw-purple-600);
+    --bs-action-primary-hover: var(--raw-purple-700);
+    --bs-focus-ring: var(--raw-purple-300);
+    --bs-text-link: var(--raw-purple-300);
+    --bs-editor-selection: var(--raw-purple-900);
+}

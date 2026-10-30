@@ -1,0 +1,45 @@
+/* Layer 3: component tokens, only where a component needs its own value. */
+:root,
+[data-theme="dark"] {
+    /* R01.3, R02.8 */
+    --bs-titlebar-height: 36px;
+    /* contrast fix: the active tab was 1.08:1 */
+    --bs-tab-active-indicator: 2px;
+    /* R02.1 */
+    --bs-activity-bar-width: 48px;
+    /* R02.1, R01.7 */
+    --bs-sidebar-width: 300px;
+    /* R01.6 */
+    --bs-status-bar-height: 24px;
+    /* R01.11 (about 27 px) */
+    --bs-tree-row-height: 28px;
+    /* contrast fix: the active file was 1.47:1 */
+    --bs-tree-selected-indicator: 2px;
+    /* R01.8 (about 626 px in a 1539 px window) */
+    --bs-note-column-max-width: 700px;
+    /* R01.8 */
+    --bs-note-column-padding-x: var(--raw-space-8);
+    /* R01.11, gap found in the mockup */
+    --bs-note-block-gap: var(--raw-space-4);
+    /* R01.10, gap found in the mockup */
+    --bs-note-heading-gap: var(--raw-space-6);
+    /* R02.5, gap found in the mockup */
+    --bs-code-block-bg: var(--bs-surface-frame);
+    /* R01.5 (button #333333 in a row), gap found in the mockup */
+    --bs-button-secondary-bg: var(--bs-surface-raised);
+    /* R01.2: accent on selections */
+    --bs-editor-selection: var(--raw-blue-900);
+    /* R01.5 */
+    --bs-settings-card-padding: var(--raw-space-4);
+    /* R02.4 */
+    --bs-icon-size: 16px;
+    /* icon-size row in tokens.md: activity bar icons are 20 px, in a 36 px button */
+    --bs-activity-icon-size: 20px;
+    --bs-activity-button-size: 36px;
+    /* PROPOSAL: reading width for interface prose, about 65 characters (design system brief). The note column keeps its owner-approved 700 px. */
+    --bs-prose-max-width: 65ch;
+    /* R01.7, WCAG 2.5.8 (target at least 24 px) */
+    --bs-icon-button-size: 28px;
+    /* PROPOSAL: Switch track and thumb need a full radius; not in tokens.md */
+    --bs-switch-radius: var(--raw-radius-full);
+}

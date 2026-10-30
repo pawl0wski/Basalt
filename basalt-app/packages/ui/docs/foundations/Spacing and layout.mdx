@@ -1,0 +1,30 @@
+import { Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { SpacingRelations, LayoutWidths } from "../../.storybook/blocks";
+
+<Meta title="Foundations/Spacing and layout" tags={["!autodocs"]} />
+
+# Spacing and layout
+
+Spacing expresses a relation, not a size. Components use the relation tokens (`gap-in-group`, `p-panel`, `gap-section`), never a number scale. The numeric Tailwind scale is switched off, so `p-4` and `p-[13px]` do not exist.
+
+## Rules
+
+| Rule | Source |
+|---|---|
+| One 4 px scale underneath. Raw steps are used only in the token files. | tokens.md |
+| Window sections are separated by shade and a 1 px line, with a gap of 0. Space is for content inside a section. | R01.1, R02.2, tokens.md rule 14 |
+| Every function lives in its own section. Nothing lies on top of something else. | R01.7 |
+| The note is a centred column of at most 700 px, with 32 px side padding in a narrow window. | R01.8 |
+| Interactive targets are at least 24 × 24 px. Icon buttons are 28 px. | WCAG 2.5.8, R01.7 |
+
+## Relations
+
+<Unstyled>
+    <SpacingRelations />
+</Unstyled>
+
+## Layout and widths
+
+<Unstyled>
+    <LayoutWidths />
+</Unstyled>

@@ -1,0 +1,86 @@
+/* Layer 1: raw values. Used only by semantic.css and component.css. Never reference --raw-* in components. */
+:root {
+    /* R02.2 (measured) */
+    --raw-gray-950: #181818;
+    --raw-gray-900: #1f1f1f;
+    /* chosen: one step above gray-900 */
+    --raw-gray-850: #262626;
+    /* chosen: 1 px line from R01.1 */
+    --raw-gray-800: #2b2b2b;
+    /* R01.12 (measured) */
+    --raw-gray-750: #363636;
+    /* chosen for the 3:1 threshold */
+    --raw-gray-500: #787878;
+    /* chosen for the 4.5:1 threshold on gray-750 (replaces #9d9d9d, 4.46:1) */
+    --raw-gray-400: #a0a0a0;
+    /* R02.2 (measured) */
+    --raw-gray-300: #cccccc;
+    /* chosen: note content lighter than the interface */
+    --raw-gray-200: #e0e0e0;
+    /* R02.7 */
+    --raw-white: #ffffff;
+    /* R02.3 and conflict 3: a bit darker than #0078d4 */
+    --raw-blue-600: #006cbe;
+    /* derived from blue-600 (darkened 12%) */
+    --raw-blue-700: #005fa8;
+    /* derived from blue-600 for text contrast on dark surfaces */
+    --raw-blue-300: #4da3ff;
+    /* computed: 45% blue-600 + 55% gray-900 */
+    --raw-blue-900: #114267;
+    /* status colors gap, agent proposal accepted by the owner */
+    --raw-red-300: #f48771;
+    --raw-yellow-500: #cca700;
+
+    /* Accent presets (R01.2: user-selected accent) */
+    --raw-green-600: #3b9400;
+    --raw-green-700: #317a00;
+    --raw-green-300: #5cbf00;
+    --raw-green-900: #173f08;
+
+    --raw-amber-600: #c87d00;
+    --raw-amber-700: #a36600;
+    --raw-amber-300: #ffb443;
+    --raw-amber-900: #4d3000;
+
+    --raw-purple-600: #7e57c2;
+    --raw-purple-700: #673ab7;
+    --raw-purple-300: #b39ddb;
+    --raw-purple-900: #311b92;
+
+    /* one 4 px scale */
+    --raw-space-1: 4px;
+    --raw-space-2: 8px;
+    --raw-space-3: 12px;
+    --raw-space-4: 16px;
+    --raw-space-6: 24px;
+    --raw-space-8: 32px;
+    --raw-space-12: 48px;
+
+    /* R01.9, font gap: system fonts for now (tokens.md rule 9) */
+    --raw-font-sans-stack:
+        system-ui, "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Ubuntu, Cantarell,
+        "Noto Sans", sans-serif;
+    /* R02.5 */
+    --raw-font-mono-stack:
+        ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+
+    /* R01.10 */
+    --raw-size-12: 12px;
+    --raw-size-13: 13px;
+    --raw-size-14: 14px;
+    --raw-size-16: 16px;
+    --raw-size-18: 18px;
+    --raw-size-20: 20px;
+    --raw-size-26: 26px;
+
+    /* R01.12, R01.5 */
+    --raw-radius-4: 4px;
+    --raw-radius-8: 8px;
+    --raw-radius-full: 9999px;
+
+    /* M2 */
+    --raw-duration-0: 0ms;
+    --raw-duration-100: 100ms;
+    --raw-duration-150: 150ms;
+    --raw-ease-out: cubic-bezier(0.2, 0, 0, 1);
+}

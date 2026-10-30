@@ -1,0 +1,46 @@
+import { Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { ColorRoles, ContrastTable } from "../../.storybook/blocks";
+
+<Meta title="Foundations/Color" tags={["!autodocs"]} />
+
+# Color
+
+Basalt is graphite: neutral grey that goes down to black, with no colour cast (R02.2). The only colour is the accent, and the user can change it (R01.2). Components never use a colour name or a hex value. They use the role tokens below, as Tailwind classes.
+
+## Rules
+
+| Rule | Source |
+|---|---|
+| Frames (title bar, activity bar, side panels) are darker than the editor. | R02.2, conflict 1 |
+| Accent is used only on links, the primary button, switches, checkboxes, selections, count badges and active indicators. Never on surfaces, headings or decorative icons. | R01.2, tokens.md rule 6 |
+| Never hard-code the accent. Components use `action-primary` and `text-link`, so the user's accent works everywhere. | R01.2, R02.7, tokens.md rule 5 |
+| Colour is never the only carrier of meaning. A status has a word, a selected row has a 2 px indicator, an error has text. | WCAG 1.4.1 |
+| Text must reach 4.5 : 1, interface elements and state indicators 3 : 1. | WCAG 1.4.3, 1.4.11 |
+| Controls (switches, checkboxes, inputs) stand only on `surface-frame`, `surface-editor` or `surface-card`. | tokens.md rule 15, contrast table |
+| In selected text everything, links included, is `text-note`. | tokens.md rule 16 |
+| There is no `status-success`. "Synced" is neutral `text-muted` text. | tokens.md |
+| No gradients, glass or glow. | R01.1, A01 |
+
+## Roles
+
+<Unstyled>
+    <ColorRoles />
+</Unstyled>
+
+## Contrast: text (4.5 : 1)
+
+<Unstyled>
+    <ContrastTable kind="text" />
+</Unstyled>
+
+## Contrast: interface elements and state indicators (3 : 1)
+
+<Unstyled>
+    <ContrastTable kind="ui" />
+</Unstyled>
+
+Every pair marked below the threshold has a rule or a fix in its note. None is left unresolved. The same pairs are asserted in `src/tokens/contrast.test.ts` from the values written in the token files.
+
+## Proposed corrections
+
+None. All pairs that the product uses meet the thresholds. The accent chosen by the user changes these results, so the app recalculates them (tokens.md rule 5). That calculation is not built yet; see What is missing.

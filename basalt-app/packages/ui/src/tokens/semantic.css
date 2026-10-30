@@ -1,0 +1,103 @@
+/* Layer 2: meaning-based tokens. Components use these (through the Tailwind theme in theme.css). */
+:root,
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    /* R02.2, conflict 1: frames darker than the editor */
+    --bs-surface-frame: var(--raw-gray-950);
+    /* R02.2, R01.1 */
+    --bs-surface-editor: var(--raw-gray-900);
+    /* R01.5 (cards lighter than the page) and the switch contrast fix */
+    --bs-surface-card: var(--raw-gray-900);
+    /* R01.1, A01: no shadows, a layer above content is separated by shade */
+    --bs-surface-raised: var(--raw-gray-850);
+    /* R01.12, M1 */
+    --bs-state-hover: var(--raw-gray-850);
+    /* R01.12 (#363636 measured) */
+    --bs-state-selected: var(--raw-gray-750);
+    /* R01.1: window parts are separated by a 1 px line */
+    --bs-border-divider: var(--raw-gray-800);
+    /* 3:1 requirement for controls */
+    --bs-border-control: var(--raw-gray-500);
+
+    /* R01.10, R01.1: note content is brighter than the interface */
+    --bs-text-note: var(--raw-gray-200);
+    /* R02.2 */
+    --bs-text-ui: var(--raw-gray-300);
+    /* R01.5, R01.13, R01.6, R01.14, R01.10 */
+    --bs-text-muted: var(--raw-gray-400);
+    /* R01.2: light derivative of the accent, because blue-600 as text is only 3.05:1 */
+    --bs-text-link: var(--raw-blue-300);
+    /* R02.7 */
+    --bs-text-on-accent: var(--raw-white);
+
+    /* R02.4, R02.1: deviation from R02.4 accepted (cccccc vs the active state would be 1.1:1) */
+    --bs-icon-default: var(--raw-gray-400);
+    /* R02.1, R02.4 */
+    --bs-icon-active: var(--raw-gray-200);
+
+    /* R01.2, R02.3, R02.7, conflict 3: set by the user */
+    --bs-action-primary: var(--raw-blue-600);
+    /* derived from action-primary */
+    --bs-action-primary-hover: var(--raw-blue-700);
+    /* focus gap, agent proposal accepted: 2 px, offset 2 px */
+    --bs-focus-ring: var(--raw-blue-300);
+
+    /* status colors gap, AB3, agent proposal accepted */
+    --bs-status-danger: var(--raw-red-300);
+    /* status colors gap, agent proposal accepted */
+    --bs-status-warning: var(--raw-yellow-500);
+
+    /* R01.7, R01.5 */
+    --bs-space-in-group: var(--raw-space-1);
+    /* R01.7, R01.6 */
+    --bs-space-between-groups: var(--raw-space-3);
+    /* R01.7, R02.1 */
+    --bs-space-panel: var(--raw-space-3);
+    /* R01.5, R01.7 */
+    --bs-space-section: var(--raw-space-8);
+
+    /* R01.9 */
+    --bs-font-text: var(--raw-font-sans-stack);
+    /* R02.5 */
+    --bs-font-code: var(--raw-font-mono-stack);
+    /* R01.5 */
+    --bs-font-weight-ui-strong: 600;
+
+
+    /* R01.10, R01.11: note text, headings, UI text, code */
+    --bs-text-size-note: var(--raw-size-16);
+    --bs-text-size-note-line-height: 1.6;
+    --bs-text-size-note-h1: var(--raw-size-26);
+    --bs-text-size-note-h1-line-height: 1.25;
+    --bs-text-size-note-h2: var(--raw-size-20);
+    --bs-text-size-note-h2-line-height: 1.25;
+    --bs-text-size-note-h3: var(--raw-size-18);
+    --bs-text-size-note-h3-line-height: 1.25;
+    --bs-text-size-code: var(--raw-size-14);
+    --bs-text-size-code-line-height: 1.5;
+    --bs-text-size-ui: var(--raw-size-13);
+    --bs-text-size-ui-line-height: 1.5;
+    --bs-text-size-ui-small: var(--raw-size-12);
+    --bs-text-size-ui-small-line-height: 1.4;
+
+    /* R01.12 */
+    --bs-radius-control: var(--raw-radius-4);
+    /* R01.5 */
+    --bs-radius-container: var(--raw-radius-8);
+
+    /* R01.12, M1, M2 */
+    --bs-motion-feedback-duration: var(--raw-duration-100);
+    /* M2 */
+    --bs-motion-panel-duration: var(--raw-duration-150);
+    --bs-motion-ease: var(--raw-ease-out);
+}
+
+/* M2: with prefers-reduced-motion, all durations are 0 */
+@media (prefers-reduced-motion: reduce) {
+    :root,
+    [data-theme="dark"] {
+        --bs-motion-feedback-duration: var(--raw-duration-0);
+        --bs-motion-panel-duration: var(--raw-duration-0);
+    }
+}
