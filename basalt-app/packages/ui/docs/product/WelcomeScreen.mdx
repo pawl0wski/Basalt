@@ -1,0 +1,76 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as WelcomeScreenStories from "../../src/product/WelcomeScreen.stories";
+
+<Meta of={WelcomeScreenStories} />
+
+# WelcomeScreen
+
+## 1. What it is for
+
+The first screen when no workspace is open. It has one action: open a folder as a workspace. Source: E01-S01 defaults ("a single \"Open folder as workspace\" action; the duplicate \"Create new workspace\" button is removed"), G8.
+
+<Canvas of={WelcomeScreenStories.Playground} />
+
+## 2. When to use
+
+- No workspace is open, or the last workspace is gone (then with a notice).
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| A workspace is open but empty. | The empty list in [NoteList](?path=/docs/product-notelist--docs). |
+
+## 4. Anatomy
+
+1. Name "Basalt" (`text-size-note-h1`) and one sentence (`text-size-note`).
+2. Optional notice: a warning [Alert](?path=/docs/primitives-alert--docs) "Workspace unavailable".
+3. One `primary` Button "Open folder as workspace", `lg` size (the use for the proposed 36 px size), with a folder icon.
+
+The block is left-aligned, not centered on the page (A01).
+
+## 5. Variants
+
+| Variant | Source |
+|---|---|
+| Default | E01-S01 |
+| After the workspace was lost | E01-S01 edge cases ("welcome screen with an explanatory notice") |
+
+<Canvas of={WelcomeScreenStories.WorkspaceLost} />
+
+## 6. States
+
+Cancelling the picker changes nothing. Loading the last workspace (a short moment at launch) is not designed.
+
+## 7. Behavior and accessibility
+
+- A `main` landmark with an `h1`. One button, so the first Tab lands on the action.
+- The notice is `role="status"`.
+
+## 8. Content
+
+- One sentence about what Basalt does; no marketing claims. The sentence "Notes kept as plain Markdown files in a folder you choose" is a proposal.
+- The button names the action: "Open folder as workspace".
+
+## 9. Responsiveness
+
+The column is at most 65 characters wide and fits down to 320 px; the window is desktop only.
+
+## 10. API
+
+`onOpenWorkspace`, `notice`.
+
+## 11. Code
+
+```tsx
+<WelcomeScreen onOpenWorkspace={pickFolder} notice={lost ? message : undefined} />
+```
+
+## 12. Do and don't
+
+- Do keep exactly one action.
+- Don't add a second button that does the same (the old "Create new workspace").
+
+## 13. Related
+
+[NoteSidebar](?path=/docs/product-notesidebar--docs), [Button](?path=/docs/primitives-button--docs), [Notes screens](?path=/docs/screens-map-of-states--docs).

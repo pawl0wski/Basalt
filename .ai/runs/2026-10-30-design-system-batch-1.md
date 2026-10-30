@@ -40,3 +40,6 @@ Built Select (native), Switch (hand-written `role="switch"`), Card/CardRow, Stat
 
 ## Update: Batch 3 (same day)
 Built Tooltip, Dialog, ConfirmDialog, Menu, Popover, RadioGroup, Toast, Tabs, EmptyState, ErrorState with tests, stories and 13-section docs. Added Radix dependencies (dialog, dropdown-menu, popover, radio-group, tabs, toast; tooltip moved to dependencies). IconButton now uses Tooltip. `setupTests.ts` got jsdom stubs for Radix. Results: `check:tokens` 0, unit tests 163/163, stories 110/110, lint 0, typecheck 0, build OK. Proposals in `POSTEP.md`. Not committed or pushed.
+
+## Update: Stage 3 (same day)
+Built product components from the E01-S01 and E01-S03 specs (`src/product/`), four proposed patterns, 20 full-screen stories and a map of states. Fixes: AppShell scroll region needs `tabIndex` (axe), focus after a server error needs an effect (the field is disabled while pending). Stage 2 was committed as `a32e838`; Stage 3 is not committed. Results: `check:tokens` 0, unit tests 204/204, stories 182/182, lint 0, typecheck 0, build OK.

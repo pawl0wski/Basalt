@@ -1,0 +1,85 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as NewNoteDialogStories from "../../src/product/NewNoteDialog.stories";
+
+<Meta of={NewNoteDialogStories} />
+
+# NewNoteDialog
+
+## 1. What it is for
+
+The dialog where the owner names a new note. Source: E01-S01 UI/UX ("dialog with a name field prefilled with `suggestNoteName`; invalid or existing names show an inline message and the Create button is disabled; no hidden renaming").
+
+<Canvas of={NewNoteDialogStories.Playground} />
+
+## 2. When to use
+
+- Creating a note in the workspace root (sub-folders arrive with E01-S04).
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| Renaming (E01-S04). | A rename dialog built from the same parts. |
+| A longer form. | The [Form pattern](?path=/docs/patterns-form--docs). |
+
+## 4. Anatomy
+
+A [Dialog](?path=/docs/primitives-dialog--docs) with a [Field](?path=/docs/primitives-field--docs) "Note name" (selected on open), a Cancel button and a "Create note" button.
+
+## 5. Variants (states of the data)
+
+| State | What the user sees |
+|---|---|
+| Suggested name | "Untitled", selected, ready to overwrite. |
+| Name taken | Inline error, field invalid, Create disabled. |
+| Invalid characters | Inline error naming the characters. |
+| Creating | Create reads "Creating…" and is disabled; a second submit is ignored. |
+
+<Canvas of={NewNoteDialogStories.NameAlreadyExists} />
+<Canvas of={NewNoteDialogStories.InvalidCharacters} />
+<Canvas of={NewNoteDialogStories.Creating} />
+
+## 6. States
+
+Create is disabled only while the name is empty or has an error, and the error explains why (the disabled-button-without-reason problem does not apply). Validation itself lives in `@basalt/core` (`validateNoteName`); the dialog only shows the message it receives.
+
+## 7. Behavior and accessibility
+
+- Name field focused on open and its text selected. Enter submits; Escape and Cancel close.
+- The error is linked with `aria-describedby`; the field has `aria-invalid`.
+- Focus returns to the "New note" button on close.
+
+## 8. Content
+
+- Title "New note", button "Create note" (verb and object).
+- Errors say what is wrong and what to do: "A note named Weekly plan already exists. Choose another name."
+
+## 9. Responsiveness
+
+Same as [Dialog](?path=/docs/primitives-dialog--docs).
+
+## 10. API
+
+`open`, `onOpenChange`, `name`, `onNameChange`, `error`, `pending`, `onCreate`. The caller owns the name and the validation.
+
+## 11. Code
+
+```tsx
+<NewNoteDialog
+    open={open}
+    onOpenChange={setOpen}
+    name={name}
+    onNameChange={setName}
+    error={validate(name)}
+    onCreate={createNote}
+/>
+```
+
+## 12. Do and don't
+
+- Do show the error under the field while the user can still edit.
+- Don't rename the note silently to avoid a collision.
+
+## 13. Related
+
+[Dialog](?path=/docs/primitives-dialog--docs), [Field](?path=/docs/primitives-field--docs), [Form pattern](?path=/docs/patterns-form--docs).

@@ -1,0 +1,77 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as NoteSidebarStories from "../../src/product/NoteSidebar.stories";
+
+<Meta of={NoteSidebarStories} />
+
+# NoteSidebar
+
+## 1. What it is for
+
+The left column of an open workspace: the workspace name, "New note", "Change workspace" and the list of notes. Source: E01-S01 UI/UX.
+
+<Canvas of={NoteSidebarStories.Playground} />
+
+## 2. When to use
+
+- The window of an open workspace, 300 px wide (`sidebar`) from 768 px.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The welcome screen. | [WelcomeScreen](?path=/docs/product-welcomescreen--docs). |
+| A folder tree (E01-S04). | Not built yet. |
+
+## 4. Anatomy
+
+1. Header: workspace name (`font-ui-strong`, truncated), a "New note" icon button, a "Change workspace" ghost button, a 1 px divider below.
+2. Optional notice: an info [Alert](?path=/docs/primitives-alert--docs), for the watcher fallback ("the list refreshes when you return to this window").
+3. Content slot: normally [NoteList](?path=/docs/product-notelist--docs).
+
+Surface: `surface-card`, separated from the editor by a 1 px `border-divider`.
+
+## 5. Variants
+
+One layout. The notice and the long workspace name are data cases.
+
+<Canvas of={NoteSidebarStories.FocusFallbackNotice} />
+<Canvas of={NoteSidebarStories.LongWorkspaceName} />
+
+## 6. States
+
+Only the states of its buttons and the list. No collapsed state exists in the sources.
+
+## 7. Behavior and accessibility
+
+- `nav` named "Workspace". The content slot scrolls on its own.
+- The notice is `role="status"`.
+- Contrast: `text-ui` on `surface-card` is at least 4.5:1.
+
+## 8. Content
+
+Workspace name as the folder name. Actions are "New note" and "Change workspace".
+
+## 9. Responsiveness
+
+Fixed 300 px at 768 px and above. Below that it fills the width, but the stacked layout for a narrow window is not designed (the platform is desktop only, Q6).
+
+## 10. API
+
+`workspaceName`, `onChangeWorkspace`, `onNewNote`, `notice`, `children`, `className`.
+
+## 11. Code
+
+```tsx
+<NoteSidebar workspaceName={name} onChangeWorkspace={change} onNewNote={openDialog}>
+    <NoteList label="Notes" notes={notes} selectedPath={path} onSelect={open} />
+</NoteSidebar>
+```
+
+## 12. Do and don't
+
+- Do keep the two header actions; do not add more without a spec.
+- Don't put the notice inside the list.
+
+## 13. Related
+
+[NoteList](?path=/docs/product-notelist--docs), [NewNoteDialog](?path=/docs/product-newnotedialog--docs), [Spacing and layout](?path=/docs/foundations-spacing-and-layout--docs).

@@ -85,6 +85,7 @@ const preview: Preview = {
                     "Primitives",
                     "Product",
                     "Patterns",
+                    "Screens",
                 ],
             },
         },

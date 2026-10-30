@@ -1,0 +1,118 @@
+import { Canvas, Controls, Meta } from "@storybook/addon-docs/blocks";
+import * as NoteListStories from "../../src/product/NoteList.stories";
+
+<Meta of={NoteListStories} />
+
+# NoteList
+
+Product component for E01-S01. Presentational: it receives notes and callbacks and reads no store (engineering standards, containers connect state). It lives in `@basalt/ui` for the design system; moving it to `@basalt/app` is the owner's call (the standards put feature components there).
+
+## 1. What it is for
+
+The list of notes in the workspace sidebar. The user finds a note and opens it. Source: E01-S01 UI/UX ("labelled listbox", relative path, sorted case-insensitively).
+
+<Canvas of={NoteListStories.Playground} />
+
+## 2. When to use
+
+- The flat list of notes in a workspace (G7). The folder tree arrives with E01-S04.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| Choosing a value in a form. | [Select](?path=/docs/primitives-select--docs) or [RadioGroup](?path=/docs/primitives-radiogroup--docs). |
+| A list of actions. | [Menu](?path=/docs/primitives-menu--docs). |
+| A list that needs columns or sorting controls. | Not available; see "What is missing". |
+
+## 4. Anatomy
+
+1. Row: 28 px high (`tree-row`), `text-size-ui`, `text-ui`.
+2. Folder prefix: `text-muted`, only for notes in sub-folders (proposal: the spec says "relative path"; the file extension is not shown because the title is the file name without it).
+3. Name: truncated with an ellipsis when long.
+4. Selected row: `state-selected` fill and a 2 px `action-primary` bar at the left (`tree-selected-indicator`). The bar exists because the selected file was 1.47:1 against its neighbours by fill alone (tokens.md contrast fix).
+
+## 5. Variants (data states)
+
+| State | How it is shown |
+|---|---|
+| Ready | The list. |
+| Loading | Four skeleton rows in a `role="status"` region ("Loading notes"). |
+| Empty | The `empty` slot: [EmptyState](?path=/docs/primitives-emptystate--docs) "Create your first note". |
+| Error | The `error` slot: [ErrorState](?path=/docs/primitives-errorstate--docs) with a retry. |
+| Many | A scrolling container; 400 and 500 notes are in the stories. Virtualization is not built (E01-S01 does not specify a limit; the 10 000 cap was dropped, G9). |
+| Long names | Truncated; the full name is in the accessible name. |
+| Partial data | A notice above the list through [NoteSidebar](?path=/docs/product-notesidebar--docs) (watcher fallback). |
+
+<Controls of={NoteListStories.Playground} />
+
+<Canvas of={NoteListStories.Loading} />
+<Canvas of={NoteListStories.Empty} />
+<Canvas of={NoteListStories.ErrorOnRead} />
+<Canvas of={NoteListStories.LongName} />
+
+## 6. States
+
+| State | What the user sees |
+|---|---|
+| Default | `text-ui` row. |
+| Hover | `state-hover` fill. |
+| Focus | 2 px `focus-ring` outline on the focused row. |
+| Selected | `state-selected` fill and the accent bar; `aria-selected="true"`. |
+| Disabled, pressed | Not supported. Pressed looks like hover. |
+
+## 7. Behavior and accessibility
+
+- `role="listbox"` named by `label`; each row `role="option"` with `aria-selected`.
+- One tab stop. It starts on the selected note, otherwise on the first.
+- Up and Down move focus and wrap; Home and End jump; Enter or Space opens the note. Selection does not follow focus, so moving through a long list does not load every note.
+- A click opens the note.
+- Contrast: `text-ui` on `state-selected`, `state-hover` and `surface-card` is at least 4.5:1; the accent bar is at least 3:1 (measured in `contrast.test.ts`).
+- Row height 28 px, above the 24 px target minimum (WCAG 2.5.8).
+
+## 8. Content
+
+- Name: the file name without extension (E01-S01 data model).
+- Sorted case-insensitively by the caller.
+- Do not add counts, dates or previews to the row; the spec lists only the relative path.
+
+## 9. Responsiveness
+
+E01-S01 is desktop only (Q6). The list fills the sidebar, 300 px (`sidebar`). Below 768 px the sidebar is not designed; this is listed in "What is missing".
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | `string` | required | Accessible name. |
+| `notes` | `{ path, name }[]` | required | Notes, already sorted. |
+| `selectedPath` | `string \| null` | `null` | Open note. |
+| `onSelect` | `(path) => void` | required | Open request. |
+| `status` | `"ready" \| "loading" \| "error"` | `"ready"` | Data state. |
+| `loadingLabel` | `string` | `"Loading notes"` | Text for the loading region. |
+| `empty`, `error` | `ReactNode` | | Slots for the states. |
+
+## 11. Code
+
+```tsx
+import { EmptyState, NoteList } from "@basalt/ui";
+
+<NoteList
+    label="Notes"
+    notes={notes}
+    selectedPath={session?.path ?? null}
+    onSelect={openNote}
+    status={status}
+    empty={<EmptyState title="Create your first note" />}
+/>
+```
+
+## 12. Do and don't
+
+- Do keep one list per workspace, sorted case-insensitively.
+- Don't open a note on every arrow key press; use Enter.
+- Don't add a card around each row.
+
+## 13. Related
+
+[NoteSidebar](?path=/docs/product-notesidebar--docs), [EmptyState](?path=/docs/primitives-emptystate--docs), [Skeleton](?path=/docs/primitives-skeleton--docs), [List with filters](?path=/docs/patterns-list-with-filters--docs).

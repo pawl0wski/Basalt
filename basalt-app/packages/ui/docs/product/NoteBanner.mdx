@@ -1,0 +1,83 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as NoteBannerStories from "../../src/product/NoteBanner.stories";
+
+<Meta of={NoteBannerStories} />
+
+# NoteBanner
+
+## 1. What it is for
+
+A persistent message above the editor when something stops the open note from saving or opening: a conflict with the file on disk, a deleted file, a read-only folder, a file that cannot be opened. Source: E01-S01 edge cases ("banner with the reason and actions; autosave stays paused"). The texts are proposals; the specification names only the actions.
+
+<Canvas of={NoteBannerStories.Conflict} />
+
+## 2. When to use
+
+- Over the editor, in the note column, as long as the cause exists. The editor text is never cleared by an error.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The save fails while leaving the note. | [SaveFailedDialog](?path=/docs/product-savefaileddialog--docs). |
+| A short confirmation. | Toast. |
+| An error for the whole view. | [ErrorState](?path=/docs/primitives-errorstate--docs). |
+
+## 4. Anatomy
+
+An [Alert](?path=/docs/primitives-alert--docs) with a title, a message and one or two actions below it. At 768 px and above the actions sit side by side.
+
+## 5. Variants (kinds)
+
+| Kind | Alert variant | Actions | Source |
+|---|---|---|---|
+| `conflict` | warning | Keep my version, Load version from disk | E01-S01 edge cases (G3) |
+| `deleted` | warning | Save again here, Close note | E01-S01 edge cases |
+| `permission-denied` | danger (`role="alert"`) | Retry | E01-S01 AC3 |
+| `too-large` | info | none | E01-S01 (5 MiB) |
+| `not-utf8` | info | none | E01-S01 |
+
+<Canvas of={NoteBannerStories.Deleted} />
+<Canvas of={NoteBannerStories.PermissionDenied} />
+<Canvas of={NoteBannerStories.TooLarge} />
+
+## 6. States
+
+Only the data states above. Discarding local edits ("Load version from disk") happens after a confirmation in the app (spec); the banner only reports the choice.
+
+## 7. Behavior and accessibility
+
+- Warnings and information use `role="status"`; the save failure uses `role="alert"` so it is announced at once.
+- Focus is not moved to the banner; the actions are reachable in reading order, above the note.
+- Contrast: see [Alert](?path=/docs/primitives-alert--docs).
+
+## 8. Content
+
+- Title says what happened; the message says what is paused and why; the actions are verbs.
+- The note name is not repeated; the banner sits in the note.
+- No codes (`not-found`, `permission-denied`) in the user's text.
+
+## 9. Responsiveness
+
+Fills the note column (700 px at most). Actions stack at narrow widths.
+
+## 10. API
+
+A discriminated union on `kind`; each kind requires only its own callbacks: `conflict` (`onKeepMine`, `onLoadFromDisk`), `deleted` (`onSaveAgain`, `onCloseNote`), `permission-denied` (`onRetry`), `too-large`, `not-utf8`.
+
+## 11. Code
+
+```tsx
+import { NoteBanner } from "@basalt/ui";
+
+<NoteBanner kind="conflict" onKeepMine={overwrite} onLoadFromDisk={reloadFromDisk} />
+```
+
+## 12. Do and don't
+
+- Do keep the user's text visible and say that saving is paused.
+- Don't offer a destructive choice as the default; "Keep my version" is the first action.
+
+## 13. Related
+
+[Alert](?path=/docs/primitives-alert--docs), [SaveStatus](?path=/docs/product-savestatus--docs), [SaveFailedDialog](?path=/docs/product-savefaileddialog--docs).

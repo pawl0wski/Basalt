@@ -11,11 +11,11 @@ Materiały źródłowe: `lekcja6/referencje.md`, `lekcja6/tokeny.md`, `.ai/specs
 | 0. Inwentaryzacja i plan | wykonany, decyzje zatwierdzone przez właściciela (2026-10-25) |
 | 1. Fundamenty | wykonany, zweryfikowany, czeka na zatwierdzenie Partii 1 i „dalej” do Etapu 2 |
 | 2. Komponenty bazowe | Partie 1, 2 i 3 zbudowane i zweryfikowane (2026-10-30), czekają na przegląd właściciela; Etap 3 po „dalej” |
-| 3. Komponenty produktu, wzorce, ekrany | nie zaczęty |
+| 3. Komponenty produktu, wzorce, ekrany | zbudowany i zweryfikowany (2026-10-30), czeka na przegląd właściciela; E02 bez ekranów (brak specyfikacji) |
 | 4. Strony, które uczą | nie zaczęty |
 | 5. Sprawdzenie i raport | nie zaczęty |
 
-**Następny krok:** Właściciel ogląda Partie 1-3 (Primitives w Storybooku), rozstrzyga pytania i propozycje poniżej i podaje „dalej” do Etapu 3 (komponenty produktu, wzorce, ekrany).
+**Następny krok:** Właściciel ogląda Etapy 2 i 3 (Primitives, Product, Patterns, Screens w Storybooku), rozstrzyga pytania i propozycje poniżej i podaje „dalej” do Etapu 4 (strony, które uczą).
 
 ---
 
@@ -205,3 +205,28 @@ Znaleziska (szczegóły: `.ai/lessons/2026-10-30-radix-overlays-gotchas.md`): to
 
 ### Niesprawdzone
 Szerokości 320/768/1440 px w przeglądarce poza stories „Narrow screen”, nawigacja klawiaturą po zbudowanych stronach docs, akcenty zielony/bursztynowy/fioletowy, czytniki ekranu (tylko role i nazwy z testów), `npm run test:e2e`.
+
+
+---
+
+## Etap 3. Wykonane (2026-10-30)
+
+Źródła: specyfikacje E01-S01 (UI/UX, przypadki brzegowe) i E01-S03 (UI/UX, placeholdery). Backlog ma epiki E01 (S01, S03) i E02 (S01-S03, bez specyfikacji i bez ekranów), E03 jest odłożony.
+
+Komponenty produktu (`src/product/`, prezentacyjne, bez store i i18n; teksty stałe po angielsku z możliwością nadpisania tam, gdzie spec wymaga tłumaczeń): NoteList, SaveStatus, StatusBar, NoteBanner (conflict, deleted, permission-denied, too-large, not-utf8), SaveFailedDialog, NewNoteDialog, ImagePlaceholder + NoteImage, NoteSidebar, WelcomeScreen. Każdy ma testy jednostkowe, stories (stany danych, `play`) i stronę MDX w `docs/product/`.
+
+Wzorce (`docs/patterns/`, wszystkie jako propozycje): Form (symulowane API: sukces, błąd pola, błąd serwera, folder niedostępny, oczekiwanie), List with filters, Detail view, Delete confirmation. Ekrany (`docs/screens/Notes.stories.tsx`, 20 stories pełnoekranowych) i strona „Map of states”.
+
+Wyniki: `check:tokens` 0 naruszeń, `test` 204/204, `test:stories:themes` 182/182 (motyw ciemny, a11y), `lint` 0, `typecheck` 0, `build-storybook` OK.
+
+### Propozycje i decyzje do potwierdzenia
+1. Komponenty produktu leżą w `@basalt/ui/src/product/`, a standardy repo każą trzymać komponenty funkcjonalne w `@basalt/app`. Zostały w pakiecie design systemu, bo Storybook jest tutaj; przeniesienie przy integracji to decyzja właściciela.
+2. Teksty banerów (tytuły i opisy) są propozycją; specyfikacja podaje tylko nazwy akcji. Tak samo tekst „Loading image”, zdanie na ekranie powitalnym i fokus na „Retry” w SaveFailedDialog.
+3. Lista pokazuje nazwę notatki bez rozszerzenia, a folder jako szary prefiks (spec mówi „relative path”).
+4. Ekrany tylko dla desktopu (Q6); układ okna poniżej 768 px nie jest zaprojektowany.
+5. Brak wirtualizacji listy (spec zdjął limit 10 000, G9); stories z 400-500 notatkami pokazują przewijanie, nie wydajność.
+6. E02 (połączenie z serwerem, szyfrowanie, synchronizacja) nie ma specyfikacji, więc nie ma ekranów; do „What is missing”.
+7. Wzorce Form, List with filters, Detail view i Delete confirmation są propozycjami (decyzja właściciela z Etapu 0); Delete confirmation zakłada E01-S04 bez specyfikacji.
+
+### Niesprawdzone
+Szerokości 320 px dla ekranów (poza zakresem), nawigacja klawiaturą po stronach docs, akcenty zielony/bursztynowy/fioletowy, czytniki ekranu, `npm run test:e2e`, wydajność listy przy tysiącach notatek.

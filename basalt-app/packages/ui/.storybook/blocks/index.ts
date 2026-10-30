@@ -1,11 +1,15 @@
 export type { StateRow } from "./StateMatrix";
+export { AppShell } from "./AppShell";
 export { ColorRoles } from "./ColorRoles";
 export { ContrastTable } from "./ContrastTable";
 export { DoDont } from "./DoDont";
 export { IconSizes } from "./IconSizes";
 export { LayoutWidths } from "./LayoutWidths";
 export { MotionDemo } from "./MotionDemo";
+export { NoteColumn, WeeklyPlan } from "./NoteColumn";
 export { ShapeDepth } from "./ShapeDepth";
 export { SpacingRelations } from "./SpacingRelations";
 export { StateMatrix } from "./StateMatrix";
 export { TypeRoles } from "./TypeRoles";
+export { longNameNote, manyNotes, sampleNotes, workspaceName } from "./sampleData";
+export { sampleImage } from "./sampleImage";
