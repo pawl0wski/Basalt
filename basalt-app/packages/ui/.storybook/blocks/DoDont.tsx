@@ -13,9 +13,17 @@ type DoDontProps = {
 function Side({ kind, example }: { kind: "Do" | "Don't"; example: Example }) {
     return (
         <figure className="m-none flex flex-1 flex-col gap-between-groups border border-border-divider bg-surface-editor p-panel rounded-container">
-            <div className="flex flex-wrap items-center gap-between-groups">{example.children}</div>
+            <div className="flex flex-wrap items-center gap-between-groups">
+                {example.children}
+            </div>
             <figcaption className="text-size-ui text-text-ui">
-                <strong className={kind === "Do" ? "font-ui-strong text-text-note" : "font-ui-strong text-status-danger"}>
+                <strong
+                    className={
+                        kind === "Do"
+                            ? "font-ui-strong text-text-note"
+                            : "font-ui-strong text-status-danger"
+                    }
+                >
                     {kind}.
                 </strong>{" "}
                 {example.reason}

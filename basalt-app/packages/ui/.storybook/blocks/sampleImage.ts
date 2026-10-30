@@ -6,7 +6,9 @@ export function sampleImage(width = 1600, height = 900): string {
     if (!context) return "";
 
     const token = (name: string) =>
-        getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        getComputedStyle(document.documentElement)
+            .getPropertyValue(name)
+            .trim();
 
     context.fillStyle = token("--bs-surface-frame");
     context.fillRect(0, 0, width, height);
@@ -16,7 +18,12 @@ export function sampleImage(width = 1600, height = 900): string {
     context.fillRect(width * 0.06, height * 0.1, width * 0.88, height * 0.08);
     context.fillStyle = token("--bs-border-control");
     for (let row = 0; row < 6; row += 1) {
-        context.fillRect(width * 0.1, height * (0.26 + row * 0.1), width * (0.3 + ((row * 7) % 5) * 0.1), height * 0.03);
+        context.fillRect(
+            width * 0.1,
+            height * (0.26 + row * 0.1),
+            width * (0.3 + ((row * 7) % 5) * 0.1),
+            height * 0.03,
+        );
     }
     context.fillStyle = token("--bs-action-primary");
     context.fillRect(width * 0.62, height * 0.5, width * 0.28, height * 0.3);

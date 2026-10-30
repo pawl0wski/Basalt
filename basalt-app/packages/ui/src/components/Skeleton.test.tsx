@@ -6,7 +6,9 @@ describe("Skeleton", () => {
     it("is hidden from assistive technology", () => {
         const { container } = render(<Skeleton />);
 
-        expect(container.firstElementChild?.getAttribute("aria-hidden")).toBe("true");
+        expect(container.firstElementChild?.getAttribute("aria-hidden")).toBe(
+            "true",
+        );
     });
 
     it("lets the caller size it", () => {

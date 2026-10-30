@@ -9,19 +9,27 @@ describe("cn", () => {
     });
 
     it("lets a later text color replace an earlier one", () => {
-        expect(cn("text-text-ui", "text-status-danger")).toBe("text-status-danger");
+        expect(cn("text-text-ui", "text-status-danger")).toBe(
+            "text-status-danger",
+        );
     });
 
     it("lets a later font size replace an earlier one", () => {
-        expect(cn("text-size-ui", "text-size-ui-small")).toBe("text-size-ui-small");
+        expect(cn("text-size-ui", "text-size-ui-small")).toBe(
+            "text-size-ui-small",
+        );
     });
 
     it("lets a later height replace an earlier one", () => {
-        expect(cn("h-icon-button", "h-activity-button")).toBe("h-activity-button");
+        expect(cn("h-icon-button", "h-activity-button")).toBe(
+            "h-activity-button",
+        );
     });
 
     it("lets a later radius replace an earlier one", () => {
-        expect(cn("rounded-control", "rounded-container")).toBe("rounded-container");
+        expect(cn("rounded-control", "rounded-container")).toBe(
+            "rounded-container",
+        );
     });
 
     it("keeps unrelated spacing utilities", () => {

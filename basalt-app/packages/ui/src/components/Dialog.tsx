@@ -32,9 +32,15 @@ function Dialog({
     className,
 }: DialogProps) {
     return (
-        <DialogPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
+        <DialogPrimitive.Root
+            open={open}
+            defaultOpen={defaultOpen}
+            onOpenChange={onOpenChange}
+        >
             {trigger ? (
-                <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>
+                <DialogPrimitive.Trigger asChild>
+                    {trigger}
+                </DialogPrimitive.Trigger>
             ) : null}
             <DialogPrimitive.Portal>
                 <DialogPrimitive.Overlay className="fixed inset-none bg-surface-frame opacity-80" />

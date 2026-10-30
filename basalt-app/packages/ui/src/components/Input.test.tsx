@@ -8,7 +8,9 @@ describe("Input", () => {
         render(<Input aria-label="Note title" />);
 
         expect(
-            screen.getByRole("textbox", { name: "Note title" }).getAttribute("type"),
+            screen
+                .getByRole("textbox", { name: "Note title" })
+                .getAttribute("type"),
         ).toBe("text");
     });
 
@@ -20,7 +22,9 @@ describe("Input", () => {
         await user.type(screen.getByRole("textbox"), "Plan");
 
         expect(onChange).toHaveBeenCalledTimes(4);
-        expect((screen.getByRole("textbox") as HTMLInputElement).value).toBe("Plan");
+        expect((screen.getByRole("textbox") as HTMLInputElement).value).toBe(
+            "Plan",
+        );
     });
 
     it("does not accept text while disabled", async () => {
@@ -29,14 +33,16 @@ describe("Input", () => {
         render(<Input aria-label="Note title" disabled />);
         await user.type(screen.getByRole("textbox"), "Plan");
 
-        expect((screen.getByRole("textbox") as HTMLInputElement).value).toBe("");
+        expect((screen.getByRole("textbox") as HTMLInputElement).value).toBe(
+            "",
+        );
     });
 
     it("exposes the invalid state to assistive technology", () => {
         render(<Input aria-label="Note title" aria-invalid="true" />);
 
-        expect(
-            screen.getByRole("textbox").getAttribute("aria-invalid"),
-        ).toBe("true");
+        expect(screen.getByRole("textbox").getAttribute("aria-invalid")).toBe(
+            "true",
+        );
     });
 });

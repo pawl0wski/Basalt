@@ -23,7 +23,11 @@ export const Playground: Story = {
         await expect(checkbox).toBeChecked();
         await userEvent.keyboard(" ");
         await expect(checkbox).not.toBeChecked();
-        await userEvent.click(within(canvasElement).getByText("Show word count in the status bar"));
+        await userEvent.click(
+            within(canvasElement).getByText(
+                "Show word count in the status bar",
+            ),
+        );
         await expect(checkbox).toBeChecked();
         await expect(args.onCheckedChange).toHaveBeenCalledTimes(3);
     },
@@ -34,7 +38,9 @@ export const Checked: Story = { args: { defaultChecked: true } };
 export const Group: Story = {
     render: () => (
         <fieldset className="m-none flex flex-col border-none p-none">
-            <legend className="mb-in-group p-none font-ui-strong text-text-ui">Status bar</legend>
+            <legend className="mb-in-group p-none font-ui-strong text-text-ui">
+                Status bar
+            </legend>
             <Checkbox label="Show word count" defaultChecked />
             <Checkbox label="Show character count" />
             <Checkbox label="Show sync status" defaultChecked />

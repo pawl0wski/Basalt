@@ -6,7 +6,9 @@ describe("Alert", () => {
     it("announces errors immediately", () => {
         render(<Alert variant="danger">Could not save the note.</Alert>);
 
-        expect(screen.getByRole("alert").textContent).toContain("Could not save the note.");
+        expect(screen.getByRole("alert").textContent).toContain(
+            "Could not save the note.",
+        );
     });
 
     it("announces information and warnings politely", () => {
@@ -23,7 +25,11 @@ describe("Alert", () => {
 
     it("renders the title and the action", () => {
         render(
-            <Alert variant="warning" title="Sync conflict" action={<button type="button">Review</button>}>
+            <Alert
+                variant="warning"
+                title="Sync conflict"
+                action={<button type="button">Review</button>}
+            >
                 Two devices changed this note.
             </Alert>,
         );

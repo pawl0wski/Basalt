@@ -20,7 +20,10 @@ export type { SelectProps } from "./components/Select";
 export { Skeleton } from "./components/Skeleton";
 export type { SkeletonProps } from "./components/Skeleton";
 export { StatusIndicator } from "./components/StatusIndicator";
-export type { StatusIndicatorProps, SyncStatus } from "./components/StatusIndicator";
+export type {
+    StatusIndicatorProps,
+    SyncStatus,
+} from "./components/StatusIndicator";
 export { Switch } from "./components/Switch";
 export type { SwitchProps } from "./components/Switch";
 export { ConfirmDialog } from "./components/ConfirmDialog";
@@ -45,7 +48,11 @@ export type { ToastOptions } from "./components/toastContext";
 export { Tooltip } from "./components/Tooltip";
 export type { TooltipProps } from "./components/Tooltip";
 export { ImagePlaceholder, NoteImage } from "./product/ImagePlaceholder";
-export type { ImagePlaceholderProps, ImageProblem, NoteImageProps } from "./product/ImagePlaceholder";
+export type {
+    ImagePlaceholderProps,
+    ImageProblem,
+    NoteImageProps,
+} from "./product/ImagePlaceholder";
 export { NewNoteDialog } from "./product/NewNoteDialog";
 export type { NewNoteDialogProps } from "./product/NewNoteDialog";
 export { NoteBanner } from "./product/NoteBanner";

@@ -9,14 +9,31 @@ const meta = {
     component: ImagePlaceholder,
     tags: ["!autodocs"],
     parameters: { layout: "padded" },
-    args: { problem: "not-found", path: "attachments/Pasted image 20261025-101530.png" },
+    args: {
+        problem: "not-found",
+        path: "attachments/Pasted image 20261025-101530.png",
+    },
     argTypes: {
         problem: {
             control: "select",
-            options: ["loading", "not-found", "unreadable", "unsupported", "too-large", "remote", "invalid"],
+            options: [
+                "loading",
+                "not-found",
+                "unreadable",
+                "unsupported",
+                "too-large",
+                "remote",
+                "invalid",
+            ],
         },
     },
-    decorators: [(Story) => <div className="w-full max-w-note"><Story /></div>],
+    decorators: [
+        (Story) => (
+            <div className="w-full max-w-note">
+                <Story />
+            </div>
+        ),
+    ],
 } satisfies Meta<typeof ImagePlaceholder>;
 
 export default meta;
@@ -24,7 +41,9 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
     play: async ({ canvasElement }) => {
-        await expect(within(canvasElement).getByText(/Image not found: attachments\//)).toBeVisible();
+        await expect(
+            within(canvasElement).getByText(/Image not found: attachments\//),
+        ).toBeVisible();
     },
 };
 
@@ -32,7 +51,10 @@ export const AllProblems: Story = {
     render: () => (
         <div className="flex flex-col gap-between-groups">
             <ImagePlaceholder problem="loading" />
-            <ImagePlaceholder problem="not-found" path="attachments/diagram.png" />
+            <ImagePlaceholder
+                problem="not-found"
+                path="attachments/diagram.png"
+            />
             <ImagePlaceholder problem="unreadable" />
             <ImagePlaceholder problem="unsupported" />
             <ImagePlaceholder problem="too-large" />
@@ -50,12 +72,23 @@ export const LongPath: Story = {
 
 function Loaded() {
     const source = useMemo(() => sampleImage(1600, 900), []);
-    return <NoteImage src={source} alt="Whiteboard photo" width={1600} height={900} />;
+    return (
+        <NoteImage
+            src={source}
+            alt="Whiteboard photo"
+            width={1600}
+            height={900}
+        />
+    );
 }
 
 export const LoadedImage: Story = {
     render: () => <Loaded />,
     play: async ({ canvasElement }) => {
-        await expect(within(canvasElement).getByRole("img", { name: "Whiteboard photo" })).toBeVisible();
+        await expect(
+            within(canvasElement).getByRole("img", {
+                name: "Whiteboard photo",
+            }),
+        ).toBeVisible();
     },
 };

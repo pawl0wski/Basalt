@@ -13,8 +13,8 @@
     --bs-status-bar-height: 24px;
     /* R01.11 (about 27 px) */
     --bs-tree-row-height: 28px;
-    /* contrast fix: the active file was 1.47:1 */
-    --bs-tree-selected-indicator: 2px;
+    /* Owner decision 2026-10-30 (option C): the selected row of a list or tree is an accent-tinted fill while the list has focus; the neutral state-selected is used otherwise. 1.57:1 to surface-card, an accepted deviation from 3:1 (as in VS Code). Follows the user accent. */
+    --bs-tree-selected: var(--bs-editor-selection);
     /* R01.8 (about 626 px in a 1539 px window) */
     --bs-note-column-max-width: 700px;
     /* R01.8 */

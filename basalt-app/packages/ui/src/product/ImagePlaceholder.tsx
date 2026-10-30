@@ -20,7 +20,10 @@ type ImagePlaceholderProps = {
 };
 
 function ImagePlaceholder({ problem, path, className }: ImagePlaceholderProps) {
-    const text = problem === "not-found" && path ? `${texts[problem]}: ${path}` : texts[problem];
+    const text =
+        problem === "not-found" && path
+            ? `${texts[problem]}: ${path}`
+            : texts[problem];
     const Icon = problem === "loading" ? LoaderCircle : ImageOff;
 
     return (
@@ -31,7 +34,10 @@ function ImagePlaceholder({ problem, path, className }: ImagePlaceholderProps) {
                 className,
             )}
         >
-            <Icon aria-hidden="true" className="size-icon shrink-0 text-icon-default" />
+            <Icon
+                aria-hidden="true"
+                className="size-icon shrink-0 text-icon-default"
+            />
             <span className="break-words">{text}</span>
         </div>
     );
@@ -52,7 +58,11 @@ function NoteImage({ src, alt, width, height }: NoteImageProps) {
             width={width}
             height={height}
             className="bs-note-image block h-auto max-w-full rounded-control border border-border-divider"
-            style={width && height ? { aspectRatio: `${width} / ${height}` } : undefined}
+            style={
+                width && height
+                    ? { aspectRatio: `${width} / ${height}` }
+                    : undefined
+            }
         />
     );
 }

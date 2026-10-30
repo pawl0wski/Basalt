@@ -13,9 +13,22 @@ const meta = {
         workspaceName,
         onChangeWorkspace: fn(),
         onNewNote: fn(),
-        children: <NoteList label="Notes" notes={sampleNotes} selectedPath="Weekly plan.md" onSelect={() => {}} />,
+        children: (
+            <NoteList
+                label="Notes"
+                notes={sampleNotes}
+                selectedPath="Weekly plan.md"
+                onSelect={() => {}}
+            />
+        ),
     },
-    decorators: [(Story) => <div className="h-sidebar w-sidebar"><Story /></div>],
+    decorators: [
+        (Story) => (
+            <div className="h-sidebar w-sidebar">
+                <Story />
+            </div>
+        ),
+    ],
 } satisfies Meta<typeof NoteSidebar>;
 
 export default meta;
@@ -25,7 +38,9 @@ export const Playground: Story = {
     play: async ({ args, canvasElement }) => {
         const canvas = within(canvasElement);
         await userEvent.click(canvas.getByRole("button", { name: "New note" }));
-        await userEvent.click(canvas.getByRole("button", { name: "Change workspace" }));
+        await userEvent.click(
+            canvas.getByRole("button", { name: "Change workspace" }),
+        );
         await expect(args.onNewNote).toHaveBeenCalledTimes(1);
         await expect(args.onChangeWorkspace).toHaveBeenCalledTimes(1);
     },
@@ -36,5 +51,8 @@ export const FocusFallbackNotice: Story = {
 };
 
 export const LongWorkspaceName: Story = {
-    args: { workspaceName: "Notes for the whole family and the shared house, synced from the old laptop" },
+    args: {
+        workspaceName:
+            "Notes for the whole family and the shared house, synced from the old laptop",
+    },
 };

@@ -35,7 +35,8 @@ const preview: Preview = {
     decorators: [withTheme],
     globalTypes: {
         theme: {
-            description: "Theme, set on the document root so portals inherit it",
+            description:
+                "Theme, set on the document root so portals inherit it",
             toolbar: {
                 title: "Theme",
                 icon: "contrast",
@@ -80,7 +81,17 @@ const preview: Preview = {
             storySort: {
                 order: [
                     "Design system",
-                    ["Start here", "Components", "How to choose", "Usage and accessibility", "Content", "What to avoid", "What is missing", "Contributing", "Epics"],
+                    [
+                        "Start here",
+                        "Components",
+                        "How to choose",
+                        "Usage and accessibility",
+                        "Content",
+                        "What to avoid",
+                        "What is missing",
+                        "Contributing",
+                        "Epics",
+                    ],
                     "Foundations",
                     "Primitives",
                     "Product",

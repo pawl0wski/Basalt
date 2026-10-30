@@ -15,7 +15,10 @@ export const sampleNotes: NoteListEntry[] = [
 export function manyNotes(count: number): NoteListEntry[] {
     return Array.from({ length: count }, (_, index) => {
         const day = String((index % 28) + 1).padStart(2, "0");
-        const month = String((Math.floor(index / 28) % 12) + 1).padStart(2, "0");
+        const month = String((Math.floor(index / 28) % 12) + 1).padStart(
+            2,
+            "0",
+        );
         const name = `Daily ${2025 + Math.floor(index / 336)}-${month}-${day}`;
         return { path: `journal/${name}.md`, name };
     });

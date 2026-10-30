@@ -6,14 +6,14 @@ Materiały źródłowe: `lekcja6/referencje.md`, `lekcja6/tokeny.md`, `.ai/specs
 
 ## Status
 
-| Etap | Stan |
-|---|---|
-| 0. Inwentaryzacja i plan | wykonany, decyzje zatwierdzone przez właściciela (2026-10-25) |
-| 1. Fundamenty | wykonany, zweryfikowany, czeka na zatwierdzenie Partii 1 i „dalej” do Etapu 2 |
-| 2. Komponenty bazowe | Partie 1, 2 i 3 zbudowane i zweryfikowane (2026-10-30), czekają na przegląd właściciela; Etap 3 po „dalej” |
+| Etap                                   | Stan                                                                                                       |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 0. Inwentaryzacja i plan               | wykonany, decyzje zatwierdzone przez właściciela (2026-10-25)                                              |
+| 1. Fundamenty                          | wykonany, zweryfikowany, czeka na zatwierdzenie Partii 1 i „dalej” do Etapu 2                              |
+| 2. Komponenty bazowe                   | Partie 1, 2 i 3 zbudowane i zweryfikowane (2026-10-30), czekają na przegląd właściciela; Etap 3 po „dalej” |
 | 3. Komponenty produktu, wzorce, ekrany | zbudowany i zweryfikowany (2026-10-30), czeka na przegląd właściciela; E02 bez ekranów (brak specyfikacji) |
-| 4. Strony, które uczą | zbudowany i zweryfikowany (2026-10-30), czeka na przegląd właściciela |
-| 5. Sprawdzenie i raport | wykonany (2026-10-30); regresja e2e naprawiona przez przepisanie strony startowej aplikacji |
+| 4. Strony, które uczą                  | zbudowany i zweryfikowany (2026-10-30), czeka na przegląd właściciela                                      |
+| 5. Sprawdzenie i raport                | wykonany (2026-10-30); regresja e2e naprawiona przez przepisanie strony startowej aplikacji                |
 
 **Następny krok:** Właściciel ogląda Storybook i stronę startową aplikacji, wykonuje test agentem nowym promptem i rozstrzyga propozycje z Etapów 2-4.
 
@@ -42,40 +42,40 @@ Materiały źródłowe: `lekcja6/referencje.md`, `lekcja6/tokeny.md`, `.ai/specs
 ## Etap 1. Fundamenty – co zrobiono i sprawdzono
 
 1. **Konfiguracja Storybook 10.6.3 w `@basalt/ui`:**
-   - Framework: `@storybook/react-vite` z Vite 8 i React 19.
-   - Dodatki: `@storybook/addon-docs` z pluginem `remark-gfm` dla tabel MDX, `@storybook/addon-a11y` z `a11y: { test: 'error' }`, `@storybook/addon-vitest` z `@vitest/browser-playwright` (Chromium).
-   - Branding i porządek: wyłączone onboarding checklisty i sprawdzanie nowych wersji, czysty motyw Basalt w managerze i dokumentacji.
+    - Framework: `@storybook/react-vite` z Vite 8 i React 19.
+    - Dodatki: `@storybook/addon-docs` z pluginem `remark-gfm` dla tabel MDX, `@storybook/addon-a11y` z `a11y: { test: 'error' }`, `@storybook/addon-vitest` z `@vitest/browser-playwright` (Chromium).
+    - Branding i porządek: wyłączone onboarding checklisty i sprawdzanie nowych wersji, czysty motyw Basalt w managerze i dokumentacji.
 2. **Trzy warstwy tokenów (`src/tokens/`):**
-   - Warstwa 1 (`raw.css`): surowe szarości, błękity, akcenty, skala odstępów 4 px, stosy fontów, promienie, czasy animacji.
-   - Warstwa 2 (`semantic.css` + `accents.css`): tokeny znaczeniowe (`--bs-surface-*`, `--bs-text-*`, `--bs-border-*`, `--bs-action-*`, `--bs-space-*`, `--bs-radius-*`, `--bs-motion-*`). Każdy token ma w komentarzu źródło (R01/R02/A01/WCAG/tokens.md).
-   - Warstwa 3 (`component.css`): tokeny komponentowe (`--bs-titlebar-height`, `--bs-sidebar-width`, `--bs-tab-active-indicator`, `--bs-tree-selected-indicator`, itp.).
+    - Warstwa 1 (`raw.css`): surowe szarości, błękity, akcenty, skala odstępów 4 px, stosy fontów, promienie, czasy animacji.
+    - Warstwa 2 (`semantic.css` + `accents.css`): tokeny znaczeniowe (`--bs-surface-*`, `--bs-text-*`, `--bs-border-*`, `--bs-action-*`, `--bs-space-*`, `--bs-radius-*`, `--bs-motion-*`). Każdy token ma w komentarzu źródło (R01/R02/A01/WCAG/tokens.md).
+    - Warstwa 3 (`component.css`): tokeny komponentowe (`--bs-titlebar-height`, `--bs-sidebar-width`, `--bs-tab-active-indicator`, `--bs-tree-selected-indicator`, itp.).
 3. **Weryfikacja kontrastu:**
-   - 50 testów jednostkowych w `src/tokens/contrast.test.ts` weryfikuje każdą parę tekst/tło (próg 4.5:1) i kontrolka/tło (próg 3:1) według WCAG 2.x bezpośrednio z plików CSS. Wszystkie używane pary spełniają wymagania.
+    - 50 testów jednostkowych w `src/tokens/contrast.test.ts` weryfikuje każdą parę tekst/tło (próg 4.5:1) i kontrolka/tło (próg 3:1) według WCAG 2.x bezpośrednio z plików CSS. Wszystkie używane pary spełniają wymagania.
 4. **Integracja z Tailwind CSS v4:**
-   - `@theme inline` w `theme.css` mapuje wyłącznie tokeny Basalt na klasy narzędziowe. Domyślne palety kolorów, promieni, cieni i odstępów Tailwinda zostały wyzerowane (`--color-*: initial` itd.).
-   - Fonty: systemowy stos bez zewnętrznego CDN (zasada 9).
+    - `@theme inline` w `theme.css` mapuje wyłącznie tokeny Basalt na klasy narzędziowe. Domyślne palety kolorów, promieni, cieni i odstępów Tailwinda zostały wyzerowane (`--color-*: initial` itd.).
+    - Fonty: systemowy stos bez zewnętrznego CDN (zasada 9).
 5. **Przełączniki w Storybooku (zasada 9):**
-   - Przełącznik motywu ustawia `data-theme` na `<html>`, co gwarantuje poprawne stylowanie portali, dialogów i menu.
-   - Przełącznik akcentu ustawia `data-accent` na `<html>` (Blue default, Green Obsidian, Amber, Purple).
+    - Przełącznik motywu ustawia `data-theme` na `<html>`, co gwarantuje poprawne stylowanie portali, dialogów i menu.
+    - Przełącznik akcentu ustawia `data-accent` na `<html>` (Blue default, Green Obsidian, Amber, Purple).
 6. **Strony Foundations w MDX (z blokami `Unstyled`):**
-   - `Color.mdx` – role, palety, zasady WCAG i interaktywna zmierzona tabela kontrastu.
-   - `Typography.mdx` – role typograficzne, skale, interlinie, szerokość tekstu ciągłego.
-   - `Spacing and layout.mdx` – relacje przestrzenne w grupie, między grupami, wewnątrz panelu, między sekcjami oraz szerokości 320/768/1440 px.
-   - `Shape and depth.mdx` – promienie 4 px / 8 px, zasada braku cieni i rozmyć (A01), separacja warstw kolorem i obrysem.
-   - `Motion.mdx` – czasy 100/150 ms, brak sprężynowania, zerowanie przy `prefers-reduced-motion`.
-   - `Icons.mdx` – Lucide outline, stała grubość kreski, reguły dostępności i rozmiary.
-   - `Themes.mdx` – architektura ciemnego motywu, obsługa akcentów, informacja o jasnym motywie w backlogu.
+    - `Color.mdx` – role, palety, zasady WCAG i interaktywna zmierzona tabela kontrastu.
+    - `Typography.mdx` – role typograficzne, skale, interlinie, szerokość tekstu ciągłego.
+    - `Spacing and layout.mdx` – relacje przestrzenne w grupie, między grupami, wewnątrz panelu, między sekcjami oraz szerokości 320/768/1440 px.
+    - `Shape and depth.mdx` – promienie 4 px / 8 px, zasada braku cieni i rozmyć (A01), separacja warstw kolorem i obrysem.
+    - `Motion.mdx` – czasy 100/150 ms, brak sprężynowania, zerowanie przy `prefers-reduced-motion`.
+    - `Icons.mdx` – Lucide outline, stała grubość kreski, reguły dostępności i rozmiary.
+    - `Themes.mdx` – architektura ciemnego motywu, obsługa akcentów, informacja o jasnym motywie w backlogu.
 7. **Narzędzia i skrypty weryfikacji:**
-   - `scripts/check-tokens.ts` (`npm run check:tokens`) – skaner zakazanych literałów kolorów hex/rgb/hsl/oklch, domyślnych klas palety Tailwinda i arbitralnych wartości (`p-[13px]`). Zwraca kod 1 w razie naruszeń.
-   - `scripts/test-stories-themes.mjs` (`npm run test:stories:themes`) – uruchamia stories w headless Chromium z testem a11y.
-   - Skrypty w root `package.json` przekazują polecenia do `@basalt/ui`: `storybook`, `build-storybook`, `test:stories`, `test:stories:themes`, `check:tokens`.
+    - `scripts/check-tokens.ts` (`npm run check:tokens`) – skaner zakazanych literałów kolorów hex/rgb/hsl/oklch, domyślnych klas palety Tailwinda i arbitralnych wartości (`p-[13px]`). Zwraca kod 1 w razie naruszeń.
+    - `scripts/test-stories-themes.mjs` (`npm run test:stories:themes`) – uruchamia stories w headless Chromium z testem a11y.
+    - Skrypty w root `package.json` przekazują polecenia do `@basalt/ui`: `storybook`, `build-storybook`, `test:stories`, `test:stories:themes`, `check:tokens`.
 8. **Wyniki testów weryfikacyjnych:**
-   - `npm run check:tokens` -> **0 naruszeń** (czysto).
-   - `npm run test:stories:themes` -> **9/9 testów browser/a11y PASS**.
-   - `npm run test` (root) -> **61/61 testów jednostkowych PASS**.
-   - `npm run lint` -> **0 błędów, 0 ostrzeżeń**.
-   - `npm run typecheck` -> **0 błędów**.
-   - `npm run build-storybook` -> **build zakończony sukcesem**.
+    - `npm run check:tokens` -> **0 naruszeń** (czysto).
+    - `npm run test:stories:themes` -> **9/9 testów browser/a11y PASS**.
+    - `npm run test` (root) -> **61/61 testów jednostkowych PASS**.
+    - `npm run lint` -> **0 błędów, 0 ostrzeżeń**.
+    - `npm run typecheck` -> **0 błędów**.
+    - `npm run build-storybook` -> **build zakończony sukcesem**.
 
 ---
 
@@ -84,6 +84,7 @@ Materiały źródłowe: `lekcja6/referencje.md`, `lekcja6/tokeny.md`, `.ai/specs
 Zgodnie z wymogiem Etapu 2, przed rozpoczęciem pierwszej partii przedstawiamy zestawienie, czym kształt, gęstość i stany komponentów różnią się od domyślnego shadcn:
 
 ### Partia 1: 6 komponentów bazowych
+
 1. **Button** (primary, secondary, ghost, destructive)
 2. **IconButton** (dedykowany komponent z wymaganym `aria-label` i tooltipem)
 3. **TextLink** (link inline i standalone z akcentem)
@@ -92,6 +93,7 @@ Zgodnie z wymogiem Etapu 2, przed rozpoczęciem pierwszej partii przedstawiamy z
 6. **Checkbox** (pole wyboru w edytorze zadań i opcjach)
 
 ### Partia 2: kolejne 6 komponentów bazowych
+
 7. Select
 8. Switch
 9. Panel / Card (karta grupująca wiersze ustawień)
@@ -100,6 +102,7 @@ Zgodnie z wymogiem Etapu 2, przed rozpoczęciem pierwszej partii przedstawiamy z
 12. Skeleton (szkielet ładowania obrazu/danych)
 
 ### Partia 3: pozostałe komponenty bazowe
+
 13. Dialog
 14. ConfirmDialog
 15. Menu (Dropdown / Context menu)
@@ -113,17 +116,17 @@ Zgodnie z wymogiem Etapu 2, przed rozpoczęciem pierwszej partii przedstawiamy z
 
 ### Zestawienie różnic Partii 1 od domyślnej bazy (shadcn/ui `new-york`)
 
-| Cecha | Domyślny shadcn (`new-york`) | Basalt (`@basalt/ui`) | Decyzja / źródło |
-|---|---|---|---|
-| **Promienie (`radius`)** | `rounded-md` (6 px), `rounded-lg` (8 px), `rounded-xl` (12 px) na przyciskach | Tylko `radius-control` (4 px) dla kontrolek i `radius-container` (8 px) dla paneli | R01.12, R01.5, A01 (zakaz `rounded-2xl` i pigułek) |
-| **Wysokość kontrolek** | `h-10` (40 px) domyślnie, `h-9` (36 px) małe | Zwarte `h-icon-button` (28 px) dla przycisków akcji, inputów i ikon | R01.7, R01.11, cel kliknięcia WCAG 2.5.8 (≥24 px) |
-| **Cienie (`shadow`)** | `shadow-sm`, `shadow` na przyciskach i kartach | Całkowity brak cieni (`shadow: none`) | R01.1, A01 (płaski interfejs) |
-| **Obramowania (`border`)** | Kontur `border-input`, pierścień `ring-offset-2` | Linie 1 px `border-divider` (`#2b2b2b`) dla podziału, `border-control` (`#787878`, 3:1) dla obrysów pól | R01.1, WCAG 1.4.11, tokeny.md |
-| **Fokus z klawiatury** | `ring-2 ring-ring ring-offset-2` (często biały/szary) | `focus-ring` (2 px `blue-300`, odsunięcie 2 px `outline-offset-2`) na tle powierzchni | luka fokusu, propozycja zatwierdzona, kontrast 6.28:1 |
-| **Kolorystyka akcji** | `bg-primary text-primary-foreground` (czarno-białe lub barwne tła z biblioteki) | Główny: `bg-action-primary` (akcent użytkownika, domyślnie `#006cbe`) + `text-on-accent` (`#ffffff`); Drugorzędny: `bg-button-secondary-bg` (`#262626`) + `border-divider` | R01.2, R02.3, R02.7, R01.5 |
-| **Stan najechania (`hover`)** | Rozjaśnienie/ściemnienie przez `opacity` (`hover:bg-primary/90`) | Precyzyjna zmiana koloru tła: `action-primary-hover` (`#005fa8`) lub `state-hover` (`#262626`), bez skalowania | R01.12, M1, M2 |
-| **Typografia kontrolek** | `text-sm` (14 px) font sans zmienny | `text-size-ui` (13 px, line-height 1.5) font systemowy | R01.10, R01.9 |
-| **Odstępy wewnętrzne** | `px-4 py-2` (16 px / 8 px) | Zwarte odstępy relacyjne: `px-between-groups` (12 px) / `px-in-group` (8 px / 4 px) | R01.7, R02.1 |
+| Cecha                         | Domyślny shadcn (`new-york`)                                                    | Basalt (`@basalt/ui`)                                                                                                                                                      | Decyzja / źródło                                      |
+| ----------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| **Promienie (`radius`)**      | `rounded-md` (6 px), `rounded-lg` (8 px), `rounded-xl` (12 px) na przyciskach   | Tylko `radius-control` (4 px) dla kontrolek i `radius-container` (8 px) dla paneli                                                                                         | R01.12, R01.5, A01 (zakaz `rounded-2xl` i pigułek)    |
+| **Wysokość kontrolek**        | `h-10` (40 px) domyślnie, `h-9` (36 px) małe                                    | Zwarte `h-icon-button` (28 px) dla przycisków akcji, inputów i ikon                                                                                                        | R01.7, R01.11, cel kliknięcia WCAG 2.5.8 (≥24 px)     |
+| **Cienie (`shadow`)**         | `shadow-sm`, `shadow` na przyciskach i kartach                                  | Całkowity brak cieni (`shadow: none`)                                                                                                                                      | R01.1, A01 (płaski interfejs)                         |
+| **Obramowania (`border`)**    | Kontur `border-input`, pierścień `ring-offset-2`                                | Linie 1 px `border-divider` (`#2b2b2b`) dla podziału, `border-control` (`#787878`, 3:1) dla obrysów pól                                                                    | R01.1, WCAG 1.4.11, tokeny.md                         |
+| **Fokus z klawiatury**        | `ring-2 ring-ring ring-offset-2` (często biały/szary)                           | `focus-ring` (2 px `blue-300`, odsunięcie 2 px `outline-offset-2`) na tle powierzchni                                                                                      | luka fokusu, propozycja zatwierdzona, kontrast 6.28:1 |
+| **Kolorystyka akcji**         | `bg-primary text-primary-foreground` (czarno-białe lub barwne tła z biblioteki) | Główny: `bg-action-primary` (akcent użytkownika, domyślnie `#006cbe`) + `text-on-accent` (`#ffffff`); Drugorzędny: `bg-button-secondary-bg` (`#262626`) + `border-divider` | R01.2, R02.3, R02.7, R01.5                            |
+| **Stan najechania (`hover`)** | Rozjaśnienie/ściemnienie przez `opacity` (`hover:bg-primary/90`)                | Precyzyjna zmiana koloru tła: `action-primary-hover` (`#005fa8`) lub `state-hover` (`#262626`), bez skalowania                                                             | R01.12, M1, M2                                        |
+| **Typografia kontrolek**      | `text-sm` (14 px) font sans zmienny                                             | `text-size-ui` (13 px, line-height 1.5) font systemowy                                                                                                                     | R01.10, R01.9                                         |
+| **Odstępy wewnętrzne**        | `px-4 py-2` (16 px / 8 px)                                                      | Zwarte odstępy relacyjne: `px-between-groups` (12 px) / `px-in-group` (8 px / 4 px)                                                                                        | R01.7, R02.1                                          |
 
 ---
 
@@ -132,7 +135,6 @@ Zgodnie z wymogiem Etapu 2, przed rozpoczęciem pierwszej partii przedstawiamy z
 - **2026-10-25 (Etap 0):** Inwentaryzacja repozytorium, analiza referencji, tokenów i specyfikacji. Zgłoszenie 5 pytań do właściciela.
 - **2026-10-25 (Decyzje):** Właściciel zatwierdził ciemny motyw (jasny do What is missing), dodanie Toast/RadioGroup/Popover, realizację wzorców jako propozycje, Vitest 5 w ui oraz zasady migracji istniejącego kodu.
 - **2026-10-25 (Etap 1):** Zbudowano pełne fundamenty: Storybook 10.6.3 z a11y i Vitest browser runnerem, 3 warstwy tokenów CSS, Tailwind inline theme, przełączniki motywu i akcentu, 7 stron Foundations w MDX ze zmierzonym kontrastem, skrypt `check:tokens` weryfikujący zgodność z tokenami. Wszystkie testy (unit, a11y browser, checkTokens, lint, typecheck) zakończone sukcesem.
-
 
 ---
 
@@ -145,17 +147,18 @@ Wyniki: `check:tokens` 0 naruszeń, `test` 96/96, `test:stories:themes` 45/45 (m
 Znalezione i naprawione: `tailwind-merge` nie znał tokenów (gubił `text-size-ui`), kolejność warstw CSS (base nadpisywało utilities), brak resetu tła przycisku. Szczegóły: `.ai/lessons/2026-10-30-tailwind-merge-and-layer-order.md`.
 
 ### Propozycje do decyzji (pytania z `lekcja6/TODO.md`, przyjęte tymczasowo wg rekomendacji)
+
 1. Button: nazwy Basalt + aliasy `default`/`outline` i rozmiar `lg` (zgodność z `packages/app/src/App.tsx`).
 2. Rozmiar `lg` = 36 px (`activity-button`), tylko jako propozycja dla pojedynczej wyraźnej akcji.
 3. Disabled: `text-muted` na `state-hover`, bez `opacity`.
 4. IconButton: natywny `title` do czasu Tooltip (Partia 3).
 5. Checkbox: pole 16 px w wierszu 28 px, bez stanu pośredniego.
 6. Komponenty pisane ręcznie, bez CLI shadcn.
-Dodatkowe propozycje: link `inline` zawsze podkreślony, `standalone` na hover; pole opcjonalne oznaczone „(optional)”, wymagane bez oznaczenia; hover linku i pola wyboru bez źródła w materiałach.
+   Dodatkowe propozycje: link `inline` zawsze podkreślony, `standalone` na hover; pole opcjonalne oznaczone „(optional)”, wymagane bez oznaczenia; hover linku i pola wyboru bez źródła w materiałach.
 
 ### Niesprawdzone
-Szerokości 320/768/1440 px w przeglądarce poza stories „Narrow screen”, nawigacja klawiaturą po zbudowanych stronach, akcenty zielony/bursztynowy/fioletowy dla nowych komponentów, `npm run test:e2e`.
 
+Szerokości 320/768/1440 px w przeglądarce poza stories „Narrow screen”, nawigacja klawiaturą po zbudowanych stronach, akcenty zielony/bursztynowy/fioletowy dla nowych komponentów, `npm run test:e2e`.
 
 ---
 
@@ -168,6 +171,7 @@ Wyniki: `check:tokens` 0 naruszeń, `test` 121/121, `test:stories:themes` 70/70 
 Naprawione po drodze: brak resetu marginesów `p`, nagłówków, `figure`, `fieldset` (bez preflightu Tailwinda; dodany do `styles.css`); `status-danger` dodany do par kontrastu na `surface-card`, `state-hover`, `state-selected`.
 
 ### Propozycje do decyzji
+
 1. Select to natywny `select` (bez nowej zależności); otwarta lista jest rysowana przez system i nie podlega tokenom.
 2. Switch pisany ręcznie (`role="switch"`, bez `@radix-ui/react-switch`); rozmiary toru 36 x 20 px i kółka 16 px używają istniejących tokenów (`activity-button`, `activity-icon`, `icon`, `tab-indicator`), osobny token tylko jeśli rozmiary mają się rozjechać.
 3. StatusIndicator: słowa „Sync conflict” i „Sync error” oraz ikony są propozycją (źródła: „Synced”, „Syncing”, błąd w `status-danger`); bez animacji ikony „Syncing”.
@@ -176,8 +180,8 @@ Naprawione po drodze: brak resetu marginesów `p`, nagłówków, `figure`, `fiel
 6. Card: nagłówek poza kontenerem, `headingAs` ustawia poziom; wiersz kontrolki zawija się pod tytuł poniżej 768 px.
 
 ### Niesprawdzone
-Szerokości 320/768/1440 px w przeglądarce poza stories „Narrow screen”, nawigacja klawiaturą po stronach docs, akcenty zielony/bursztynowy/fioletowy, `npm run test:e2e`.
 
+Szerokości 320/768/1440 px w przeglądarce poza stories „Narrow screen”, nawigacja klawiaturą po stronach docs, akcenty zielony/bursztynowy/fioletowy, `npm run test:e2e`.
 
 ---
 
@@ -192,6 +196,7 @@ Wyniki: `check:tokens` 0 naruszeń, `test` 163/163, `test:stories:themes` 110/11
 Znaleziska (szczegóły: `.ai/lessons/2026-10-30-radix-overlays-gotchas.md`): tooltip otwierał się na autofokusie przycisku zamykania dialogu; `state-hover` = `surface-raised`, więc podświetlenie pozycji menu używa `state-selected`; modalne menu psuło a11y (`modal={false}`).
 
 ### Propozycje do decyzji
+
 1. Zasłona (scrim) dialogu: `surface-frame` z `opacity-80`; brak w źródłach.
 2. Dialog nie przewija zawartości wyższej niż ekran (do rozważenia przy pierwszym długim dialogu).
 3. Menu: tylko dropdown. Menu kontekstowe (prawy przycisk) nie zbudowane, czeka na drugie użycie (drzewo plików); do „What is missing”. Menu nazywa trigger, nie osobna etykieta.
@@ -204,8 +209,8 @@ Znaleziska (szczegóły: `.ai/lessons/2026-10-30-radix-overlays-gotchas.md`): to
 10. Dokumentacja Dialog/Menu/Popover/Tabs itd. ma w sekcji 12 listę zasad zamiast par „dobrze/źle”, gdzie para wymagałaby otwartej nakładki.
 
 ### Niesprawdzone
-Szerokości 320/768/1440 px w przeglądarce poza stories „Narrow screen”, nawigacja klawiaturą po zbudowanych stronach docs, akcenty zielony/bursztynowy/fioletowy, czytniki ekranu (tylko role i nazwy z testów), `npm run test:e2e`.
 
+Szerokości 320/768/1440 px w przeglądarce poza stories „Narrow screen”, nawigacja klawiaturą po zbudowanych stronach docs, akcenty zielony/bursztynowy/fioletowy, czytniki ekranu (tylko role i nazwy z testów), `npm run test:e2e`.
 
 ---
 
@@ -220,6 +225,7 @@ Wzorce (`docs/patterns/`, wszystkie jako propozycje): Form (symulowane API: sukc
 Wyniki: `check:tokens` 0 naruszeń, `test` 204/204, `test:stories:themes` 182/182 (motyw ciemny, a11y), `lint` 0, `typecheck` 0, `build-storybook` OK.
 
 ### Propozycje i decyzje do potwierdzenia
+
 1. Komponenty produktu leżą w `@basalt/ui/src/product/`, a standardy repo każą trzymać komponenty funkcjonalne w `@basalt/app`. Zostały w pakiecie design systemu, bo Storybook jest tutaj; przeniesienie przy integracji to decyzja właściciela.
 2. Teksty banerów (tytuły i opisy) są propozycją; specyfikacja podaje tylko nazwy akcji. Tak samo tekst „Loading image”, zdanie na ekranie powitalnym i fokus na „Retry” w SaveFailedDialog.
 3. Lista pokazuje nazwę notatki bez rozszerzenia, a folder jako szary prefiks (spec mówi „relative path”).
@@ -229,8 +235,8 @@ Wyniki: `check:tokens` 0 naruszeń, `test` 204/204, `test:stories:themes` 182/18
 7. Wzorce Form, List with filters, Detail view i Delete confirmation są propozycjami (decyzja właściciela z Etapu 0); Delete confirmation zakłada E01-S04 bez specyfikacji.
 
 ### Niesprawdzone
-Szerokości 320 px dla ekranów (poza zakresem), nawigacja klawiaturą po stronach docs, akcenty zielony/bursztynowy/fioletowy, czytniki ekranu, `npm run test:e2e`, wydajność listy przy tysiącach notatek.
 
+Szerokości 320 px dla ekranów (poza zakresem), nawigacja klawiaturą po stronach docs, akcenty zielony/bursztynowy/fioletowy, czytniki ekranu, `npm run test:e2e`, wydajność listy przy tysiącach notatek.
 
 ---
 
@@ -241,14 +247,15 @@ Strony w `docs/guide/` (grupa „Design system”): Start here (charakter, 5 kro
 Wyniki: `check:tokens` 0 naruszeń, `test` 204/204, `test:stories:themes` 182/182, `lint` 0, `typecheck` 0, `build-storybook` OK; 53 strony docs, 0 zepsutych linków wewnętrznych (sprawdzone skryptem na `index.json` zbudowanego Storybooka).
 
 ### Propozycje do decyzji
+
 1. Formaty dat (RRRR-MM-DD) i godzin (24 h) w Content nie mają źródła; to propozycje. Liczby z separatorem tysięcy wynikają z `StatusBar`.
 2. Priorytety w „What is missing” to propozycje agenta.
 3. Strona epika E02 mówi wprost, że nie ma ekranów (brak specyfikacji); lista „oczekiwanych ekranów” to opis zakresu do specyfikacji, nie projekt.
 4. Przykłady „Basalt mówi / nie mówi” w Content: pierwsze zdanie pochodzi z R01.14, pozostałe są ilustracjami zgodnymi z tonem W3.
 
 ### Niesprawdzone
-Nawigacja klawiaturą po stronach, czytniki ekranu, akcenty zielony/bursztynowy/fioletowy, `npm run test:e2e`.
 
+Nawigacja klawiaturą po stronach, czytniki ekranu, akcenty zielony/bursztynowy/fioletowy, `npm run test:e2e`.
 
 ---
 
@@ -256,18 +263,18 @@ Nawigacja klawiaturą po stronach, czytniki ekranu, akcenty zielony/bursztynowy/
 
 ### Co sprawdzono i wyniki
 
-| Sprawdzenie | Wynik |
-|---|---|
-| `build-storybook` | OK |
-| `typecheck` | 0 błędów |
-| `lint` | 0 ostrzeżeń |
-| `check:tokens` | 0 wartości poza tokenami |
-| Testy jednostkowe (`npm run test`) | 204 testy w 29 plikach, wszystkie przechodzą (w tym 53 testy kontrastu tokenów) |
-| Stories jako testy z a11y (`test:stories:themes`) | 182/182, 0 naruszeń a11y |
+| Sprawdzenie                                                                           | Wynik                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `build-storybook`                                                                     | OK                                                                                                                                                                                                                                                                     |
+| `typecheck`                                                                           | 0 błędów                                                                                                                                                                                                                                                               |
+| `lint`                                                                                | 0 ostrzeżeń                                                                                                                                                                                                                                                            |
+| `check:tokens`                                                                        | 0 wartości poza tokenami                                                                                                                                                                                                                                               |
+| Testy jednostkowe (`npm run test`)                                                    | 204 testy w 29 plikach, wszystkie przechodzą (w tym 53 testy kontrastu tokenów)                                                                                                                                                                                        |
+| Stories jako testy z a11y (`test:stories:themes`)                                     | 182/182, 0 naruszeń a11y                                                                                                                                                                                                                                               |
 | Przegląd 182 stories przy 320, 768 i 1440 px (przepełnienie poziome, błędy w konsoli) | 0 błędów w konsoli. Przy 320 px przepełniają: 4 stories „Foundations/Checks” (Etap 1, ukryte w menu, szerokie tabele) i 3 ekrany desktopowe (spodziewane, Q6). Pięć stories komponentów przepełniało i zostało poprawionych (Tabs, ImagePlaceholder, Button, Skeleton) |
-| Przegląd 53 stron docs przy 320, 768 i 1440 px | 768 i 1440: 0 przepełnień. 320: 38 stron przepełnia (tabele i bloki kodu w układzie Storybooka); nie naprawiano |
-| Tab po 10 kluczowych ekranach i stories | Fokus jest widoczny wszędzie; w dialogach fokus zostaje w środku; patrz obserwacje niżej |
-| `npm run test:e2e` | najpierw 1 test z 4 nie przechodził (regresja niżej); po naprawie 5/5 (dodany test koloru akcentu) |
+| Przegląd 53 stron docs przy 320, 768 i 1440 px                                        | 768 i 1440: 0 przepełnień. 320: 38 stron przepełnia (tabele i bloki kodu w układzie Storybooka); nie naprawiano                                                                                                                                                        |
+| Tab po 10 kluczowych ekranach i stories                                               | Fokus jest widoczny wszędzie; w dialogach fokus zostaje w środku; patrz obserwacje niżej                                                                                                                                                                               |
+| `npm run test:e2e`                                                                    | najpierw 1 test z 4 nie przechodził (regresja niżej); po naprawie 5/5 (dodany test koloru akcentu)                                                                                                                                                                     |
 
 Motywy: istnieje tylko ciemny (decyzja z Etapu 0), więc „oba motywy” nie dotyczy; jasny motyw jest w „What is missing”.
 
@@ -278,19 +285,23 @@ Motywy: istnieje tylko ciemny (decyzja z Etapu 0), więc „oba motywy” nie do
 Właściciel wybrał naprawę (a): `packages/app/src/index.css` importuje `@basalt/ui/styles.css` (z `@source` na kod pakietu), a `App.tsx` jest przepisany na komponenty i tokeny: ciemny motyw, bez gradientu, iskierek, pigułek, cieni i wyśrodkowanego hero, zasady z „What to avoid”. Treść i testy e2e zostały; trzy zasady produktu są jedną kartą z rzędami zamiast trzech identycznych kart. Dodany test e2e „styles the main action with the design system accent” porównuje tło przycisku z tokenem `--bs-action-primary`, więc ta sama regresja zostałaby wykryta. Zmiana dotyczy kodu aplikacji, wbrew pierwotnej decyzji 5 z Etapu 0, za wyraźną zgodą właściciela. Pozostałe elementy starej strony (znaczek z ikoną, kapsułka z hasłem, „A calmer home for your ideas”, stopka) zostały usunięte; nie ma ich w żadnych materiałach, a pierwsze trzy łamały A01.
 
 ### Obserwacje z testu klawiaturą (nienaprawione)
+
 1. Po „zawinięciu” Tab w Tabs na chwilę fokus trafia na `div[role=tablist]` bez widocznego obrysu (grupa Radix z `tabindex=0`), zanim przejdzie na aktywną kartę.
 2. W otwartym Menu Tab nie opuszcza menu (zachowanie Radix; nawigacja strzałkami).
 
 ### Liczby
+
 - Strony dokumentacji: 53 (Foundations 7, Primitives 22, Product 8, Patterns 4, Design system 11, Screens 1).
 - Komponenty: 22 bazowe + 9 produktowych + 4 wzorce (propozycje).
 - Stories: 182 (Primitives 101, Product 32, Screens 21, Patterns 19, Foundations 9), w tym 70 z testem interakcji (`play`).
 - Testy: 204 jednostkowe; 182 testy stories z a11y.
 
 ### Czego nie sprawdzono
+
 Czytników ekranu (tylko role i nazwy w testach), akcentów zielonego/bursztynowego/fioletowego dla nowych komponentów, wydajności listy przy tysiącach notatek, ekranów przy 320 px (poza zakresem), a11y 38 stron docs przy 320 px.
 
 ### Propozycje (zbiorczo)
+
 Wszystkie wypisane w sekcjach Partii 1-3, Etapu 3 i 4 powyżej, plus „What is missing” w Storybooku. Żadna nie jest zatwierdzona.
 
 ### Test agentem (przygotowany, nie wykonany)
@@ -300,3 +311,21 @@ Ekran z backlogu, którego nie ma w Storybooku: **E02-S01, „The owner can run 
 Prompt dla nowego agenta (do wklejenia): „Zbuduj w Storybooku `@basalt/ui` nowy ekran pełnoekranowy ‚Connect to a sync server’ (ustawienia synchronizacji). Zacznij od `basalt-app/packages/ui/docs/design-system.md`. Używaj tylko komponentów i tokenów z design systemu. Nie dodawaj komponentów ani zależności. Każdą decyzję, której nie da się oprzeć na dokumentacji, zapisz jako ‚zgadłem’ z uzasadnieniem. Ekran ma: pole adresu serwera, przycisk połączenia, stany: niepołączony, łączenie, połączony (adres, stan synchronizacji słowem, akcja rozłączenia z potwierdzeniem), błąd adresu przy polu, serwer niedostępny (błąd z ponowieniem). Stories dla każdego stanu, test `play` dla połączenia, a11y bez naruszeń.”
 
 Przewidywane luki (hipotezy, do sprawdzenia testem): brak wzorca strony ustawień (układ kart i nagłówków), brak pola typu hasło lub tajny klucz, brak wzorca „test połączenia” z oczekiwaniem, brak miejsca na stan sync poza paskiem stanu, brak tekstów dla stanów sync w Content.
+
+---
+
+## Zmiana stylu zaznaczonej notatki (2026-10-30)
+
+Decyzja właściciela po przeglądzie: dotychczasowy styl (pełna szerokość, szare wypełnienie i pasek akcentu 2 px) jest zbyt „systemowy”. Z trzech propozycji (A pigułka ze znacznikiem, B jak VS Code, C pigułka z odcieniem akcentu) wybrany został **wariant C**.
+
+Wdrożone:
+
+- `NoteList`: lista wcięta o 4 px, wiersze zaokrąglone (`rounded-control`); zaznaczony wiersz ma wypełnienie `tree-selected` (odcień akcentu) gdy lista ma fokus i neutralne `state-selected` gdy nie ma; tekst `text-note`, także prefiks folderu; bez paska akcentu; fokus klawiatury rysowany wewnątrz wiersza (`focus-ring-inset`).
+- Nowy token komponentowy `--bs-tree-selected` (= `--bs-editor-selection`, więc podąża za akcentem użytkownika) i klasa `bg-tree-selected`; nowe narzędzie `focus-ring-inset`. Usunięty nieużywany token `--bs-tree-selected-indicator` (klasa `w-tree-indicator`).
+- Kontrast: `text-note` na `tree-selected` ma 7,96:1 (niebieski), 9,09 (zielony), 9,15 (bursztynowy), 9,34 (fioletowy). Samo wypełnienie ma 1,57:1 (niebieski) i 1,34-1,37:1 (pozostałe akcenty) do `surface-card`, a `state-selected` 1,36:1. To **świadome, zaakceptowane odstępstwo od reguły 3:1** (WCAG 1.4.11) jak w VS Code; zapisane w `contrastPairs.ts`, na stronach NoteList, Usage and accessibility, Color i w pliku dla agentów.
+- Test w przeglądarce (`NoteList`, story „Selected row follows focus”): kolor zaznaczonego wiersza zmienia się z neutralnego na odcień akcentu, gdy lista dostaje fokus, i wraca, gdy go traci.
+- Prototyp drzewa folderów (kierunek dla E01-S04: rozwijanie kliknięciem, obracający się chevron, cienka linia prowadząca) zostaje w Storybooku jako „Proposals / Folder tree”, tylko w wybranym stylu; bez semantyki `tree` i nawigacji strzałkami. Zapisany w „What is missing” i na stronie E01.
+
+Uwaga: pozostałe tokeny i style dla paska aktywnej karty (`tab-active-indicator`) bez zmian.
+
+Liczby po tej zmianie: 206 testów jednostkowych (dwie nowe pary kontrastu), 185 stories (182 poprzednie, jedna nowa z testem fokusu i dwa prototypy drzewa folderów, wyłączone z testu a11y). `lint`, `typecheck`, `check:tokens`, `build-storybook` bez błędów.

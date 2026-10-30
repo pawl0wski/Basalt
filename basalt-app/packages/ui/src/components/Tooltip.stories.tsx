@@ -8,8 +8,17 @@ const meta = {
     title: "Primitives/Tooltip",
     component: Tooltip,
     tags: ["!autodocs"],
-    args: { content: "Open settings (Ctrl+,)", side: "top", children: <span /> },
-    argTypes: { side: { control: "inline-radio", options: ["top", "right", "bottom", "left"] } },
+    args: {
+        content: "Open settings (Ctrl+,)",
+        side: "top",
+        children: <span />,
+    },
+    argTypes: {
+        side: {
+            control: "inline-radio",
+            options: ["top", "right", "bottom", "left"],
+        },
+    },
     render: (args) => (
         <div className="p-section">
             <Tooltip {...args}>
@@ -26,9 +35,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
     play: async ({ canvasElement }) => {
-        const button = within(canvasElement).getByRole("button", { name: "Open settings" });
+        const button = within(canvasElement).getByRole("button", {
+            name: "Open settings",
+        });
         await userEvent.hover(button);
-        await expect(await screen.findByRole("tooltip")).toHaveTextContent("Open settings (Ctrl+,)");
+        await expect(await screen.findByRole("tooltip")).toHaveTextContent(
+            "Open settings (Ctrl+,)",
+        );
         await userEvent.keyboard("{Escape}");
         await expect(screen.queryByRole("tooltip")).toBeNull();
     },

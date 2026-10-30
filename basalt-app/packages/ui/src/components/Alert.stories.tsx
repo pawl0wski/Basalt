@@ -7,9 +7,23 @@ const meta = {
     title: "Primitives/Alert",
     component: Alert,
     tags: ["!autodocs"],
-    args: { variant: "info", children: "Markdown files and attachments stay in your folder." },
-    argTypes: { variant: { control: "inline-radio", options: ["info", "warning", "danger"] } },
-    decorators: [(Story) => <div className="w-full max-w-prose"><Story /></div>],
+    args: {
+        variant: "info",
+        children: "Markdown files and attachments stay in your folder.",
+    },
+    argTypes: {
+        variant: {
+            control: "inline-radio",
+            options: ["info", "warning", "danger"],
+        },
+    },
+    decorators: [
+        (Story) => (
+            <div className="w-full max-w-prose">
+                <Story />
+            </div>
+        ),
+    ],
 } satisfies Meta<typeof Alert>;
 
 export default meta;
@@ -36,13 +50,24 @@ export const Variants: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         await expect(canvas.getAllByRole("status")).toHaveLength(2);
-        await expect(canvas.getByRole("alert")).toHaveTextContent("Could not save the note");
+        await expect(canvas.getByRole("alert")).toHaveTextContent(
+            "Could not save the note",
+        );
     },
 };
 
 export const WithAction: Story = {
-    args: { variant: "warning", title: "Sync conflict", children: "Two devices changed this note." },
-    render: (args) => <Alert {...args} action={<Button variant="secondary">Review changes</Button>} />,
+    args: {
+        variant: "warning",
+        title: "Sync conflict",
+        children: "Two devices changed this note.",
+    },
+    render: (args) => (
+        <Alert
+            {...args}
+            action={<Button variant="secondary">Review changes</Button>}
+        />
+    ),
 };
 
 export const LongText: Story = {
@@ -56,10 +81,17 @@ export const LongText: Story = {
 
 export const NarrowScreen: Story = {
     globals: { viewport: { value: "mobile" } },
-    args: { variant: "warning", title: "Sync conflict", children: "Two devices changed this note." },
+    args: {
+        variant: "warning",
+        title: "Sync conflict",
+        children: "Two devices changed this note.",
+    },
     render: (args) => (
         <div className="w-full p-panel">
-            <Alert {...args} action={<Button variant="secondary">Review changes</Button>} />
+            <Alert
+                {...args}
+                action={<Button variant="secondary">Review changes</Button>}
+            />
         </div>
     ),
 };

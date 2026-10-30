@@ -35,7 +35,10 @@ function NewNoteDialog({
             title="New note"
             description="The note is created in the workspace folder."
         >
-            <form onSubmit={handleSubmit} className="flex flex-col gap-between-groups">
+            <form
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-between-groups"
+            >
                 <Field label="Note name" error={error} required>
                     <Input
                         value={name}
@@ -50,7 +53,9 @@ function NewNoteDialog({
                     </Button>
                     <Button
                         type="submit"
-                        disabled={Boolean(error) || pending || name.trim() === ""}
+                        disabled={
+                            Boolean(error) || pending || name.trim() === ""
+                        }
                     >
                         {pending ? "Creating…" : "Create note"}
                     </Button>

@@ -22,7 +22,9 @@ type MenuProps = {
 function Menu({ trigger, items, align = "start", defaultOpen }: MenuProps) {
     return (
         <DropdownMenuPrimitive.Root defaultOpen={defaultOpen} modal={false}>
-            <DropdownMenuPrimitive.Trigger asChild>{trigger}</DropdownMenuPrimitive.Trigger>
+            <DropdownMenuPrimitive.Trigger asChild>
+                {trigger}
+            </DropdownMenuPrimitive.Trigger>
             <DropdownMenuPrimitive.Portal>
                 <DropdownMenuPrimitive.Content
                     align={align}

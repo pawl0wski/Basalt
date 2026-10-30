@@ -30,10 +30,18 @@ function EmptyState({
                 className,
             )}
         >
-            {icon ? <span className="text-icon-default [&_svg]:size-activity-icon">{icon}</span> : null}
+            {icon ? (
+                <span className="text-icon-default [&_svg]:size-activity-icon">
+                    {icon}
+                </span>
+            ) : null}
             <div className="flex flex-col gap-in-group">
-                <Heading className="font-ui-strong text-size-ui text-text-ui">{title}</Heading>
-                {description ? <p className="text-text-muted">{description}</p> : null}
+                <Heading className="font-ui-strong text-size-ui text-text-ui">
+                    {title}
+                </Heading>
+                {description ? (
+                    <p className="text-text-muted">{description}</p>
+                ) : null}
             </div>
             {children}
             {action ? <div>{action}</div> : null}

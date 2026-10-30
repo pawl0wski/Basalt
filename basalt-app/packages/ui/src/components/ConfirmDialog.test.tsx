@@ -3,7 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ConfirmDialog } from "./ConfirmDialog";
 
-const setup = (props: Partial<React.ComponentProps<typeof ConfirmDialog>> = {}) => {
+const setup = (
+    props: Partial<React.ComponentProps<typeof ConfirmDialog>> = {},
+) => {
     const onConfirm = vi.fn();
     const onOpenChange = vi.fn();
     render(
@@ -25,13 +27,17 @@ describe("ConfirmDialog", () => {
     it("is an alert dialog named by the question", () => {
         setup();
 
-        expect(screen.getByRole("alertdialog", { name: "Delete Weekly plan?" })).toBeTruthy();
+        expect(
+            screen.getByRole("alertdialog", { name: "Delete Weekly plan?" }),
+        ).toBeTruthy();
     });
 
     it("puts focus on the safe choice, not on the destructive one", () => {
         setup();
 
-        expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel" }));
+        expect(document.activeElement).toBe(
+            screen.getByRole("button", { name: "Cancel" }),
+        );
     });
 
     it("confirms with the verb button and closes", async () => {
@@ -65,13 +71,31 @@ describe("ConfirmDialog", () => {
 
     it("styles the confirm button as destructive only when asked", () => {
         const { rerender } = render(
-            <ConfirmDialog open onOpenChange={() => {}} title="t" confirmLabel="Delete note" onConfirm={() => {}} destructive />,
+            <ConfirmDialog
+                open
+                onOpenChange={() => {}}
+                title="t"
+                confirmLabel="Delete note"
+                onConfirm={() => {}}
+                destructive
+            />,
         );
-        expect(screen.getByRole("button", { name: "Delete note" }).dataset.variant).toBe("destructive");
+        expect(
+            screen.getByRole("button", { name: "Delete note" }).dataset.variant,
+        ).toBe("destructive");
 
         rerender(
-            <ConfirmDialog open onOpenChange={() => {}} title="t" confirmLabel="Discard changes" onConfirm={() => {}} />,
+            <ConfirmDialog
+                open
+                onOpenChange={() => {}}
+                title="t"
+                confirmLabel="Discard changes"
+                onConfirm={() => {}}
+            />,
         );
-        expect(screen.getByRole("button", { name: "Discard changes" }).dataset.variant).toBe("primary");
+        expect(
+            screen.getByRole("button", { name: "Discard changes" }).dataset
+                .variant,
+        ).toBe("primary");
     });
 });

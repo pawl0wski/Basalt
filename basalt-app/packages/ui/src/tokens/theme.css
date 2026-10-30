@@ -38,6 +38,7 @@
     --color-code-block-bg: var(--bs-code-block-bg);
     --color-button-secondary-bg: var(--bs-button-secondary-bg);
     --color-editor-selection: var(--bs-editor-selection);
+    --color-tree-selected: var(--bs-tree-selected);
 
     --spacing-in-group: var(--bs-space-in-group);
     --spacing-between-groups: var(--bs-space-between-groups);
@@ -57,7 +58,6 @@
     --spacing-activity-button: var(--bs-activity-button-size);
     --spacing-icon-button: var(--bs-icon-button-size);
     --spacing-tab-indicator: var(--bs-tab-active-indicator);
-    --spacing-tree-indicator: var(--bs-tree-selected-indicator);
     --spacing-none: 0px;
 
     --container-note: var(--bs-note-column-max-width);
@@ -96,6 +96,11 @@
 @utility focus-ring {
     outline: 2px solid var(--bs-focus-ring);
     outline-offset: 2px;
+}
+
+@utility focus-ring-inset {
+    outline: 2px solid var(--bs-focus-ring);
+    outline-offset: -2px;
 }
 
 @utility motion-feedback {

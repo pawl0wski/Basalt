@@ -18,7 +18,12 @@ describe("Checkbox", () => {
         const user = userEvent.setup();
         const onCheckedChange = vi.fn();
 
-        render(<Checkbox label="Show word count" onCheckedChange={onCheckedChange} />);
+        render(
+            <Checkbox
+                label="Show word count"
+                onCheckedChange={onCheckedChange}
+            />,
+        );
         await user.click(screen.getByRole("checkbox"));
         await user.click(screen.getByText("Show word count"));
 
@@ -33,9 +38,9 @@ describe("Checkbox", () => {
         await user.tab();
         await user.keyboard(" ");
 
-        expect(
-            screen.getByRole("checkbox").getAttribute("aria-checked"),
-        ).toBe("true");
+        expect(screen.getByRole("checkbox").getAttribute("aria-checked")).toBe(
+            "true",
+        );
     });
 
     it("does not toggle while disabled", async () => {
@@ -43,7 +48,11 @@ describe("Checkbox", () => {
         const onCheckedChange = vi.fn();
 
         render(
-            <Checkbox label="Show word count" disabled onCheckedChange={onCheckedChange} />,
+            <Checkbox
+                label="Show word count"
+                disabled
+                onCheckedChange={onCheckedChange}
+            />,
         );
         await user.click(screen.getByRole("checkbox"));
         await user.click(screen.getByText("Show word count"));

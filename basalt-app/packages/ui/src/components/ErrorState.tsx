@@ -16,7 +16,12 @@ function ErrorState({ title, description, action, details }: ErrorStateProps) {
             title={title}
             description={description}
             action={action}
-            icon={<CircleAlert aria-hidden="true" className="text-status-danger" />}
+            icon={
+                <CircleAlert
+                    aria-hidden="true"
+                    className="text-status-danger"
+                />
+            }
         >
             {details ? (
                 <pre

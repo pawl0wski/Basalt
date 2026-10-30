@@ -9,7 +9,11 @@ const statuses = {
         Icon: TriangleAlert,
         tone: "text-status-warning",
     },
-    error: { label: "Sync error", Icon: CircleAlert, tone: "text-status-danger" },
+    error: {
+        label: "Sync error",
+        Icon: CircleAlert,
+        tone: "text-status-danger",
+    },
 } as const;
 
 type SyncStatus = keyof typeof statuses;

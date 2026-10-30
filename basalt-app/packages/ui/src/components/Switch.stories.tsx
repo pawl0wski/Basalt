@@ -17,7 +17,9 @@ type Story = StoryObj<typeof meta>;
 export const Playground: Story = {
     play: async ({ args, canvasElement }) => {
         const canvas = within(canvasElement);
-        const toggle = canvas.getByRole("switch", { name: "Sync notes between devices" });
+        const toggle = canvas.getByRole("switch", {
+            name: "Sync notes between devices",
+        });
         await userEvent.click(toggle);
         await expect(toggle).toBeChecked();
         await userEvent.keyboard(" ");
@@ -56,7 +58,10 @@ export const States: Story = {
 export const LongLabel: Story = {
     render: (args) => (
         <div className="w-full max-w-prose">
-            <Switch {...args} label="Keep a copy of every image next to the note that uses it, even when the image is large" />
+            <Switch
+                {...args}
+                label="Keep a copy of every image next to the note that uses it, even when the image is large"
+            />
         </div>
     ),
 };

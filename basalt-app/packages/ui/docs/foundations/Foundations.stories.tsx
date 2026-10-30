@@ -20,8 +20,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Color: Story = { render: () => <ColorRoles /> };
-export const ContrastText: Story = { render: () => <ContrastTable kind="text" /> };
-export const ContrastInterface: Story = { render: () => <ContrastTable kind="ui" /> };
+export const ContrastText: Story = {
+    render: () => <ContrastTable kind="text" />,
+};
+export const ContrastInterface: Story = {
+    render: () => <ContrastTable kind="ui" />,
+};
 export const Typography: Story = { render: () => <TypeRoles /> };
 export const Spacing: Story = { render: () => <SpacingRelations /> };
 export const Layout: Story = { render: () => <LayoutWidths /> };

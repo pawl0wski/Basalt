@@ -13,7 +13,9 @@ describe("EmptyState", () => {
             />,
         );
 
-        expect(screen.getByRole("heading", { level: 2, name: "No notes yet" })).toBeTruthy();
+        expect(
+            screen.getByRole("heading", { level: 2, name: "No notes yet" }),
+        ).toBeTruthy();
         expect(screen.getByText(/saved as Markdown files/)).toBeTruthy();
         expect(screen.getByRole("button", { name: "New note" })).toBeTruthy();
     });
@@ -35,15 +37,25 @@ describe("ErrorState", () => {
             />,
         );
 
-        expect(screen.getByRole("alert").textContent).toContain("Could not open the workspace");
+        expect(screen.getByRole("alert").textContent).toContain(
+            "Could not open the workspace",
+        );
         expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
     });
 
     it("shows technical details only when given", () => {
-        const { rerender } = render(<ErrorState title="Failed" description="Try again later." />);
+        const { rerender } = render(
+            <ErrorState title="Failed" description="Try again later." />,
+        );
         expect(screen.queryByText("EACCES: permission denied")).toBeNull();
 
-        rerender(<ErrorState title="Failed" description="Try again later." details="EACCES: permission denied" />);
+        rerender(
+            <ErrorState
+                title="Failed"
+                description="Try again later."
+                details="EACCES: permission denied"
+            />,
+        );
         expect(screen.getByText("EACCES: permission denied")).toBeTruthy();
     });
 });

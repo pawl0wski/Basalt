@@ -32,8 +32,16 @@ function RadioGroup({
     const legendId = useId();
 
     return (
-        <div className={cn("bs-radio-group flex flex-col gap-in-group", className)}>
-            <p id={legendId} className="font-ui-strong text-size-ui text-text-ui">
+        <div
+            className={cn(
+                "bs-radio-group flex flex-col gap-in-group",
+                className,
+            )}
+        >
+            <p
+                id={legendId}
+                className="font-ui-strong text-size-ui text-text-ui"
+            >
                 {legend}
             </p>
             <RadioGroupPrimitive.Root

@@ -16,7 +16,9 @@ describe("TextLink", () => {
     it("underlines inline links so they do not rely on color alone", () => {
         render(<TextLink href="/a">Inline</TextLink>);
 
-        expect(screen.getByRole("link").className).toMatch(/(^|\s)underline(\s|$)/);
+        expect(screen.getByRole("link").className).toMatch(
+            /(^|\s)underline(\s|$)/,
+        );
     });
 
     it("underlines standalone links only on hover", () => {
@@ -38,6 +40,8 @@ describe("TextLink", () => {
             </TextLink>,
         );
 
-        expect(screen.getByRole("button", { name: "Router link" })).toBeTruthy();
+        expect(
+            screen.getByRole("button", { name: "Router link" }),
+        ).toBeTruthy();
     });
 });

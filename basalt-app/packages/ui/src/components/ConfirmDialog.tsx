@@ -39,7 +39,11 @@ function ConfirmDialog({
             }}
             footer={
                 <>
-                    <Button ref={cancelRef} variant="ghost" onClick={() => onOpenChange(false)}>
+                    <Button
+                        ref={cancelRef}
+                        variant="ghost"
+                        onClick={() => onOpenChange(false)}
+                    >
                         {cancelLabel}
                     </Button>
                     <Button

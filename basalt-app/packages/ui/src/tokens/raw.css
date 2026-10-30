@@ -58,11 +58,12 @@
 
     /* R01.9, font gap: system fonts for now (tokens.md rule 9) */
     --raw-font-sans-stack:
-        system-ui, "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Ubuntu, Cantarell,
-        "Noto Sans", sans-serif;
+        system-ui, "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto,
+        Ubuntu, Cantarell, "Noto Sans", sans-serif;
     /* R02.5 */
     --raw-font-mono-stack:
-        ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+        ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas,
+        "DejaVu Sans Mono", monospace;
 
     /* R01.10 */
     --raw-size-12: 12px;

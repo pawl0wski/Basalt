@@ -17,11 +17,18 @@ export function StateMatrix({ columns, rows, cell }: StateMatrixProps) {
             <table className="border-collapse text-left">
                 <thead>
                     <tr>
-                        <th scope="col" className="p-in-group pr-section font-ui-strong">
+                        <th
+                            scope="col"
+                            className="p-in-group pr-section font-ui-strong"
+                        >
                             State
                         </th>
                         {columns.map((column) => (
-                            <th key={column} scope="col" className="p-in-group font-ui-strong">
+                            <th
+                                key={column}
+                                scope="col"
+                                className="p-in-group font-ui-strong"
+                            >
                                 {column}
                             </th>
                         ))}
@@ -29,13 +36,22 @@ export function StateMatrix({ columns, rows, cell }: StateMatrixProps) {
                 </thead>
                 <tbody>
                     {rows.map((row) => (
-                        <tr key={row.label} className="border-t border-border-divider">
-                            <th scope="row" className="p-in-group pr-section font-normal text-text-muted">
+                        <tr
+                            key={row.label}
+                            className="border-t border-border-divider"
+                        >
+                            <th
+                                scope="row"
+                                className="p-in-group pr-section font-normal text-text-muted"
+                            >
                                 {row.label}
                             </th>
                             {columns.map((column) => (
                                 <td key={column} className="p-between-groups">
-                                    <div data-preview-state={row.previewState} className="inline-flex">
+                                    <div
+                                        data-preview-state={row.previewState}
+                                        className="inline-flex"
+                                    >
                                         {cell(column, row)}
                                     </div>
                                 </td>

@@ -19,10 +19,24 @@ const meta = {
     args: {
         trigger: <Button variant="secondary">Note actions</Button>,
         items: [
-            { label: "Rename", icon: <Pencil aria-hidden="true" />, onSelect: onRename },
-            { label: "Duplicate", icon: <Copy aria-hidden="true" />, onSelect: () => {}, disabled: true },
+            {
+                label: "Rename",
+                icon: <Pencil aria-hidden="true" />,
+                onSelect: onRename,
+            },
+            {
+                label: "Duplicate",
+                icon: <Copy aria-hidden="true" />,
+                onSelect: () => {},
+                disabled: true,
+            },
             "separator",
-            { label: "Delete note", icon: <Trash2 aria-hidden="true" />, onSelect: onDelete, destructive: true },
+            {
+                label: "Delete note",
+                icon: <Trash2 aria-hidden="true" />,
+                onSelect: onDelete,
+                destructive: true,
+            },
         ],
     },
 } satisfies Meta<typeof Menu>;
@@ -32,7 +46,9 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
     play: async ({ canvasElement }) => {
-        const trigger = within(canvasElement).getByRole("button", { name: "Note actions" });
+        const trigger = within(canvasElement).getByRole("button", {
+            name: "Note actions",
+        });
         await userEvent.click(trigger);
         const menu = await screen.findByRole("menu", { name: "Note actions" });
         await expect(within(menu).getAllByRole("menuitem")).toHaveLength(3);
@@ -49,13 +65,21 @@ export const Open: Story = {
     args: { defaultOpen: true },
     play: async () => {
         const menu = await screen.findByRole("menu");
-        await expect(within(menu).getByRole("menuitem", { name: "Duplicate" })).toHaveAttribute("aria-disabled", "true");
+        await expect(
+            within(menu).getByRole("menuitem", { name: "Duplicate" }),
+        ).toHaveAttribute("aria-disabled", "true");
     },
 };
 
 export const AlignedToTheEnd: Story = {
     args: { defaultOpen: true, align: "end" },
-    decorators: [(Story) => <div className="flex w-full justify-end"><Story /></div>],
+    decorators: [
+        (Story) => (
+            <div className="flex w-full justify-end">
+                <Story />
+            </div>
+        ),
+    ],
 };
 
 export const NarrowScreen: Story = {

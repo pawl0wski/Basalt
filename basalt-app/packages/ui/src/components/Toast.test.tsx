@@ -13,7 +13,9 @@ function Trigger({ onUndo }: { onUndo?: () => void }) {
                 toast({
                     title: "Note moved to trash",
                     description: "Weekly plan",
-                    action: onUndo ? { label: "Undo", onClick: onUndo } : undefined,
+                    action: onUndo
+                        ? { label: "Undo", onClick: onUndo }
+                        : undefined,
                 })
             }
         >
@@ -75,7 +77,14 @@ describe("Toast", () => {
 
         function Short() {
             const toast = useToast();
-            return <button type="button" onClick={() => toast({ title: "Saved", duration: 1000 })}>Save</button>;
+            return (
+                <button
+                    type="button"
+                    onClick={() => toast({ title: "Saved", duration: 1000 })}
+                >
+                    Save
+                </button>
+            );
         }
         render(
             <ToastProvider>
@@ -100,7 +109,9 @@ describe("Toast", () => {
             return null;
         }
 
-        expect(() => render(<Orphan />)).toThrow("useToast must be used inside ToastProvider");
+        expect(() => render(<Orphan />)).toThrow(
+            "useToast must be used inside ToastProvider",
+        );
         spy.mockRestore();
     });
 });

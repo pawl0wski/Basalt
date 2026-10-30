@@ -64,7 +64,6 @@
     /* R01.5 */
     --bs-font-weight-ui-strong: 600;
 
-
     /* R01.10, R01.11: note text, headings, UI text, code */
     --bs-text-size-note: var(--raw-size-16);
     --bs-text-size-note-line-height: 1.6;

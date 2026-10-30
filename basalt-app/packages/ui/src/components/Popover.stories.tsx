@@ -35,10 +35,14 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
     play: async ({ canvasElement }) => {
-        const trigger = within(canvasElement).getByRole("button", { name: "Accent color" });
+        const trigger = within(canvasElement).getByRole("button", {
+            name: "Accent color",
+        });
         await expect(trigger).toHaveAttribute("aria-expanded", "false");
         await userEvent.click(trigger);
-        await expect(await screen.findByRole("dialog", { name: "Accent color" })).toBeVisible();
+        await expect(
+            await screen.findByRole("dialog", { name: "Accent color" }),
+        ).toBeVisible();
         await expect(trigger).toHaveAttribute("aria-expanded", "true");
         await userEvent.keyboard("{Escape}");
         await expect(screen.queryByRole("dialog")).toBeNull();

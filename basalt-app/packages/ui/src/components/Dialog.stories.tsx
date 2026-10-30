@@ -39,10 +39,16 @@ type Story = StoryObj<typeof meta>;
 export const Playground: Story = {
     args: { trigger: <Button variant="secondary">Rename note</Button> },
     play: async ({ canvasElement }) => {
-        const trigger = within(canvasElement).getByRole("button", { name: "Rename note" });
+        const trigger = within(canvasElement).getByRole("button", {
+            name: "Rename note",
+        });
         await userEvent.click(trigger);
-        const dialog = await screen.findByRole("dialog", { name: "Rename note" });
-        await expect(dialog).toHaveAccessibleDescription("The file name on disk changes too.");
+        const dialog = await screen.findByRole("dialog", {
+            name: "Rename note",
+        });
+        await expect(dialog).toHaveAccessibleDescription(
+            "The file name on disk changes too.",
+        );
         await userEvent.keyboard("{Escape}");
         await expect(screen.queryByRole("dialog")).toBeNull();
         await expect(trigger).toHaveFocus();
@@ -52,13 +58,19 @@ export const Playground: Story = {
 export const Open: Story = {
     args: { open: true },
     play: async () => {
-        const dialog = await screen.findByRole("dialog", { name: "Rename note" });
-        await expect(dialog).toContainElement(document.activeElement as HTMLElement);
+        const dialog = await screen.findByRole("dialog", {
+            name: "Rename note",
+        });
+        await expect(dialog).toContainElement(
+            document.activeElement as HTMLElement,
+        );
         await userEvent.tab();
         await userEvent.tab();
         await userEvent.tab();
         await userEvent.tab();
-        await expect(dialog).toContainElement(document.activeElement as HTMLElement);
+        await expect(dialog).toContainElement(
+            document.activeElement as HTMLElement,
+        );
     },
 };
 

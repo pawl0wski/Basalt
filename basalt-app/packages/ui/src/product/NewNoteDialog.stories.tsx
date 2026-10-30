@@ -8,7 +8,13 @@ const meta = {
     component: NewNoteDialog,
     tags: ["!autodocs"],
     parameters: { layout: "fullscreen" },
-    args: { open: true, onOpenChange: fn(), name: "Untitled", onNameChange: fn(), onCreate: fn() },
+    args: {
+        open: true,
+        onOpenChange: fn(),
+        name: "Untitled",
+        onNameChange: fn(),
+        onCreate: fn(),
+    },
 } satisfies Meta<typeof NewNoteDialog>;
 
 export default meta;
@@ -31,18 +37,26 @@ export const Playground: Story = {
 };
 
 export const NameAlreadyExists: Story = {
-    args: { name: "Weekly plan", error: "A note named Weekly plan already exists. Choose another name." },
+    args: {
+        name: "Weekly plan",
+        error: "A note named Weekly plan already exists. Choose another name.",
+    },
     play: async ({ args }) => {
         const input = await screen.findByRole("textbox", { name: "Note name" });
         await expect(input).toBeInvalid();
-        await expect(screen.getByRole("button", { name: "Create note" })).toBeDisabled();
+        await expect(
+            screen.getByRole("button", { name: "Create note" }),
+        ).toBeDisabled();
         await userEvent.type(input, "{Enter}");
         await expect(args.onCreate).not.toHaveBeenCalled();
     },
 };
 
 export const InvalidCharacters: Story = {
-    args: { name: "plan/2026", error: "A note name cannot contain / \\ : * ? \" < > |." },
+    args: {
+        name: "plan/2026",
+        error: 'A note name cannot contain / \\ : * ? " < > |.',
+    },
 };
 
 export const Creating: Story = { args: { pending: true } };

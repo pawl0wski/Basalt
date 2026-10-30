@@ -8,7 +8,9 @@ export type ToastOptions = {
     duration?: number;
 };
 
-export const ToastContext = createContext<((options: ToastOptions) => void) | null>(null);
+export const ToastContext = createContext<
+    ((options: ToastOptions) => void) | null
+>(null);
 
 export function useToast() {
     const toast = useContext(ToastContext);

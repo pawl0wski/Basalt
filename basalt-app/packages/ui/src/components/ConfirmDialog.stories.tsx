@@ -13,8 +13,9 @@ const meta = {
         open: true,
         onOpenChange: fn(),
         onConfirm: fn(),
-        title: "Delete \"Weekly plan\"?",
-        description: "The file is moved to the trash and can be restored from there.",
+        title: 'Delete "Weekly plan"?',
+        description:
+            "The file is moved to the trash and can be restored from there.",
         confirmLabel: "Delete note",
         destructive: true,
     },
@@ -27,7 +28,9 @@ function Controlled(props: React.ComponentProps<typeof ConfirmDialog>) {
     const [open, setOpen] = useState(false);
     return (
         <div className="p-panel">
-            <Button variant="secondary" onClick={() => setOpen(true)}>Delete note</Button>
+            <Button variant="secondary" onClick={() => setOpen(true)}>
+                Delete note
+            </Button>
             <ConfirmDialog {...props} open={open} onOpenChange={setOpen} />
         </div>
     );
@@ -36,10 +39,18 @@ function Controlled(props: React.ComponentProps<typeof ConfirmDialog>) {
 export const Playground: Story = {
     render: (args) => <Controlled {...args} />,
     play: async ({ args, canvasElement }) => {
-        await userEvent.click(within(canvasElement).getByRole("button", { name: "Delete note" }));
-        const dialog = await screen.findByRole("alertdialog", { name: "Delete \"Weekly plan\"?" });
-        await expect(within(dialog).getByRole("button", { name: "Cancel" })).toHaveFocus();
-        await userEvent.click(within(dialog).getByRole("button", { name: "Delete note" }));
+        await userEvent.click(
+            within(canvasElement).getByRole("button", { name: "Delete note" }),
+        );
+        const dialog = await screen.findByRole("alertdialog", {
+            name: 'Delete "Weekly plan"?',
+        });
+        await expect(
+            within(dialog).getByRole("button", { name: "Cancel" }),
+        ).toHaveFocus();
+        await userEvent.click(
+            within(dialog).getByRole("button", { name: "Delete note" }),
+        );
         await expect(args.onConfirm).toHaveBeenCalledTimes(1);
         await expect(screen.queryByRole("alertdialog")).toBeNull();
     },
@@ -48,7 +59,9 @@ export const Playground: Story = {
 export const CancelIsFocused: Story = {
     play: async () => {
         const dialog = await screen.findByRole("alertdialog");
-        await expect(within(dialog).getByRole("button", { name: "Cancel" })).toHaveFocus();
+        await expect(
+            within(dialog).getByRole("button", { name: "Cancel" }),
+        ).toHaveFocus();
     },
 };
 

@@ -4,7 +4,11 @@ import { cn } from "../lib/utils";
 
 const variants = {
     info: { Icon: Info, icon: "text-icon-default", role: "status" },
-    warning: { Icon: TriangleAlert, icon: "text-status-warning", role: "status" },
+    warning: {
+        Icon: TriangleAlert,
+        icon: "text-status-warning",
+        role: "status",
+    },
     danger: { Icon: CircleAlert, icon: "text-status-danger", role: "alert" },
 } as const;
 
@@ -34,7 +38,10 @@ function Alert({
                 className,
             )}
         >
-            <Icon aria-hidden="true" className={cn("size-icon shrink-0", icon)} />
+            <Icon
+                aria-hidden="true"
+                className={cn("size-icon shrink-0", icon)}
+            />
             <div className="flex flex-col gap-in-group">
                 {title ? <p className="font-ui-strong">{title}</p> : null}
                 <div>{children}</div>

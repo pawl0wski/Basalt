@@ -16,7 +16,9 @@ describe("Tooltip", () => {
         expect(screen.queryByRole("tooltip")).toBeNull();
 
         await user.tab();
-        expect((await screen.findByRole("tooltip")).textContent).toBe("Create a note");
+        expect((await screen.findByRole("tooltip")).textContent).toBe(
+            "Create a note",
+        );
     });
 
     it("closes with Escape", async () => {
@@ -45,6 +47,10 @@ describe("Tooltip", () => {
         await user.tab();
         await screen.findByRole("tooltip");
 
-        expect(screen.getByRole("button", { name: "New" }).getAttribute("aria-describedby")).toBeTruthy();
+        expect(
+            screen
+                .getByRole("button", { name: "New" })
+                .getAttribute("aria-describedby"),
+        ).toBeTruthy();
     });
 });

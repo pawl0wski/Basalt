@@ -23,7 +23,13 @@ const textOn = (
 export const contrastPairs: ContrastPair[] = [
     ...textOn(
         "text-note",
-        ["surface-editor", "code-block-bg", "editor-selection", "state-selected"],
+        [
+            "surface-editor",
+            "code-block-bg",
+            "editor-selection",
+            "state-selected",
+            "tree-selected",
+        ],
         "R01.10, R01.1, WCAG 1.4.3",
     ),
     ...textOn(
@@ -135,15 +141,18 @@ export const contrastPairs: ContrastPair[] = [
         source: "tokens.md rule 15",
         note: "Controls never stand on a selected row.",
     },
-    ...["surface-frame", "surface-editor", "surface-raised", "state-selected"].map(
-        (background): ContrastPair => ({
-            foreground: "focus-ring",
-            background,
-            kind: "ui",
-            verdict: "pass",
-            source: "WCAG 2.4.11, 1.4.11",
-        }),
-    ),
+    ...[
+        "surface-frame",
+        "surface-editor",
+        "surface-raised",
+        "state-selected",
+    ].map((background): ContrastPair => ({
+        foreground: "focus-ring",
+        background,
+        kind: "ui",
+        verdict: "pass",
+        source: "WCAG 2.4.11, 1.4.11",
+    })),
     {
         foreground: "focus-ring",
         background: "action-primary",
@@ -152,15 +161,13 @@ export const contrastPairs: ContrastPair[] = [
         source: "tokens.md contrast table",
         note: "Fixed by the 2 px offset: the ring sits on the surface behind the control.",
     },
-    ...["surface-frame", "surface-editor"].map(
-        (background): ContrastPair => ({
-            foreground: "icon-default",
-            background,
-            kind: "ui",
-            verdict: "pass",
-            source: "R02.4, WCAG 1.4.11",
-        }),
-    ),
+    ...["surface-frame", "surface-editor"].map((background): ContrastPair => ({
+        foreground: "icon-default",
+        background,
+        kind: "ui",
+        verdict: "pass",
+        source: "R02.4, WCAG 1.4.11",
+    })),
     {
         foreground: "icon-active",
         background: "surface-frame",
@@ -174,7 +181,15 @@ export const contrastPairs: ContrastPair[] = [
         kind: "ui",
         verdict: "fail",
         source: "tokens.md contrast table",
-        note: "Shade alone is not a state indicator. Add the 2 px indicator (tree-selected-indicator).",
+        note: "Shade alone is 1.36:1. Owner decision 2026-10-30 (option C): a selected list or tree row is shown by fill and rounded shape, without an accent bar.",
+    },
+    {
+        foreground: "tree-selected",
+        background: "surface-card",
+        kind: "ui",
+        verdict: "fail",
+        source: "Owner decision 2026-10-30 (option C)",
+        note: "The tinted fill of a selected row is 1.57:1, an accepted deviation from 3:1 (VS Code does the same). The selected row text is text-note.",
     },
     {
         foreground: "surface-editor",

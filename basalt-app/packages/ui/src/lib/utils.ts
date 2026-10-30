@@ -25,6 +25,7 @@ const colors = [
     "code-block-bg",
     "button-secondary-bg",
     "editor-selection",
+    "tree-selected",
 ];
 
 const fontSizes = [
@@ -56,7 +57,6 @@ const spacing = [
     "activity-button",
     "icon-button",
     "tab-indicator",
-    "tree-indicator",
     "none",
 ];
 

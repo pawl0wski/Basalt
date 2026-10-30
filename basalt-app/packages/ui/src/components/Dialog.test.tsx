@@ -20,19 +20,26 @@ describe("Dialog", () => {
         await user.click(screen.getByRole("button", { name: "Rename" }));
 
         expect(
-            screen.getByRole("dialog", { name: "Rename note", description: "The file name changes too." }),
+            screen.getByRole("dialog", {
+                name: "Rename note",
+                description: "The file name changes too.",
+            }),
         ).toBeTruthy();
     });
 
     it("closes with Escape and returns focus to the trigger", async () => {
         const user = userEvent.setup();
 
-        render(<Dialog trigger={<Button>Rename</Button>} title="Rename note" />);
+        render(
+            <Dialog trigger={<Button>Rename</Button>} title="Rename note" />,
+        );
         await user.click(screen.getByRole("button", { name: "Rename" }));
         await user.keyboard("{Escape}");
 
         expect(screen.queryByRole("dialog")).toBeNull();
-        expect(document.activeElement).toBe(screen.getByRole("button", { name: "Rename" }));
+        expect(document.activeElement).toBe(
+            screen.getByRole("button", { name: "Rename" }),
+        );
     });
 
     it("closes from the close button", async () => {
@@ -57,11 +64,19 @@ describe("Dialog", () => {
         );
         for (let index = 0; index < 4; index += 1) await user.tab();
 
-        expect(screen.getByRole("dialog").contains(document.activeElement)).toBe(true);
+        expect(
+            screen.getByRole("dialog").contains(document.activeElement),
+        ).toBe(true);
     });
 
     it("renders the footer actions", () => {
-        render(<Dialog open title="Rename note" footer={<Button>Save note</Button>} />);
+        render(
+            <Dialog
+                open
+                title="Rename note"
+                footer={<Button>Save note</Button>}
+            />,
+        );
 
         expect(screen.getByRole("button", { name: "Save note" })).toBeTruthy();
     });

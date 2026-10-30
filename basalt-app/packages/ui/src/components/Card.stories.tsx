@@ -13,10 +13,19 @@ const meta = {
     render: (args) => (
         <div className="w-full max-w-prose">
             <Card {...args}>
-                <CardRow title="Word and character count" description="Shown at the right of the status bar.">
-                    <Switch aria-label="Word and character count" defaultChecked />
+                <CardRow
+                    title="Word and character count"
+                    description="Shown at the right of the status bar."
+                >
+                    <Switch
+                        aria-label="Word and character count"
+                        defaultChecked
+                    />
                 </CardRow>
-                <CardRow title="Sync status" description="Shows Synced, Syncing or an error in words.">
+                <CardRow
+                    title="Sync status"
+                    description="Shows Synced, Syncing or an error in words."
+                >
                     <Switch aria-label="Sync status" defaultChecked />
                 </CardRow>
             </Card>
@@ -30,7 +39,9 @@ type Story = StoryObj<typeof meta>;
 export const Playground: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(canvas.getByRole("region", { name: "Status bar" })).toBeVisible();
+        await expect(
+            canvas.getByRole("region", { name: "Status bar" }),
+        ).toBeVisible();
         await expect(canvas.getAllByRole("switch")).toHaveLength(2);
     },
 };
@@ -40,7 +51,10 @@ export const WithSelect: Story = {
     render: (args) => (
         <div className="w-full max-w-prose">
             <Card {...args}>
-                <CardRow title="Interface text size" description="Menus and settings. Notes keep their own size.">
+                <CardRow
+                    title="Interface text size"
+                    description="Menus and settings. Notes keep their own size."
+                >
                     <Select aria-label="Interface text size">
                         <option>System default</option>
                         <option>Small</option>

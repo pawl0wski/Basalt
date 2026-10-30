@@ -11,7 +11,9 @@ describe("Card", () => {
         );
 
         expect(screen.getByRole("region", { name: "Status bar" })).toBeTruthy();
-        expect(screen.getByRole("heading", { level: 2, name: "Status bar" })).toBeTruthy();
+        expect(
+            screen.getByRole("heading", { level: 2, name: "Status bar" }),
+        ).toBeTruthy();
     });
 
     it("uses the requested heading level", () => {

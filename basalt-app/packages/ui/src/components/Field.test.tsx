@@ -58,7 +58,9 @@ describe("Field", () => {
             </Field>,
         );
 
-        expect(screen.getByRole("textbox").hasAttribute("aria-invalid")).toBe(false);
+        expect(screen.getByRole("textbox").hasAttribute("aria-invalid")).toBe(
+            false,
+        );
     });
 
     it("tells assistive technology that a field is required and shows optional ones", () => {
@@ -78,7 +80,9 @@ describe("Field", () => {
                 .getByRole("textbox", { name: "Workspace name" })
                 .getAttribute("aria-required"),
         ).toBe("true");
-        expect(screen.getByLabelText(/Description/).hasAttribute("aria-required")).toBe(false);
+        expect(
+            screen.getByLabelText(/Description/).hasAttribute("aria-required"),
+        ).toBe(false);
         expect(screen.getByText("(optional)")).toBeTruthy();
     });
 

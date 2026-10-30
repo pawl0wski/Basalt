@@ -17,7 +17,9 @@ describe("Popover", () => {
 
         await user.click(screen.getByRole("button", { name: "Accent" }));
 
-        expect(screen.getByRole("dialog", { name: "Accent color" })).toBeTruthy();
+        expect(
+            screen.getByRole("dialog", { name: "Accent color" }),
+        ).toBeTruthy();
         expect(screen.getByText("Choose an accent.")).toBeTruthy();
     });
 
@@ -48,6 +50,8 @@ describe("Popover", () => {
         await user.keyboard("{Escape}");
 
         expect(screen.queryByRole("dialog")).toBeNull();
-        expect(document.activeElement).toBe(screen.getByRole("button", { name: "Accent" }));
+        expect(document.activeElement).toBe(
+            screen.getByRole("button", { name: "Accent" }),
+        );
     });
 });

@@ -8,7 +8,12 @@ const meta = {
     component: SaveStatus,
     tags: ["!autodocs"],
     args: { state: "saved" },
-    argTypes: { state: { control: "inline-radio", options: ["saved", "saving", "unsaved"] } },
+    argTypes: {
+        state: {
+            control: "inline-radio",
+            options: ["saved", "saving", "unsaved"],
+        },
+    },
 } satisfies Meta<typeof SaveStatus>;
 
 export default meta;
@@ -16,7 +21,9 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
     play: async ({ canvasElement }) => {
-        await expect(within(canvasElement).getByRole("status")).toHaveTextContent("Saved");
+        await expect(
+            within(canvasElement).getByRole("status"),
+        ).toHaveTextContent("Saved");
     },
 };
 
@@ -32,7 +39,9 @@ export const AllStates: Story = {
 
 export const InStatusBar: Story = {
     parameters: { layout: "fullscreen" },
-    render: () => <StatusBar wordCount={1204} characterCount={7311} saveState="saving" />,
+    render: () => (
+        <StatusBar wordCount={1204} characterCount={7311} saveState="saving" />
+    ),
 };
 
 export const StatusBarWithoutCounts: Story = {

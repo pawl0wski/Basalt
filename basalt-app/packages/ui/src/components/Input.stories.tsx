@@ -7,9 +7,19 @@ const meta = {
     title: "Primitives/Input",
     component: Input,
     tags: ["!autodocs"],
-    args: { "aria-label": "Note title", placeholder: "Untitled note", onChange: fn() },
+    args: {
+        "aria-label": "Note title",
+        placeholder: "Untitled note",
+        onChange: fn(),
+    },
     argTypes: { disabled: { control: "boolean" } },
-    decorators: [(Story) => <div className="w-full max-w-prose"><Story /></div>],
+    decorators: [
+        (Story) => (
+            <div className="w-full max-w-prose">
+                <Story />
+            </div>
+        ),
+    ],
 } satisfies Meta<typeof Input>;
 
 export default meta;
@@ -17,7 +27,9 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
     play: async ({ args, canvasElement }) => {
-        const input = within(canvasElement).getByRole("textbox", { name: "Note title" });
+        const input = within(canvasElement).getByRole("textbox", {
+            name: "Note title",
+        });
         await userEvent.type(input, "Weekly plan");
         await expect(input).toHaveValue("Weekly plan");
         await expect(args.onChange).toHaveBeenCalledTimes(11);
@@ -46,8 +58,12 @@ export const States: Story = {
                 <div className="w-full max-w-prose">
                     <Input
                         {...args}
-                        defaultValue={column === "With value" ? "Weekly plan" : undefined}
-                        aria-invalid={row.label === "Invalid" ? true : undefined}
+                        defaultValue={
+                            column === "With value" ? "Weekly plan" : undefined
+                        }
+                        aria-invalid={
+                            row.label === "Invalid" ? true : undefined
+                        }
                         disabled={row.label === "Disabled"}
                     />
                 </div>
@@ -65,5 +81,11 @@ export const LongValue: Story = {
 
 export const NarrowScreen: Story = {
     globals: { viewport: { value: "mobile" } },
-    decorators: [(Story) => <div className="w-full p-panel"><Story /></div>],
+    decorators: [
+        (Story) => (
+            <div className="w-full p-panel">
+                <Story />
+            </div>
+        ),
+    ],
 };

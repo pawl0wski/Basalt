@@ -26,7 +26,9 @@ describe("IconButton", () => {
         );
         await user.tab();
 
-        expect((await screen.findByRole("tooltip")).textContent).toBe("Open settings");
+        expect((await screen.findByRole("tooltip")).textContent).toBe(
+            "Open settings",
+        );
     });
 
     it("lets a more specific tooltip replace the default text", async () => {
@@ -39,8 +41,12 @@ describe("IconButton", () => {
         );
         await user.tab();
 
-        expect((await screen.findByRole("tooltip")).textContent).toBe("Settings (Ctrl+,)");
-        expect(screen.getByRole("button", { name: "Open settings" })).toBeTruthy();
+        expect((await screen.findByRole("tooltip")).textContent).toBe(
+            "Settings (Ctrl+,)",
+        );
+        expect(
+            screen.getByRole("button", { name: "Open settings" }),
+        ).toBeTruthy();
     });
 
     it("has no tooltip when it is turned off", async () => {

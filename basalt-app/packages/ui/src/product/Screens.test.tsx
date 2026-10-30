@@ -11,16 +11,25 @@ describe("WelcomeScreen", () => {
         const onOpenWorkspace = vi.fn();
 
         render(<WelcomeScreen onOpenWorkspace={onOpenWorkspace} />);
-        await user.click(screen.getByRole("button", { name: "Open folder as workspace" }));
+        await user.click(
+            screen.getByRole("button", { name: "Open folder as workspace" }),
+        );
 
         expect(screen.getAllByRole("button")).toHaveLength(1);
         expect(onOpenWorkspace).toHaveBeenCalledOnce();
     });
 
     it("explains why the workspace is unavailable", () => {
-        render(<WelcomeScreen onOpenWorkspace={() => {}} notice="The folder Personal notes is no longer available." />);
+        render(
+            <WelcomeScreen
+                onOpenWorkspace={() => {}}
+                notice="The folder Personal notes is no longer available."
+            />,
+        );
 
-        expect(screen.getByRole("status").textContent).toContain("The folder Personal notes is no longer available.");
+        expect(screen.getByRole("status").textContent).toContain(
+            "The folder Personal notes is no longer available.",
+        );
     });
 });
 
@@ -31,32 +40,51 @@ describe("NoteSidebar", () => {
         const onNewNote = vi.fn();
 
         render(
-            <NoteSidebar workspaceName="Personal notes" onChangeWorkspace={onChangeWorkspace} onNewNote={onNewNote}>
+            <NoteSidebar
+                workspaceName="Personal notes"
+                onChangeWorkspace={onChangeWorkspace}
+                onNewNote={onNewNote}
+            >
                 <p>list</p>
             </NoteSidebar>,
         );
         await user.click(screen.getByRole("button", { name: "New note" }));
-        await user.click(screen.getByRole("button", { name: "Change workspace" }));
+        await user.click(
+            screen.getByRole("button", { name: "Change workspace" }),
+        );
 
-        expect(screen.getByRole("navigation", { name: "Workspace" }).textContent).toContain("Personal notes");
+        expect(
+            screen.getByRole("navigation", { name: "Workspace" }).textContent,
+        ).toContain("Personal notes");
         expect(onNewNote).toHaveBeenCalledOnce();
         expect(onChangeWorkspace).toHaveBeenCalledOnce();
     });
 
     it("shows a notice above the list only when given", () => {
         const { rerender } = render(
-            <NoteSidebar workspaceName="W" onChangeWorkspace={() => {}} onNewNote={() => {}}>
+            <NoteSidebar
+                workspaceName="W"
+                onChangeWorkspace={() => {}}
+                onNewNote={() => {}}
+            >
                 <p>list</p>
             </NoteSidebar>,
         );
         expect(screen.queryByRole("status")).toBeNull();
 
         rerender(
-            <NoteSidebar workspaceName="W" onChangeWorkspace={() => {}} onNewNote={() => {}} notice="The list refreshes when the window is focused.">
+            <NoteSidebar
+                workspaceName="W"
+                onChangeWorkspace={() => {}}
+                onNewNote={() => {}}
+                notice="The list refreshes when the window is focused."
+            >
                 <p>list</p>
             </NoteSidebar>,
         );
-        expect(screen.getByRole("status").textContent).toContain("refreshes when the window is focused");
+        expect(screen.getByRole("status").textContent).toContain(
+            "refreshes when the window is focused",
+        );
     });
 });
 
@@ -75,15 +103,26 @@ describe("ImagePlaceholder", () => {
     });
 
     it("names the missing file", () => {
-        render(<ImagePlaceholder problem="not-found" path="attachments/x.png" />);
+        render(
+            <ImagePlaceholder problem="not-found" path="attachments/x.png" />,
+        );
 
-        expect(screen.getByText("Image not found: attachments/x.png")).toBeTruthy();
+        expect(
+            screen.getByText("Image not found: attachments/x.png"),
+        ).toBeTruthy();
     });
 });
 
 describe("NoteImage", () => {
     it("keeps the alt text and reserves the final height from its dimensions", () => {
-        render(<NoteImage src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Whiteboard photo" width={1600} height={900} />);
+        render(
+            <NoteImage
+                src="data:image/gif;base64,R0lGODlhAQABAAAAACw="
+                alt="Whiteboard photo"
+                width={1600}
+                height={900}
+            />,
+        );
 
         const image = screen.getByRole("img", { name: "Whiteboard photo" });
         expect(image.getAttribute("width")).toBe("1600");
@@ -91,7 +130,12 @@ describe("NoteImage", () => {
     });
 
     it("sets no aspect ratio when the dimensions are unknown", () => {
-        render(<NoteImage src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Photo" />);
+        render(
+            <NoteImage
+                src="data:image/gif;base64,R0lGODlhAQABAAAAACw="
+                alt="Photo"
+            />,
+        );
 
         expect(screen.getByRole("img").style.aspectRatio).toBe("");
     });

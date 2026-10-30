@@ -17,7 +17,8 @@ const classStart = String.raw`(?<![\w-])(?:[a-z0-9-]+:)*`;
 const rules: { category: string; pattern: RegExp }[] = [
     {
         category: "color literal",
-        pattern: /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(?![\w-])|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color-mix|color)\(/g,
+        pattern:
+            /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(?![\w-])|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color-mix|color)\(/g,
     },
     {
         category: "Tailwind palette class",
@@ -28,7 +29,10 @@ const rules: { category: string; pattern: RegExp }[] = [
     },
     {
         category: "arbitrary Tailwind value",
-        pattern: new RegExp(`${classStart}!?-?[a-z][a-z0-9-]*-\\[[^\\]\\s]+\\](?!:)`, "g"),
+        pattern: new RegExp(
+            `${classStart}!?-?[a-z][a-z0-9-]*-\\[[^\\]\\s]+\\](?!:)`,
+            "g",
+        ),
     },
     {
         category: "numeric scale class (no such token)",
@@ -46,7 +50,10 @@ const rules: { category: string; pattern: RegExp }[] = [
     },
     {
         category: "font size outside the tokens",
-        pattern: new RegExp(`${classStart}text-(?:xs|sm|base|lg|xl|[2-9]xl)(?![\\w-])`, "g"),
+        pattern: new RegExp(
+            `${classStart}text-(?:xs|sm|base|lg|xl|[2-9]xl)(?![\\w-])`,
+            "g",
+        ),
     },
 ];
 
@@ -62,13 +69,17 @@ function proseLines(source: string): string[] {
             }
             return "";
         }
-        return skipping ? "" : text.replace(/`[^`]*`/g, (span) => " ".repeat(span.length));
+        return skipping
+            ? ""
+            : text.replace(/`[^`]*`/g, (span) => " ".repeat(span.length));
     });
 }
 
 export function findViolations(source: string, file: string): Violation[] {
     const violations: Violation[] = [];
-    const lines = file.endsWith(".mdx") ? proseLines(source) : source.split("\n");
+    const lines = file.endsWith(".mdx")
+        ? proseLines(source)
+        : source.split("\n");
     lines.forEach((text, index) => {
         for (const { category, pattern } of rules) {
             for (const match of text.matchAll(pattern)) {

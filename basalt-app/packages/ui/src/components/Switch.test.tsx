@@ -25,38 +25,62 @@ describe("Switch", () => {
         await user.keyboard(" ");
 
         expect(onCheckedChange.mock.calls).toEqual([[true], [false], [true]]);
-        expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe("true");
+        expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe(
+            "true",
+        );
     });
 
     it("follows the checked prop when controlled and only reports the request", async () => {
         const user = userEvent.setup();
         const onCheckedChange = vi.fn();
 
-        render(<Switch label="Sync notes" checked={false} onCheckedChange={onCheckedChange} />);
+        render(
+            <Switch
+                label="Sync notes"
+                checked={false}
+                onCheckedChange={onCheckedChange}
+            />,
+        );
         await user.click(screen.getByRole("switch"));
 
         expect(onCheckedChange).toHaveBeenCalledWith(true);
-        expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe("false");
+        expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe(
+            "false",
+        );
     });
 
     it("works as a controlled component inside a parent", async () => {
         const user = userEvent.setup();
         function Parent() {
             const [on, setOn] = useState(true);
-            return <Switch label="Sync notes" checked={on} onCheckedChange={setOn} />;
+            return (
+                <Switch
+                    label="Sync notes"
+                    checked={on}
+                    onCheckedChange={setOn}
+                />
+            );
         }
 
         render(<Parent />);
         await user.click(screen.getByRole("switch"));
 
-        expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe("false");
+        expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe(
+            "false",
+        );
     });
 
     it("does not toggle while disabled", async () => {
         const user = userEvent.setup();
         const onCheckedChange = vi.fn();
 
-        render(<Switch label="Sync notes" disabled onCheckedChange={onCheckedChange} />);
+        render(
+            <Switch
+                label="Sync notes"
+                disabled
+                onCheckedChange={onCheckedChange}
+            />,
+        );
         await user.click(screen.getByRole("switch"));
         await user.click(screen.getByText("Sync notes"));
 
@@ -65,7 +89,9 @@ describe("Switch", () => {
 
     it("does not submit a surrounding form", async () => {
         const user = userEvent.setup();
-        const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault());
+        const onSubmit = vi.fn((event: React.FormEvent) =>
+            event.preventDefault(),
+        );
 
         render(
             <form onSubmit={onSubmit}>

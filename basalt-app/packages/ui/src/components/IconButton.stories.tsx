@@ -26,9 +26,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
     play: async ({ args, canvasElement }) => {
-        const button = within(canvasElement).getByRole("button", { name: "Open settings" });
+        const button = within(canvasElement).getByRole("button", {
+            name: "Open settings",
+        });
         await userEvent.hover(button);
-        await expect(await screen.findByRole("tooltip")).toHaveTextContent("Open settings");
+        await expect(await screen.findByRole("tooltip")).toHaveTextContent(
+            "Open settings",
+        );
         await userEvent.unhover(button);
         await userEvent.click(button);
         await userEvent.keyboard(" ");
@@ -39,9 +43,15 @@ export const Playground: Story = {
 export const Variants: Story = {
     render: (args) => (
         <div className="flex items-center gap-in-group">
-            <IconButton {...args} variant="ghost" aria-label="New note"><FilePlus aria-hidden="true" /></IconButton>
-            <IconButton {...args} variant="ghost" aria-label="New folder"><FolderPlus aria-hidden="true" /></IconButton>
-            <IconButton {...args} variant="secondary" aria-label="Search notes"><Search aria-hidden="true" /></IconButton>
+            <IconButton {...args} variant="ghost" aria-label="New note">
+                <FilePlus aria-hidden="true" />
+            </IconButton>
+            <IconButton {...args} variant="ghost" aria-label="New folder">
+                <FolderPlus aria-hidden="true" />
+            </IconButton>
+            <IconButton {...args} variant="secondary" aria-label="Search notes">
+                <Search aria-hidden="true" />
+            </IconButton>
         </div>
     ),
 };
@@ -72,9 +82,15 @@ export const NarrowScreen: Story = {
     globals: { viewport: { value: "mobile" } },
     render: (args) => (
         <div className="flex w-full items-center justify-end gap-in-group p-panel">
-            <IconButton {...args} aria-label="New note"><FilePlus aria-hidden="true" /></IconButton>
-            <IconButton {...args} aria-label="New folder"><FolderPlus aria-hidden="true" /></IconButton>
-            <IconButton {...args} aria-label="Open settings"><Settings aria-hidden="true" /></IconButton>
+            <IconButton {...args} aria-label="New note">
+                <FilePlus aria-hidden="true" />
+            </IconButton>
+            <IconButton {...args} aria-label="New folder">
+                <FolderPlus aria-hidden="true" />
+            </IconButton>
+            <IconButton {...args} aria-label="Open settings">
+                <Settings aria-hidden="true" />
+            </IconButton>
         </div>
     ),
 };

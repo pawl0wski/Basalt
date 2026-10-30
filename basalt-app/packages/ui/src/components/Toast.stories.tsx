@@ -6,7 +6,13 @@ import { useToast } from "./toastContext";
 
 const onUndo = fn();
 
-function Demo({ withAction = false, duration }: { withAction?: boolean; duration?: number }) {
+function Demo({
+    withAction = false,
+    duration,
+}: {
+    withAction?: boolean;
+    duration?: number;
+}) {
     const toast = useToast();
     return (
         <Button
@@ -16,7 +22,9 @@ function Demo({ withAction = false, duration }: { withAction?: boolean; duration
                     title: "Note moved to trash",
                     description: "Weekly plan",
                     duration,
-                    action: withAction ? { label: "Undo", onClick: onUndo } : undefined,
+                    action: withAction
+                        ? { label: "Undo", onClick: onUndo }
+                        : undefined,
                 })
             }
         >
@@ -43,8 +51,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
     play: async ({ canvasElement }) => {
-        await userEvent.click(within(canvasElement).getByRole("button", { name: "Delete note" }));
-        await expect((await screen.findAllByText("Note moved to trash"))[0]).toBeVisible();
+        await userEvent.click(
+            within(canvasElement).getByRole("button", { name: "Delete note" }),
+        );
+        await expect(
+            (await screen.findAllByText("Note moved to trash"))[0],
+        ).toBeVisible();
         await userEvent.click(screen.getByRole("button", { name: "Dismiss" }));
         await expect(screen.queryByText("Weekly plan")).toBeNull();
     },
@@ -57,8 +69,12 @@ export const WithAction: Story = {
         </ToastProvider>
     ),
     play: async ({ canvasElement }) => {
-        await userEvent.click(within(canvasElement).getByRole("button", { name: "Delete note" }));
-        await userEvent.click(await screen.findByRole("button", { name: "Undo" }));
+        await userEvent.click(
+            within(canvasElement).getByRole("button", { name: "Delete note" }),
+        );
+        await userEvent.click(
+            await screen.findByRole("button", { name: "Undo" }),
+        );
         await expect(onUndo).toHaveBeenCalledTimes(1);
     },
 };
@@ -71,7 +87,11 @@ export const NarrowScreen: Story = {
         </ToastProvider>
     ),
     play: async ({ canvasElement }) => {
-        await userEvent.click(within(canvasElement).getByRole("button", { name: "Delete note" }));
-        await expect((await screen.findAllByText("Note moved to trash"))[0]).toBeVisible();
+        await userEvent.click(
+            within(canvasElement).getByRole("button", { name: "Delete note" }),
+        );
+        await expect(
+            (await screen.findAllByText("Note moved to trash"))[0],
+        ).toBeVisible();
     },
 };

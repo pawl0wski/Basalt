@@ -16,10 +16,14 @@ describe("StatusIndicator", () => {
 
     it("uses the danger color only for errors and the warning color only for conflicts", () => {
         const { rerender } = render(<StatusIndicator status="error" />);
-        expect(screen.getByRole("status").className).toContain("text-status-danger");
+        expect(screen.getByRole("status").className).toContain(
+            "text-status-danger",
+        );
 
         rerender(<StatusIndicator status="conflict" />);
-        expect(screen.getByRole("status").className).toContain("text-status-warning");
+        expect(screen.getByRole("status").className).toContain(
+            "text-status-warning",
+        );
 
         rerender(<StatusIndicator status="synced" />);
         const className = screen.getByRole("status").className;
@@ -30,7 +34,10 @@ describe("StatusIndicator", () => {
         render(<StatusIndicator status="synced" />);
 
         expect(
-            screen.getByRole("status").querySelector("svg")?.getAttribute("aria-hidden"),
+            screen
+                .getByRole("status")
+                .querySelector("svg")
+                ?.getAttribute("aria-hidden"),
         ).toBe("true");
     });
 });

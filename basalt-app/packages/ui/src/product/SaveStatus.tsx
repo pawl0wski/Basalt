@@ -4,7 +4,11 @@ import { cn } from "../lib/utils";
 const states = {
     saved: { text: "Saved", Icon: Check, tone: "text-text-muted" },
     saving: { text: "Saving…", Icon: LoaderCircle, tone: "text-text-muted" },
-    unsaved: { text: "Not saved", Icon: CircleAlert, tone: "text-status-warning" },
+    unsaved: {
+        text: "Not saved",
+        Icon: CircleAlert,
+        tone: "text-status-warning",
+    },
 } as const;
 
 type SaveState = keyof typeof states;

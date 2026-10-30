@@ -43,7 +43,9 @@ function SaveFailedDialog({
                     <Button variant="destructive" onClick={onDiscard}>
                         Discard changes
                     </Button>
-                    <Button ref={retryRef} onClick={onRetry}>Retry</Button>
+                    <Button ref={retryRef} onClick={onRetry}>
+                        Retry
+                    </Button>
                 </>
             }
         />

@@ -12,7 +12,9 @@ describe("Button", () => {
 
     it("does not submit a surrounding form unless asked to", async () => {
         const user = userEvent.setup();
-        const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault());
+        const onSubmit = vi.fn((event: React.FormEvent) =>
+            event.preventDefault(),
+        );
 
         render(
             <form onSubmit={onSubmit}>

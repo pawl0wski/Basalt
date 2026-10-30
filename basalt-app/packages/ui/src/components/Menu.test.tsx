@@ -30,11 +30,9 @@ describe("Menu", () => {
         await user.keyboard("{Enter}");
 
         expect(screen.getByRole("menu", { name: "Actions" })).toBeTruthy();
-        expect(screen.getAllByRole("menuitem").map((item) => item.textContent)).toEqual([
-            "Rename",
-            "Duplicate",
-            "Delete note",
-        ]);
+        expect(
+            screen.getAllByRole("menuitem").map((item) => item.textContent),
+        ).toEqual(["Rename", "Duplicate", "Delete note"]);
     });
 
     it("selects with the arrow keys and Enter, then closes", async () => {
@@ -71,7 +69,9 @@ describe("Menu", () => {
         await user.keyboard("{Escape}");
 
         expect(screen.queryByRole("menu")).toBeNull();
-        expect(document.activeElement).toBe(screen.getByRole("button", { name: "Actions" }));
+        expect(document.activeElement).toBe(
+            screen.getByRole("button", { name: "Actions" }),
+        );
     });
 
     it("marks disabled items as disabled", async () => {
@@ -81,6 +81,10 @@ describe("Menu", () => {
         await user.tab();
         await user.keyboard("{Enter}");
 
-        expect(screen.getByRole("menuitem", { name: "Duplicate" }).getAttribute("aria-disabled")).toBe("true");
+        expect(
+            screen
+                .getByRole("menuitem", { name: "Duplicate" })
+                .getAttribute("aria-disabled"),
+        ).toBe("true");
     });
 });

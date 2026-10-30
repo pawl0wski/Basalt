@@ -11,7 +11,12 @@ export { ShapeDepth } from "./ShapeDepth";
 export { SpacingRelations } from "./SpacingRelations";
 export { StateMatrix } from "./StateMatrix";
 export { TypeRoles } from "./TypeRoles";
-export { longNameNote, manyNotes, sampleNotes, workspaceName } from "./sampleData";
+export {
+    longNameNote,
+    manyNotes,
+    sampleNotes,
+    workspaceName,
+} from "./sampleData";
 export { sampleImage } from "./sampleImage";
 export { catalog } from "./catalog";
 export { ComponentCatalog, ComponentTable } from "./ComponentCatalog";

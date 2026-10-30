@@ -19,7 +19,9 @@ describe("Select", () => {
             </Field>,
         );
 
-        expect(screen.getByRole("combobox", { name: "Text size" })).toBeTruthy();
+        expect(
+            screen.getByRole("combobox", { name: "Text size" }),
+        ).toBeTruthy();
     });
 
     it("reports the chosen option", async () => {
@@ -34,7 +36,9 @@ describe("Select", () => {
         await user.selectOptions(screen.getByRole("combobox"), "small");
 
         expect(onChange).toHaveBeenCalledOnce();
-        expect((screen.getByRole("combobox") as HTMLSelectElement).value).toBe("small");
+        expect((screen.getByRole("combobox") as HTMLSelectElement).value).toBe(
+            "small",
+        );
     });
 
     it("exposes a Field error to assistive technology", () => {
@@ -57,8 +61,12 @@ describe("Select", () => {
                 {options}
             </Select>,
         );
-        await user.selectOptions(screen.getByRole("combobox"), "small").catch(() => undefined);
+        await user
+            .selectOptions(screen.getByRole("combobox"), "small")
+            .catch(() => undefined);
 
-        expect((screen.getByRole("combobox") as HTMLSelectElement).value).toBe("system");
+        expect((screen.getByRole("combobox") as HTMLSelectElement).value).toBe(
+            "system",
+        );
     });
 });

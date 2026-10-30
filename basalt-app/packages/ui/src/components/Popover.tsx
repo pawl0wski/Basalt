@@ -21,8 +21,14 @@ function Popover({
     onOpenChange,
 }: PopoverProps) {
     return (
-        <PopoverPrimitive.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
-            <PopoverPrimitive.Trigger asChild>{trigger}</PopoverPrimitive.Trigger>
+        <PopoverPrimitive.Root
+            open={open}
+            defaultOpen={defaultOpen}
+            onOpenChange={onOpenChange}
+        >
+            <PopoverPrimitive.Trigger asChild>
+                {trigger}
+            </PopoverPrimitive.Trigger>
             <PopoverPrimitive.Portal>
                 <PopoverPrimitive.Content
                     aria-label={label}

@@ -13,10 +13,14 @@ function ToastProvider({ children }: { children: ReactNode }) {
     const [toasts, setToasts] = useState<ToastItem[]>([]);
 
     const toast = useCallback((options: ToastOptions) => {
-        setToasts((current) => [...current, { ...options, id: Date.now() + current.length }]);
+        setToasts((current) => [
+            ...current,
+            { ...options, id: Date.now() + current.length },
+        ]);
     }, []);
 
-    const remove = (id: number) => setToasts((current) => current.filter((item) => item.id !== id));
+    const remove = (id: number) =>
+        setToasts((current) => current.filter((item) => item.id !== id));
 
     return (
         <ToastContext.Provider value={toast}>
@@ -41,8 +45,14 @@ function ToastProvider({ children }: { children: ReactNode }) {
                                 </ToastPrimitive.Description>
                             ) : null}
                             {item.action ? (
-                                <ToastPrimitive.Action altText={item.action.label} asChild>
-                                    <Button variant="secondary" onClick={item.action.onClick}>
+                                <ToastPrimitive.Action
+                                    altText={item.action.label}
+                                    asChild
+                                >
+                                    <Button
+                                        variant="secondary"
+                                        onClick={item.action.onClick}
+                                    >
                                         {item.action.label}
                                     </Button>
                                 </ToastPrimitive.Action>

@@ -11,10 +11,20 @@ type StatusBarProps = {
     className?: string;
 };
 
-function StatusBar({ wordCount, characterCount, saveState, trailing, className }: StatusBarProps) {
+function StatusBar({
+    wordCount,
+    characterCount,
+    saveState,
+    trailing,
+    className,
+}: StatusBarProps) {
     const counts = [
-        wordCount === undefined ? null : `${wordCount.toLocaleString("en")} words`,
-        characterCount === undefined ? null : `${characterCount.toLocaleString("en")} characters`,
+        wordCount === undefined
+            ? null
+            : `${wordCount.toLocaleString("en")} words`,
+        characterCount === undefined
+            ? null
+            : `${characterCount.toLocaleString("en")} characters`,
     ].filter(Boolean);
 
     return (

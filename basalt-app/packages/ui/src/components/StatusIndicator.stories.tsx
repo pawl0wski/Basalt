@@ -8,7 +8,10 @@ const meta = {
     tags: ["!autodocs"],
     args: { status: "synced" },
     argTypes: {
-        status: { control: "inline-radio", options: ["synced", "syncing", "conflict", "error"] },
+        status: {
+            control: "inline-radio",
+            options: ["synced", "syncing", "conflict", "error"],
+        },
     },
 } satisfies Meta<typeof StatusIndicator>;
 
@@ -17,7 +20,9 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {
     play: async ({ canvasElement }) => {
-        await expect(within(canvasElement).getByRole("status")).toHaveTextContent("Synced");
+        await expect(
+            within(canvasElement).getByRole("status"),
+        ).toHaveTextContent("Synced");
     },
 };
 
@@ -45,7 +50,9 @@ export const NarrowScreen: Story = {
     globals: { viewport: { value: "mobile" } },
     render: () => (
         <div className="flex h-status-bar w-full items-center justify-between bg-surface-frame px-between-groups">
-            <span className="text-size-ui-small text-text-muted">1,204 words</span>
+            <span className="text-size-ui-small text-text-muted">
+                1,204 words
+            </span>
             <StatusIndicator status="error" />
         </div>
     ),

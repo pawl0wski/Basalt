@@ -24,8 +24,14 @@ function App() {
     return (
         <div className="flex min-h-svh flex-col bg-surface-editor text-text-ui">
             <header className="mx-auto flex w-full max-w-note items-center gap-in-group px-note-x py-panel">
-                <BookOpen aria-hidden="true" className="size-icon text-icon-default" />
-                <a className="rounded-control text-size-ui text-text-ui focus-visible:focus-ring" href="#home">
+                <BookOpen
+                    aria-hidden="true"
+                    className="size-icon text-icon-default"
+                />
+                <a
+                    className="rounded-control text-size-ui text-text-ui focus-visible:focus-ring"
+                    href="#home"
+                >
                     Basalt
                 </a>
             </header>
@@ -69,7 +75,10 @@ function App() {
                             className="flex items-start gap-between-groups p-settings-card"
                             key={title}
                         >
-                            <Icon aria-hidden="true" className="size-icon shrink-0 text-icon-default" />
+                            <Icon
+                                aria-hidden="true"
+                                className="size-icon shrink-0 text-icon-default"
+                            />
                             <div className="flex flex-col gap-in-group">
                                 <h2 className="font-ui-strong text-size-ui text-text-ui">
                                     {title}

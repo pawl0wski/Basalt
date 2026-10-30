@@ -16,7 +16,10 @@ function Card({ heading, headingAs = "h2", children, className }: CardProps) {
     return (
         <section
             aria-labelledby={heading ? headingId : undefined}
-            className={cn("bs-card flex flex-col gap-between-groups", className)}
+            className={cn(
+                "bs-card flex flex-col gap-between-groups",
+                className,
+            )}
         >
             {heading ? (
                 <Heading

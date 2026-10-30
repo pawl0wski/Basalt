@@ -7,7 +7,11 @@ import { SaveFailedDialog } from "./SaveFailedDialog";
 
 describe("SaveFailedDialog", () => {
     const setup = () => {
-        const handlers = { onRetry: vi.fn(), onDiscard: vi.fn(), onCancel: vi.fn() };
+        const handlers = {
+            onRetry: vi.fn(),
+            onDiscard: vi.fn(),
+            onCancel: vi.fn(),
+        };
         render(<SaveFailedDialog open noteName="Weekly plan" {...handlers} />);
         return handlers;
     };
@@ -15,23 +19,33 @@ describe("SaveFailedDialog", () => {
     it("names the note and offers retry, discard and cancel", () => {
         setup();
 
-        expect(screen.getByRole("alertdialog", { name: 'Could not save "Weekly plan"' })).toBeTruthy();
+        expect(
+            screen.getByRole("alertdialog", {
+                name: 'Could not save "Weekly plan"',
+            }),
+        ).toBeTruthy();
         expect(screen.getByRole("button", { name: "Retry" })).toBeTruthy();
-        expect(screen.getByRole("button", { name: "Discard changes" })).toBeTruthy();
+        expect(
+            screen.getByRole("button", { name: "Discard changes" }),
+        ).toBeTruthy();
         expect(screen.getByRole("button", { name: "Cancel" })).toBeTruthy();
     });
 
     it("puts focus on Retry, the choice that keeps the text", () => {
         setup();
 
-        expect(document.activeElement).toBe(screen.getByRole("button", { name: "Retry" }));
+        expect(document.activeElement).toBe(
+            screen.getByRole("button", { name: "Retry" }),
+        );
     });
 
     it("reports each choice separately", async () => {
         const user = userEvent.setup();
         const handlers = setup();
 
-        await user.click(screen.getByRole("button", { name: "Discard changes" }));
+        await user.click(
+            screen.getByRole("button", { name: "Discard changes" }),
+        );
         expect(handlers.onDiscard).toHaveBeenCalledOnce();
         expect(handlers.onRetry).not.toHaveBeenCalled();
 
@@ -51,10 +65,26 @@ describe("SaveFailedDialog", () => {
 });
 
 describe("NewNoteDialog", () => {
-    function Harness({ error, pending, onCreate }: { error?: string; pending?: boolean; onCreate: () => void }) {
+    function Harness({
+        error,
+        pending,
+        onCreate,
+    }: {
+        error?: string;
+        pending?: boolean;
+        onCreate: () => void;
+    }) {
         const [name, setName] = useState("Untitled");
         return (
-            <NewNoteDialog open onOpenChange={() => {}} name={name} onNameChange={setName} error={error} pending={pending} onCreate={onCreate} />
+            <NewNoteDialog
+                open
+                onOpenChange={() => {}}
+                name={name}
+                onNameChange={setName}
+                error={error}
+                pending={pending}
+                onCreate={onCreate}
+            />
         );
     }
 
@@ -63,7 +93,13 @@ describe("NewNoteDialog", () => {
         const onCreate = vi.fn();
 
         render(<Harness onCreate={onCreate} />);
-        expect((screen.getByRole("textbox", { name: "Note name" }) as HTMLInputElement).value).toBe("Untitled");
+        expect(
+            (
+                screen.getByRole("textbox", {
+                    name: "Note name",
+                }) as HTMLInputElement
+            ).value,
+        ).toBe("Untitled");
         await user.keyboard("{Enter}");
 
         expect(onCreate).toHaveBeenCalledOnce();
@@ -73,12 +109,25 @@ describe("NewNoteDialog", () => {
         const user = userEvent.setup();
         const onCreate = vi.fn();
 
-        render(<Harness error="A note named Untitled already exists." onCreate={onCreate} />);
+        render(
+            <Harness
+                error="A note named Untitled already exists."
+                onCreate={onCreate}
+            />,
+        );
 
         const input = screen.getByRole("textbox", { name: "Note name" });
         expect(input.getAttribute("aria-invalid")).toBe("true");
-        expect(screen.getByRole("textbox", { description: "A note named Untitled already exists." })).toBe(input);
-        expect(screen.getByRole("button", { name: "Create note" }).hasAttribute("disabled")).toBe(true);
+        expect(
+            screen.getByRole("textbox", {
+                description: "A note named Untitled already exists.",
+            }),
+        ).toBe(input);
+        expect(
+            screen
+                .getByRole("button", { name: "Create note" })
+                .hasAttribute("disabled"),
+        ).toBe(true);
 
         await user.type(input, "{Enter}");
         expect(onCreate).not.toHaveBeenCalled();
@@ -93,7 +142,11 @@ describe("NewNoteDialog", () => {
         await user.keyboard("{Enter}");
 
         expect(onCreate).not.toHaveBeenCalled();
-        expect(screen.getByRole("button", { name: "Create note" }).hasAttribute("disabled")).toBe(true);
+        expect(
+            screen
+                .getByRole("button", { name: "Create note" })
+                .hasAttribute("disabled"),
+        ).toBe(true);
     });
 
     it("blocks a second submit while creating", async () => {
@@ -104,6 +157,10 @@ describe("NewNoteDialog", () => {
         await user.type(screen.getByRole("textbox"), "{Enter}");
 
         expect(onCreate).not.toHaveBeenCalled();
-        expect(screen.getByRole("button", { name: "Creating…" }).hasAttribute("disabled")).toBe(true);
+        expect(
+            screen
+                .getByRole("button", { name: "Creating…" })
+                .hasAttribute("disabled"),
+        ).toBe(true);
     });
 });

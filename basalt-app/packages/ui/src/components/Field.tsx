@@ -3,10 +3,7 @@ import { useId } from "react";
 import { cn } from "../lib/utils";
 import { FieldContext } from "./fieldContext";
 
-function Label({
-    className,
-    ...props
-}: LabelHTMLAttributes<HTMLLabelElement>) {
+function Label({ className, ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
     return (
         <label
             className={cn("bs-label text-size-ui text-text-ui", className)}
@@ -49,7 +46,9 @@ function Field({
                 "aria-required": required ? true : undefined,
             }}
         >
-            <div className={cn("bs-field flex flex-col gap-in-group", className)}>
+            <div
+                className={cn("bs-field flex flex-col gap-in-group", className)}
+            >
                 <Label htmlFor={id}>
                     {label}
                     {optional ? (

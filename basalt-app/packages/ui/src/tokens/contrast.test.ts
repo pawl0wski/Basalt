@@ -8,7 +8,9 @@ const read = (file: string) =>
 
 const declarations = new Map<string, string>();
 for (const file of ["raw.css", "semantic.css", "component.css"]) {
-    for (const match of read(file).matchAll(/^\s*(--[a-z0-9-]+):\s*([^;]+);/gm)) {
+    for (const match of read(file).matchAll(
+        /^\s*(--[a-z0-9-]+):\s*([^;]+);/gm,
+    )) {
         declarations.set(match[1], match[2].trim());
     }
 }
@@ -23,7 +25,9 @@ function resolve(name: string): string {
 function luminance(hex: string): number {
     const channels = [1, 3, 5].map((index) => {
         const value = parseInt(hex.slice(index, index + 2), 16) / 255;
-        return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+        return value <= 0.03928
+            ? value / 12.92
+            : ((value + 0.055) / 1.055) ** 2.4;
     });
     return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
 }

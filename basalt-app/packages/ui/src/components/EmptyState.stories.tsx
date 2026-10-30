@@ -15,7 +15,8 @@ const meta = {
     parameters: { layout: "padded" },
     args: {
         title: "No notes yet",
-        description: "Notes you create are saved as Markdown files in your workspace folder.",
+        description:
+            "Notes you create are saved as Markdown files in your workspace folder.",
         icon: <FilePlus aria-hidden="true" />,
         action: <Button>New note</Button>,
     },
@@ -27,14 +28,18 @@ type Story = StoryObj<typeof meta>;
 export const Playground: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(canvas.getByRole("heading", { name: "No notes yet" })).toBeVisible();
-        await expect(canvas.getByRole("button", { name: "New note" })).toBeVisible();
+        await expect(
+            canvas.getByRole("heading", { name: "No notes yet" }),
+        ).toBeVisible();
+        await expect(
+            canvas.getByRole("button", { name: "New note" }),
+        ).toBeVisible();
     },
 };
 
 export const NoResults: Story = {
     args: {
-        title: "No notes match \"weekly\"",
+        title: 'No notes match "weekly"',
         description: "Check the spelling or search in all folders.",
         icon: <SearchX aria-hidden="true" />,
         action: <Button variant="secondary">Clear search</Button>,

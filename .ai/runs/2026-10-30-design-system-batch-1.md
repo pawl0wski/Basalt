@@ -49,3 +49,6 @@ Wrote the guide pages (Start here, Components, How to choose, Usage and accessib
 
 ## Update: Stage 5 (same day)
 Final checks, a sweep of all stories and docs pages at 320, 768 and 1440 px, and a keyboard walk. Fixed story layouts that overflowed at 320 px (Tabs, ImagePlaceholder, Button, Skeleton) and hid ReactNode args from Controls tables. Found a regression: `npm run test:e2e` fails on "applies the stylesheet" because the app does not generate the token classes the new Button uses; the owner chose to rewrite the app welcome page on the design system; done (`packages/app/src/index.css`, `App.tsx`, new e2e test), e2e 5/5. Prepared (not ran) the agent test on E02-S01 "Connect to a sync server". Results: `check:tokens` 0, unit tests 204/204, stories 182/182, lint 0, typecheck 0, build OK. Not committed.
+
+## Update: selected row style (same day)
+Owner chose option C (inset rounded row, accent-tinted fill while the list has focus, neutral otherwise, no accent bar). Updated `NoteList`, added token `--bs-tree-selected` and the `focus-ring-inset` utility, removed `--bs-tree-selected-indicator`, recorded the accepted 1.57:1 deviation in the contrast pairs and docs, replaced the three-way prototype with a single "Folder tree (E01-S04 direction)" prototype. Added a browser test for the focus-dependent fill. Not committed.

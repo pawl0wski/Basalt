@@ -30,7 +30,7 @@ The list of notes in the workspace sidebar. The user finds a note and opens it. 
 1. Row: 28 px high (`tree-row`), `text-size-ui`, `text-ui`.
 2. Folder prefix: `text-muted`, only for notes in sub-folders (proposal: the spec says "relative path"; the file extension is not shown because the title is the file name without it).
 3. Name: truncated with an ellipsis when long.
-4. Selected row: `state-selected` fill and a 2 px `action-primary` bar at the left (`tree-selected-indicator`). The bar exists because the selected file was 1.47:1 against its neighbours by fill alone (tokens.md contrast fix).
+4. Selected row (owner decision 2026-10-30, option C): the list is inset 4 px from the sidebar edges and each row is rounded (`rounded-control`, 4 px). The selected row has the accent-tinted fill `tree-selected` while the list has focus and the neutral `state-selected` fill when it does not (the VS Code approach). Its text is `text-note`, also the folder prefix. There is no accent bar: the 2 px bar of the first design was dropped.
 
 ## 5. Variants (data states)
 
@@ -57,8 +57,9 @@ The list of notes in the workspace sidebar. The user finds a note and opens it. 
 |---|---|
 | Default | `text-ui` row. |
 | Hover | `state-hover` fill. |
-| Focus | 2 px `focus-ring` outline on the focused row. |
-| Selected | `state-selected` fill and the accent bar; `aria-selected="true"`. |
+| Focus | 2 px `focus-ring` outline drawn inside the row (`focus-ring-inset`), so it stays inside the 4 px inset. |
+| Selected, list has focus | `tree-selected` fill, `text-note` text; `aria-selected="true"`. |
+| Selected, list has no focus | `state-selected` fill, `text-note` text. |
 | Disabled, pressed | Not supported. Pressed looks like hover. |
 
 ## 7. Behavior and accessibility
@@ -67,7 +68,7 @@ The list of notes in the workspace sidebar. The user finds a note and opens it. 
 - One tab stop. It starts on the selected note, otherwise on the first.
 - Up and Down move focus and wrap; Home and End jump; Enter or Space opens the note. Selection does not follow focus, so moving through a long list does not load every note.
 - A click opens the note.
-- Contrast: `text-ui` on `state-selected`, `state-hover` and `surface-card` is at least 4.5:1; the accent bar is at least 3:1 (measured in `contrast.test.ts`).
+- Contrast: `text-note` on `tree-selected` and on `state-selected` is at least 4.5:1 for every accent (7.96 to 9.34). The fill itself is only 1.57:1 (blue) or 1.34 to 1.37:1 (other accents) against `surface-card`, and `state-selected` 1.36:1. This is an accepted deviation from the 3:1 rule for non-text state (WCAG 1.4.11), decided by the owner on 2026-10-30, as in VS Code. The selection is also exposed by `aria-selected`.
 - Row height 28 px, above the 24 px target minimum (WCAG 2.5.8).
 
 ## 8. Content
