@@ -86,6 +86,7 @@ export const States: Story = {
 };
 
 export const LongLabel: Story = {
+    parameters: { layout: "padded" },
     render: (args) => (
         <div className="max-w-prose">
             <Button {...args} variant="secondary" className="max-w-full overflow-hidden text-ellipsis">

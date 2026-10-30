@@ -13,3 +13,6 @@ export { StateMatrix } from "./StateMatrix";
 export { TypeRoles } from "./TypeRoles";
 export { longNameNote, manyNotes, sampleNotes, workspaceName } from "./sampleData";
 export { sampleImage } from "./sampleImage";
+export { catalog } from "./catalog";
+export { ComponentCatalog, ComponentTable } from "./ComponentCatalog";
+export type { CatalogEntry } from "./catalog";

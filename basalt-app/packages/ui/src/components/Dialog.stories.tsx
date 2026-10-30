@@ -9,6 +9,11 @@ const meta = {
     title: "Primitives/Dialog",
     component: Dialog,
     tags: ["!autodocs"],
+    argTypes: {
+        children: { control: false, table: { disable: true } },
+        footer: { control: false, table: { disable: true } },
+        trigger: { control: false, table: { disable: true } },
+    },
     parameters: { layout: "fullscreen" },
     args: {
         title: "Rename note",

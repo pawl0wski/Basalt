@@ -6,6 +6,7 @@ const meta = {
     title: "Primitives/Skeleton",
     component: Skeleton,
     tags: ["!autodocs"],
+    parameters: { layout: "padded" },
 } satisfies Meta<typeof Skeleton>;
 
 export default meta;
@@ -26,7 +27,7 @@ export const NoteLoading: Story = {
             <Skeleton className="h-activity-button w-activity-bar" />
             <Skeleton />
             <Skeleton />
-            <Skeleton className="w-sidebar" />
+            <Skeleton className="w-sidebar max-w-full" />
         </div>
     ),
     play: async ({ canvasElement }) => {
@@ -40,7 +41,7 @@ export const NarrowScreen: Story = {
         <div role="status" aria-busy="true" className="flex w-full flex-col gap-between-groups p-panel">
             <span className="sr-only">Loading image</span>
             <Skeleton className="h-sidebar w-full" />
-            <Skeleton className="w-sidebar" />
+            <Skeleton className="w-sidebar max-w-full" />
         </div>
     ),
 };

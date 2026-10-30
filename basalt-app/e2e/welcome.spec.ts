@@ -46,6 +46,23 @@ test.describe("welcome screen", () => {
         );
     });
 
+    test("styles the main action with the design system accent", async ({
+        page,
+    }) => {
+        const button = page.getByRole("button", { name: "Choose a workspace" });
+        const accent = await page.evaluate(() => {
+            const probe = document.createElement("div");
+            probe.style.backgroundColor = "var(--bs-action-primary)";
+            document.body.append(probe);
+            const color = getComputedStyle(probe).backgroundColor;
+            probe.remove();
+            return color;
+        });
+
+        expect(accent).not.toBe("rgba(0, 0, 0, 0)");
+        await expect(button).toHaveCSS("background-color", accent);
+    });
+
     test("stays usable without horizontal scrolling on a narrow viewport", async ({
         page,
     }) => {

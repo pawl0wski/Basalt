@@ -1,0 +1,25 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Design system/Epics/E02 Self-hosted sync with E2EE" />
+
+# E02: Self-hosted sync with client-side E2EE
+
+Backlog: epic #6. Stories: E02-S01 (#11, connect to a server; its task #12 writes the sync and E2EE spec), E02-S02 (#13, encryption on the client), E02-S03 (#14, sync between devices).
+
+## Status
+
+**No screens.** None of the stories has a specification, so inventing screens would break the rule that style follows the materials. What exists:
+
+| Part | Where | Note |
+|---|---|---|
+| Sync words in the status bar | [StatusIndicator](?path=/docs/primitives-statusindicator--docs) | Synced, Syncing, Sync conflict, Sync error. Words "conflict" and "error" are proposals |
+| Rule that sync is always visible | [What to avoid](?path=/docs/design-system-what-to-avoid--docs) (AB3), [Usage](?path=/docs/design-system-usage-and-accessibility--docs) | From the references |
+| Rule that the app opens on notes without an account | [What to avoid](?path=/docs/design-system-what-to-avoid--docs) (AB1) | From the references |
+
+## Expected screens once specified
+
+These need a specification before they are designed: connecting to a server (address, status, errors), the encryption key or passphrase (the most sensitive screen, with no recovery promise unless the design has one), sync state per device and per note, conflicts between devices, and sync errors with actions. Components that will probably be reused: Dialog, Field, Alert, StatusIndicator, Card with rows, Tabs.
+
+## Remaining work
+
+Everything above. See [What is missing](?path=/docs/design-system-what-is-missing--docs).

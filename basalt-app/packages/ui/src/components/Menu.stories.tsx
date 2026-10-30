@@ -11,6 +11,10 @@ const meta = {
     title: "Primitives/Menu",
     component: Menu,
     tags: ["!autodocs"],
+    argTypes: {
+        trigger: { control: false, table: { disable: true } },
+        items: { control: false, table: { disable: true } },
+    },
     parameters: { layout: "padded" },
     args: {
         trigger: <Button variant="secondary">Note actions</Button>,

@@ -7,6 +7,9 @@ const meta = {
     title: "Primitives/ErrorState",
     component: ErrorState,
     tags: ["!autodocs"],
+    argTypes: {
+        action: { control: false, table: { disable: true } },
+    },
     parameters: { layout: "padded" },
     args: {
         title: "Could not open the workspace",

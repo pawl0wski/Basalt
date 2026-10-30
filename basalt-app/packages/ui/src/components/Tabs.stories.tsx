@@ -12,6 +12,7 @@ const meta = {
     title: "Primitives/Tabs",
     component: Tabs,
     tags: ["!autodocs"],
+    parameters: { layout: "padded" },
     args: { label: "Settings sections", tabs, onValueChange: fn() },
     decorators: [(Story) => <div className="w-full max-w-prose"><Story /></div>],
 } satisfies Meta<typeof Tabs>;

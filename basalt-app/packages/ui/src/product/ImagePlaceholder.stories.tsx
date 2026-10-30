@@ -8,6 +8,7 @@ const meta = {
     title: "Product/ImagePlaceholder",
     component: ImagePlaceholder,
     tags: ["!autodocs"],
+    parameters: { layout: "padded" },
     args: { problem: "not-found", path: "attachments/Pasted image 20261025-101530.png" },
     argTypes: {
         problem: {

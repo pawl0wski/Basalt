@@ -1,0 +1,47 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Design system/Epics/E01 Local Markdown notes" />
+
+# E01: Local Markdown notes that work offline
+
+Backlog: epic #5. Stories: E01-S01 (#8), E01-S03 (#10); E01-S04 (rename, delete, move, folders) is planned and not specified. The epic is done only when S01, S03 and S04 are done.
+
+## E01-S01: create and edit notes stored as plain Markdown files
+
+**Flow:** open a folder as a workspace, see the notes, create a note, write (autosave), see the save status, resolve conflicts or errors.
+
+| Step | Screen story | Components |
+|---|---|---|
+| Open a workspace | Welcome | WelcomeScreen |
+| The workspace is gone | Welcome after workspace lost | WelcomeScreen with a notice |
+| See notes | Workspace with note open, Many notes | NoteSidebar, NoteList, StatusBar |
+| Nothing there | Empty workspace, Loading the list, List could not be read | EmptyState, Skeleton, ErrorState |
+| Create a note | New note dialog open, New note name taken | NewNoteDialog |
+| Autosave | Saving, Not saved | SaveStatus |
+| External changes | Conflict with the file on disk, Note deleted on disk | NoteBanner |
+| Save fails | Folder is read-only, Save failed when leaving the note | NoteBanner, SaveFailedDialog |
+| Cannot open a file | Note too large, Note is not UTF-8 | NoteBanner |
+
+**States covered:** loading, empty, error, many, long names, saving, not saved, conflict, deleted, read-only, watcher fallback. Full list: [Map of states](?path=/docs/screens-map-of-states--docs).
+
+**Source files:** `src/product/*`, `docs/screens/Notes.stories.tsx`, specification `.ai/specs/2026-10-24-markdown-notes-and-app-foundations.md`.
+
+**Remaining:** the editor (`@basalt/editor`) is separate; title bar with tabs and activity bar are not built; narrow windows are not designed.
+
+## E01-S03: add images to notes
+
+**Flow:** paste or drop an image, see it below its link, see why an image cannot be shown.
+
+| Step | Screen story | Components |
+|---|---|---|
+| Image shown | E01-S03 Image in a note | NoteImage |
+| Image cannot be shown | E01-S03 Images that cannot be shown | ImagePlaceholder |
+| Some dropped files skipped | E01-S03 Some dropped files were skipped | Alert (notice) |
+
+**Source files:** `src/product/ImagePlaceholder.tsx`, specification `.ai/specs/2026-10-25-images-in-notes.md`.
+
+**Remaining:** the drop caret and paste behavior belong to the editor package.
+
+## E01-S04: rename, delete, move, folders (planned)
+
+Not specified. Proposals only: [Delete confirmation](?path=/docs/patterns-delete-confirmation--docs), [Detail view](?path=/docs/patterns-detail-view--docs). Missing: folder tree, context menu, rename dialog, move.

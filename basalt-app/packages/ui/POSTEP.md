@@ -12,10 +12,10 @@ Materiały źródłowe: `lekcja6/referencje.md`, `lekcja6/tokeny.md`, `.ai/specs
 | 1. Fundamenty | wykonany, zweryfikowany, czeka na zatwierdzenie Partii 1 i „dalej” do Etapu 2 |
 | 2. Komponenty bazowe | Partie 1, 2 i 3 zbudowane i zweryfikowane (2026-10-30), czekają na przegląd właściciela; Etap 3 po „dalej” |
 | 3. Komponenty produktu, wzorce, ekrany | zbudowany i zweryfikowany (2026-10-30), czeka na przegląd właściciela; E02 bez ekranów (brak specyfikacji) |
-| 4. Strony, które uczą | nie zaczęty |
-| 5. Sprawdzenie i raport | nie zaczęty |
+| 4. Strony, które uczą | zbudowany i zweryfikowany (2026-10-30), czeka na przegląd właściciela |
+| 5. Sprawdzenie i raport | wykonany (2026-10-30); regresja e2e naprawiona przez przepisanie strony startowej aplikacji |
 
-**Następny krok:** Właściciel ogląda Etapy 2 i 3 (Primitives, Product, Patterns, Screens w Storybooku), rozstrzyga pytania i propozycje poniżej i podaje „dalej” do Etapu 4 (strony, które uczą).
+**Następny krok:** Właściciel ogląda Storybook i stronę startową aplikacji, wykonuje test agentem nowym promptem i rozstrzyga propozycje z Etapów 2-4.
 
 ---
 
@@ -215,7 +215,7 @@ Szerokości 320/768/1440 px w przeglądarce poza stories „Narrow screen”, na
 
 Komponenty produktu (`src/product/`, prezentacyjne, bez store i i18n; teksty stałe po angielsku z możliwością nadpisania tam, gdzie spec wymaga tłumaczeń): NoteList, SaveStatus, StatusBar, NoteBanner (conflict, deleted, permission-denied, too-large, not-utf8), SaveFailedDialog, NewNoteDialog, ImagePlaceholder + NoteImage, NoteSidebar, WelcomeScreen. Każdy ma testy jednostkowe, stories (stany danych, `play`) i stronę MDX w `docs/product/`.
 
-Wzorce (`docs/patterns/`, wszystkie jako propozycje): Form (symulowane API: sukces, błąd pola, błąd serwera, folder niedostępny, oczekiwanie), List with filters, Detail view, Delete confirmation. Ekrany (`docs/screens/Notes.stories.tsx`, 20 stories pełnoekranowych) i strona „Map of states”.
+Wzorce (`docs/patterns/`, wszystkie jako propozycje): Form (symulowane API: sukces, błąd pola, błąd serwera, folder niedostępny, oczekiwanie), List with filters, Detail view, Delete confirmation. Ekrany (`docs/screens/Notes.stories.tsx`, 21 stories pełnoekranowych) i strona „Map of states”.
 
 Wyniki: `check:tokens` 0 naruszeń, `test` 204/204, `test:stories:themes` 182/182 (motyw ciemny, a11y), `lint` 0, `typecheck` 0, `build-storybook` OK.
 
@@ -230,3 +230,73 @@ Wyniki: `check:tokens` 0 naruszeń, `test` 204/204, `test:stories:themes` 182/18
 
 ### Niesprawdzone
 Szerokości 320 px dla ekranów (poza zakresem), nawigacja klawiaturą po stronach docs, akcenty zielony/bursztynowy/fioletowy, czytniki ekranu, `npm run test:e2e`, wydajność listy przy tysiącach notatek.
+
+
+---
+
+## Etap 4. Wykonane (2026-10-30)
+
+Strony w `docs/guide/` (grupa „Design system”): Start here (charakter, 5 kroków, tabela wszystkich komponentów), Components (katalog z podglądem, jedno źródło danych w `.storybook/blocks/catalog.tsx`), How to choose, Usage and accessibility (każda reguła ze źródłem), Content, What to avoid (3 części), What is missing, Contributing oraz strony epików E01, E02 i E03 (`docs/guide/epics/`). Plik dla agentów: `docs/design-system.md`, z odwołaniem w `AGENTS.md`.
+
+Wyniki: `check:tokens` 0 naruszeń, `test` 204/204, `test:stories:themes` 182/182, `lint` 0, `typecheck` 0, `build-storybook` OK; 53 strony docs, 0 zepsutych linków wewnętrznych (sprawdzone skryptem na `index.json` zbudowanego Storybooka).
+
+### Propozycje do decyzji
+1. Formaty dat (RRRR-MM-DD) i godzin (24 h) w Content nie mają źródła; to propozycje. Liczby z separatorem tysięcy wynikają z `StatusBar`.
+2. Priorytety w „What is missing” to propozycje agenta.
+3. Strona epika E02 mówi wprost, że nie ma ekranów (brak specyfikacji); lista „oczekiwanych ekranów” to opis zakresu do specyfikacji, nie projekt.
+4. Przykłady „Basalt mówi / nie mówi” w Content: pierwsze zdanie pochodzi z R01.14, pozostałe są ilustracjami zgodnymi z tonem W3.
+
+### Niesprawdzone
+Nawigacja klawiaturą po stronach, czytniki ekranu, akcenty zielony/bursztynowy/fioletowy, `npm run test:e2e`.
+
+
+---
+
+## Etap 5. Sprawdzenie i raport (2026-10-30)
+
+### Co sprawdzono i wyniki
+
+| Sprawdzenie | Wynik |
+|---|---|
+| `build-storybook` | OK |
+| `typecheck` | 0 błędów |
+| `lint` | 0 ostrzeżeń |
+| `check:tokens` | 0 wartości poza tokenami |
+| Testy jednostkowe (`npm run test`) | 204 testy w 29 plikach, wszystkie przechodzą (w tym 53 testy kontrastu tokenów) |
+| Stories jako testy z a11y (`test:stories:themes`) | 182/182, 0 naruszeń a11y |
+| Przegląd 182 stories przy 320, 768 i 1440 px (przepełnienie poziome, błędy w konsoli) | 0 błędów w konsoli. Przy 320 px przepełniają: 4 stories „Foundations/Checks” (Etap 1, ukryte w menu, szerokie tabele) i 3 ekrany desktopowe (spodziewane, Q6). Pięć stories komponentów przepełniało i zostało poprawionych (Tabs, ImagePlaceholder, Button, Skeleton) |
+| Przegląd 53 stron docs przy 320, 768 i 1440 px | 768 i 1440: 0 przepełnień. 320: 38 stron przepełnia (tabele i bloki kodu w układzie Storybooka); nie naprawiano |
+| Tab po 10 kluczowych ekranach i stories | Fokus jest widoczny wszędzie; w dialogach fokus zostaje w środku; patrz obserwacje niżej |
+| `npm run test:e2e` | najpierw 1 test z 4 nie przechodził (regresja niżej); po naprawie 5/5 (dodany test koloru akcentu) |
+
+Motywy: istnieje tylko ciemny (decyzja z Etapu 0), więc „oba motywy” nie dotyczy; jasny motyw jest w „What is missing”.
+
+### Regresja e2e (naprawiona za zgodą właściciela)
+
+`e2e/welcome.spec.ts` > „applies the stylesheet” nie przechodzi: przycisk „Choose a workspace” ma przezroczyste tło. Przyczyna: strona startowa w `packages/app` ma własny CSS shadcn (jasny motyw, `bg-primary`), a `Button` z `@basalt/ui` używa teraz klas tokenów (`bg-action-primary`), których aplikacja nie generuje. Wprowadzone w Etapie 2 (decyzja 5 z Etapu 0 mówiła o przepisaniu `Button` i pozostawieniu kodu aplikacji bez zmian, co się wyklucza). PR #19 ma więc czerwone e2e w CI.
+
+Właściciel wybrał naprawę (a): `packages/app/src/index.css` importuje `@basalt/ui/styles.css` (z `@source` na kod pakietu), a `App.tsx` jest przepisany na komponenty i tokeny: ciemny motyw, bez gradientu, iskierek, pigułek, cieni i wyśrodkowanego hero, zasady z „What to avoid”. Treść i testy e2e zostały; trzy zasady produktu są jedną kartą z rzędami zamiast trzech identycznych kart. Dodany test e2e „styles the main action with the design system accent” porównuje tło przycisku z tokenem `--bs-action-primary`, więc ta sama regresja zostałaby wykryta. Zmiana dotyczy kodu aplikacji, wbrew pierwotnej decyzji 5 z Etapu 0, za wyraźną zgodą właściciela. Pozostałe elementy starej strony (znaczek z ikoną, kapsułka z hasłem, „A calmer home for your ideas”, stopka) zostały usunięte; nie ma ich w żadnych materiałach, a pierwsze trzy łamały A01.
+
+### Obserwacje z testu klawiaturą (nienaprawione)
+1. Po „zawinięciu” Tab w Tabs na chwilę fokus trafia na `div[role=tablist]` bez widocznego obrysu (grupa Radix z `tabindex=0`), zanim przejdzie na aktywną kartę.
+2. W otwartym Menu Tab nie opuszcza menu (zachowanie Radix; nawigacja strzałkami).
+
+### Liczby
+- Strony dokumentacji: 53 (Foundations 7, Primitives 22, Product 8, Patterns 4, Design system 11, Screens 1).
+- Komponenty: 22 bazowe + 9 produktowych + 4 wzorce (propozycje).
+- Stories: 182 (Primitives 101, Product 32, Screens 21, Patterns 19, Foundations 9), w tym 70 z testem interakcji (`play`).
+- Testy: 204 jednostkowe; 182 testy stories z a11y.
+
+### Czego nie sprawdzono
+Czytników ekranu (tylko role i nazwy w testach), akcentów zielonego/bursztynowego/fioletowego dla nowych komponentów, wydajności listy przy tysiącach notatek, ekranów przy 320 px (poza zakresem), a11y 38 stron docs przy 320 px.
+
+### Propozycje (zbiorczo)
+Wszystkie wypisane w sekcjach Partii 1-3, Etapu 3 i 4 powyżej, plus „What is missing” w Storybooku. Żadna nie jest zatwierdzona.
+
+### Test agentem (przygotowany, nie wykonany)
+
+Ekran z backlogu, którego nie ma w Storybooku: **E02-S01, „The owner can run their own sync server and connect Basalt to it”**, ekran „Connect to a sync server” w ustawieniach. E02-S01 nie ma jeszcze specyfikacji, więc każde miejsce, w którym agent będzie zgadywał, pokaże lukę w dokumentacji. Wymagania poniżej zostały napisane na potrzeby testu i nie są decyzją produktową.
+
+Prompt dla nowego agenta (do wklejenia): „Zbuduj w Storybooku `@basalt/ui` nowy ekran pełnoekranowy ‚Connect to a sync server’ (ustawienia synchronizacji). Zacznij od `basalt-app/packages/ui/docs/design-system.md`. Używaj tylko komponentów i tokenów z design systemu. Nie dodawaj komponentów ani zależności. Każdą decyzję, której nie da się oprzeć na dokumentacji, zapisz jako ‚zgadłem’ z uzasadnieniem. Ekran ma: pole adresu serwera, przycisk połączenia, stany: niepołączony, łączenie, połączony (adres, stan synchronizacji słowem, akcja rozłączenia z potwierdzeniem), błąd adresu przy polu, serwer niedostępny (błąd z ponowieniem). Stories dla każdego stanu, test `play` dla połączenia, a11y bez naruszeń.”
+
+Przewidywane luki (hipotezy, do sprawdzenia testem): brak wzorca strony ustawień (układ kart i nagłówków), brak pola typu hasło lub tajny klucz, brak wzorca „test połączenia” z oczekiwaniem, brak miejsca na stan sync poza paskiem stanu, brak tekstów dla stanów sync w Content.

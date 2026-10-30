@@ -8,6 +8,10 @@ const meta = {
     title: "Primitives/Popover",
     component: Popover,
     tags: ["!autodocs"],
+    argTypes: {
+        trigger: { control: false, table: { disable: true } },
+        children: { control: false, table: { disable: true } },
+    },
     parameters: { layout: "padded" },
     args: {
         label: "Accent color",

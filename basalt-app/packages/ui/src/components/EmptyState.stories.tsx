@@ -8,6 +8,10 @@ const meta = {
     title: "Primitives/EmptyState",
     component: EmptyState,
     tags: ["!autodocs"],
+    argTypes: {
+        icon: { control: false, table: { disable: true } },
+        action: { control: false, table: { disable: true } },
+    },
     parameters: { layout: "padded" },
     args: {
         title: "No notes yet",

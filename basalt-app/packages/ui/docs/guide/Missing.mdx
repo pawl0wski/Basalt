@@ -1,0 +1,58 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Design system/What is missing" />
+
+# What is missing
+
+What is ready, what is not, and how it covers the backlog. Priorities are proposals of the agent that built the system; the owner decides.
+
+## Coverage of the backlog
+
+| Item | Component or screen | State | Priority |
+|---|---|---|---|
+| E01-S01 notes (create, edit, list, save, conflicts) | Product components and 18 screen stories | Ready (presentational). The editor itself is `@basalt/editor`, not part of this package | Done |
+| E01-S03 images in notes | `NoteImage`, `ImagePlaceholder`, 3 screen stories | Ready. Drop caret and paste feedback belong to the editor | Done |
+| E01-S04 rename, delete, move, folders, folder tree | Pattern "Delete confirmation" only (proposal) | Story has no specification yet | High: next story after S03 |
+| E02-S01 connect to a self-hosted server | None | No specification (E02-S01-T01 writes it) | High: blocks E02 |
+| E02-S02 client-side encryption | None | No specification | High: blocks E02 |
+| E02-S03 sync between devices | `StatusIndicator` words only | No screens: conflicts between devices, last sync time, errors per note | High |
+| E03 later (whiteboards with stylus) | None | Parked by the owner | Not planned |
+
+## Components not built
+
+| Needed for | Missing part | Why not built | Priority |
+|---|---|---|---|
+| Context (right-click) menu | `ContextMenu` | Needs a second use, such as the file tree (YAGNI) | Medium, with E01-S04 |
+| Folder tree | `Tree` | E01-S04 | High, with E01-S04 |
+| Searching notes | Search field with results | Out of scope of E01-S01 | Medium |
+| Command palette | `CommandPalette` | "Should have" in the brief | Low |
+| Several lines of text | `Textarea` | No story needs it yet | Low |
+| Comparing data in columns | `Table` | No story needs it yet | Low |
+| Side panel (outline, backlinks) | `SidePanel` | R01.14 shows an outline panel, no story | Low |
+| Long tasks | Progress bar | Moving a workspace is not specified | Low |
+| Select-all | Indeterminate checkbox | No use yet | Low |
+| Dismissing alerts | Close button on `Alert` | No use yet | Low |
+| Title bar with tabs | `TitleBar`, `Tab` for open notes | R01.3 describes it, E01-S01 has no tabs | Medium |
+| Activity bar | `ActivityBar` | R02.1 describes it, no story | Low |
+| Note file icons, PDF annotation | None | "Should have" in the brief | Low |
+
+## Behavior not built
+
+| Gap | Note |
+|---|---|
+| Light theme | Only the dark theme exists, by the owner's decision. A light theme would be a separate epic later. |
+| Accent switching in the app | The Storybook toolbar switches the accent; the settings screen for it is not designed. Accent warning in `status-warning` (tokens.md rule 5) is not built. |
+| Narrow windows | Screens are desktop only (Q6). The sidebar has no collapsed or stacked layout below 768 px. |
+| Dialog taller than the screen | The dialog does not scroll its content yet. |
+| Spinner or pulse motion | Neither exists: no motion is defined for loading (proposal). |
+| Virtualized long lists | E01-S01 dropped the entry cap (G9); 400 to 500 notes were checked, not thousands. |
+| Real translations | Components take text through props; no language other than English exists (G10). |
+| Pairs "do and don't" for overlays | Dialog, Menu, Popover, Tabs, Toast and ErrorState list rules instead of side-by-side pairs, because a pair needs an open overlay. |
+
+## Not checked
+
+- Keyboard walk through every built docs page and screen reader testing.
+- The green, amber and purple accents on the new components.
+- Browser checks at 320 px for screens (out of scope) and 768 and 1440 px beyond the sampled screens.
+- `npm run test:e2e` (Playwright integration tests of the app).
+- Performance of the note list with thousands of notes.
