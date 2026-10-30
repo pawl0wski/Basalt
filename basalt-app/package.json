@@ -19,6 +19,7 @@
         "test:stories": "npm run test:stories -w packages/ui",
         "test:stories:themes": "npm run test:stories:themes -w packages/ui",
         "check:tokens": "npm run check:tokens -w packages/ui",
+        "safety-net": "npm run check:tokens && npm run test:stories:themes",
         "rust:fmt": "cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check",
         "rust:lint": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings",
         "rust:test": "cargo test --manifest-path src-tauri/Cargo.toml --all-targets --all-features",

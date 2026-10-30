@@ -11,7 +11,7 @@ const packageRoot = resolve(import.meta.dirname, "..");
 const targets = process.argv.slice(2);
 const roots = targets.length
     ? targets.map((target) => resolve(process.cwd(), target))
-    : ["src", ".storybook", "docs"].map((directory) =>
+    : ["src", ".storybook", "docs", "../app/src"].map((directory) =>
           join(packageRoot, directory),
       );
 

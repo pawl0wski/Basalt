@@ -118,7 +118,8 @@ Spacing: `gap-in-group` (4 px) for related things, `gap-between-groups` and `p-p
 ```bash
 npm run storybook           # dev server on port 6006
 npm run build-storybook     # production build
-npm run check:tokens        # values outside tokens, must be 0
+npm run safety-net          # check:tokens + test:stories:themes, the same gate CI runs
+npm run check:tokens        # values outside tokens in packages/ui and packages/app, must be 0
 npm run test                # unit tests, includes contrast tests
 npm run test:stories:themes # stories as tests with accessibility checks
 npm run lint
