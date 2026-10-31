@@ -1,0 +1,123 @@
+import { Canvas, Controls, Meta } from "@storybook/addon-docs/blocks";
+import * as DialogStories from "../../src/components/Dialog.stories";
+
+<Meta of={DialogStories} />
+
+# Dialog
+
+## 1. What it is for
+
+A dialog asks the user to finish one short, focused task before returning to the note, such as renaming a note.
+
+<Canvas of={DialogStories.Open} />
+
+## 2. When to use
+
+- A short task with one outcome: rename a note, move it to a folder, choose a workspace.
+- The user must answer before continuing (modal).
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| A yes/no confirmation. | [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs). |
+| A small option panel next to its trigger. | [Popover](?path=/docs/primitives-popover--docs). |
+| A list of actions. | [Menu](?path=/docs/primitives-menu--docs). |
+| A long form or a task with many steps. | A separate page or view. |
+| A message about the state of the app. | [Alert](?path=/docs/primitives-alert--docs) or a Toast. |
+
+## 4. Anatomy
+
+1. Scrim: `surface-frame` at reduced opacity over the app (proposal, no scrim in the sources).
+2. Container: `surface-raised`, 1 px `border-divider`, `rounded-container`, padding `settings-card` (16 px), no shadow.
+3. Title: `font-ui-strong`. Required.
+4. Description: `text-size-ui-small`, `text-muted`. Optional.
+5. Close button: an icon button with `aria-label="Close"`.
+6. Body: any content, for example a [Field](?path=/docs/primitives-field--docs).
+7. Footer: actions, the main one last.
+
+## 5. Variants
+
+One variant. `role="alertdialog"` is used only by ConfirmDialog.
+
+<Controls of={DialogStories.Playground} />
+
+## 6. States
+
+| State | Notes |
+|---|---|
+| Closed | Nothing is rendered. |
+| Open | Focus moves into the dialog; the app behind is inert. |
+| Loading | Disable the main action and change its label ("Saving..."). The dialog stays open. |
+| Error | Show the message in the body (field error or Alert); do not close. |
+| Hover, pressed, disabled, selected | Belong to the controls inside. |
+
+Switches and checkboxes do not stand on `surface-raised` (2.80:1, tokens.md rule 15). A labelled primary button is fine there.
+
+## 7. Behavior and accessibility
+
+- Built on the Radix dialog: `role="dialog"`, `aria-labelledby` the title, `aria-describedby` the description.
+- Focus moves to the first focusable element on open, stays inside (Tab and Shift+Tab wrap) and returns to the trigger on close.
+- Escape and the close button close it. Clicking the scrim closes it as well.
+- The content behind has `aria-hidden` and does not scroll.
+- Every dialog needs a title. Without a description the dialog is simply not described.
+
+## 8. Content
+
+- Title: a verb and an object ("Rename note"), not a question.
+- Description: one sentence on the consequence.
+- Footer buttons: verbs ("Rename note", "Cancel"), never "OK".
+- Long titles wrap; the container never exceeds 65 characters of width (`max-w-prose`).
+
+<Canvas of={DialogStories.LongContent} />
+
+## 9. Responsiveness
+
+- 320 px: the dialog fills the width with 12 px margins, footer buttons stack with the main one on top.
+- 768 px and above: centered, at most 65 characters wide, footer buttons in a row on the right.
+- Content taller than the screen is not scrolled by the dialog yet; keep dialogs short (proposal, to be revisited with the first long dialog).
+
+<Canvas of={DialogStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `title` | `ReactNode` | required | Heading and accessible name. |
+| `description` | `ReactNode` | | Short explanation. |
+| `children` | `ReactNode` | | Body. |
+| `footer` | `ReactNode` | | Actions. |
+| `trigger` | `ReactNode` | | Element that opens it (rendered with `asChild`). |
+| `open`, `defaultOpen`, `onOpenChange` | | | Controlled or uncontrolled state. |
+| `role` | `"dialog" \| "alertdialog"` | `"dialog"` | Use `alertdialog` through ConfirmDialog. |
+| `onOpenAutoFocus` | `(event) => void` | | Choose the initially focused element. |
+
+## 11. Code
+
+```tsx
+import { Button, Dialog, Field, Input } from "@basalt/ui";
+
+<Dialog
+    trigger={<Button variant="secondary">Rename note</Button>}
+    title="Rename note"
+    description="The file name on disk changes too."
+    footer={
+        <>
+            <Button variant="ghost">Cancel</Button>
+            <Button>Rename note</Button>
+        </>
+    }
+>
+    <Field label="Note title"><Input defaultValue="Weekly plan" /></Field>
+</Dialog>
+```
+
+## 12. Do and don't
+
+- Do give every dialog a title, a way out (Cancel, Escape, Close) and verb buttons.
+- Don't stack a dialog on top of another dialog: finish or close the first one.
+- Don't put a long form in a dialog; use a page.
+
+## 13. Related
+
+[ConfirmDialog](?path=/docs/primitives-confirmdialog--docs), [Popover](?path=/docs/primitives-popover--docs), [Field](?path=/docs/primitives-field--docs), [Button](?path=/docs/primitives-button--docs).

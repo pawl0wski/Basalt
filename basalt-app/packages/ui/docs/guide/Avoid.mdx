@@ -1,0 +1,97 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Design system/What to avoid" />
+
+# What to avoid
+
+Three parts. For each item: how to recognize it on the screen and in the code, why it is a problem, and what to use instead. Code that is wrong is shown in blocks marked `bad`, which the token scanner skips.
+
+## Part 1. Anti-patterns of the product (from the references)
+
+### A01: the generic "AI startup" look
+
+- **On screen:** a purple-to-indigo gradient as background, button or text; glass cards (translucent with blur and a light 1 px border); sparkles next to AI features; a centered hero with gradient text; large rounded cards with a soft shadow in a grid of three.
+- **In code:**
+
+```tsx bad
+<div className="bg-gradient-to-r from-purple-500 to-indigo-500 backdrop-blur-md rounded-2xl shadow-xl" />
+```
+
+- **Why:** it looks like everything else and says nothing about Basalt, where privacy and openness are the point and AI is only "nice to have" (D03).
+- **Instead:** flat surfaces (`bg-surface-card`), a 1 px `border-border-divider`, radii `rounded-container`, no shadows.
+
+### A02: Notion-like "for everyone" minimalism
+
+- **On screen:** views hidden under "1 more...", actions under a "···" menu, no column of tool icons, no status bar, an emoji as the icon of every page, an oversized page title, pastel labels, tall table rows, collaboration UI (Share, avatars) in the header, a light theme.
+- **In code:** controls visible only on hover.
+
+```tsx bad
+<button className="opacity-0 group-hover:opacity-100">Rename</button>
+```
+
+- **Why:** the owner finds it too minimal for a tool: advanced functions are not visible.
+- **Instead:** minimal in decoration, not in function. Tools are visible icons ([IconButton](?path=/docs/primitives-iconbutton--docs)) in their section; the status bar shows counts and states.
+
+### AB1: cloud SaaS with an account
+
+- **On screen:** a login screen before the notes, "Pro" and "Upgrade" badges, plan and trial banners, team avatars in the header.
+- **In code:** a login route in front of the workspace, plan badge components, avatar stacks in the title bar.
+- **Why:** Basalt works locally first, without an account, on the owner's own server (D02, N02).
+- **Instead:** open on notes at once ([WelcomeScreen](?path=/docs/product-welcomescreen--docs)); account and sync live in their own settings section.
+
+### AB2: a feature that looks glued on
+
+- **On screen:** a feature with different buttons, spacing, dialogs, palette or icons than the rest.
+- **In code:** one-off components outside `@basalt/ui`, colors and spacing written by hand, your own dialog.
+- **Why:** the owner's Obsidian plugins "did not feel like core features".
+- **Instead:** compose features from shared components and tokens; put its tools in a section (R01.7).
+
+### AB3: invisible sync
+
+- **On screen:** sync state only in a disappearing notification, a spinner without a word, an error visible only inside settings.
+- **In code:** sync state sent only as a toast, no permanent indicator.
+
+```tsx bad
+toast({ title: "Synced" });
+```
+
+- **Why:** unclear sync was the main pain with the owner's previous tools.
+- **Instead:** a permanent [StatusIndicator](?path=/docs/primitives-statusindicator--docs) with a word in the status bar (R01.6, M3).
+
+## Part 2. The generic AI look (visual)
+
+| Looks like | Recognize it in code | Why it is a problem | Instead |
+|---|---|---|---|
+| Gradients | `bg-gradient-*`, `bg-clip-text` | Decoration without meaning (A01) | Flat token colors |
+| Frosted glass | `backdrop-blur-*`, translucent white backgrounds | Contrast depends on what is behind | `bg-surface-raised` with a divider outline |
+| Glow | `blur-3xl`, colored shadows | Noise around functions | Nothing |
+| Emoji instead of icons | Emoji characters in labels | Inconsistent, not themeable | Lucide outline icons, one stroke width |
+| AI sparkles | A sparkle icon on every AI feature | Marketing, not information | A plain word ("Summarize") |
+| Three identical cards | A grid of equal cards each with an icon, a title and a line | Hides what matters | One list, one card with divided rows |
+| Everything in pills | `rounded-full` on buttons and labels | Childish (A02) | `rounded-control` (4 px) |
+| A card in a card | Nested bordered containers | Visual clutter | One card with divided rows (R01.5) |
+| A shadow as the only separator | `shadow-*` with no border | Not visible on dark surfaces | Shade and a 1 px divider |
+| Everything centered | `text-center` on every block | Hard to scan; hides structure | Left-aligned columns |
+
+## Part 3. Implementation mistakes
+
+| Mistake | Recognize it | Why | Instead |
+|---|---|---|---|
+| A value outside the tokens | Hex colors, `bg-zinc-900`, `p-[13px]`; `npm run check:tokens` fails | The system cannot change and contrast is not measured | A token class |
+| A variant added in passing | A new `variant` prop for one screen | Two ways to do one thing | Use an existing variant, or follow Contributing |
+| A `div` instead of a button | `div` with `onClick` | No keyboard, no role, no focus | [Button](?path=/docs/primitives-button--docs) or [IconButton](?path=/docs/primitives-iconbutton--docs) |
+| A placeholder instead of a label | An input with only `placeholder` | The label disappears while typing | [Field](?path=/docs/primitives-field--docs) |
+| Status by color only | A red dot with no text | Invisible to some users | A word and an icon ([StatusIndicator](?path=/docs/primitives-statusindicator--docs)) |
+| A disabled button with no explanation | `disabled` and nothing near it | The user cannot tell why | A hint, or keep it enabled and explain |
+| A toast for an error that needs action | `toast({ variant: "error" })` | It disappears | [Alert](?path=/docs/primitives-alert--docs) or a banner |
+| A tooltip with needed information | A tooltip explaining a rule | Not shown on touch or to keyboard users who never open it | Visible text or a hint |
+| A danger background on a button | `bg-status-danger` | tokens.md forbids it | A destructive-colored text button |
+| A text color via `title` only | `title` as the only name | Unreliable for assistive technology | `aria-label` and visible text |
+
+```tsx bad
+<div onClick={save} className="bg-zinc-900 p-[13px] text-white">Save</div>
+```
+
+```tsx
+<Button onClick={save}>Save note</Button>
+```

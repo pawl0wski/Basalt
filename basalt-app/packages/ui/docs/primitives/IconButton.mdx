@@ -1,0 +1,155 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { FilePlus, Settings } from "lucide-react";
+import { DoDont } from "../../.storybook/blocks";
+import { IconButton } from "../../src/components/IconButton";
+import * as IconButtonStories from "../../src/components/IconButton.stories";
+
+<Meta of={IconButtonStories} />
+
+# IconButton
+
+## 1. What it is for
+
+An icon button gives the user a frequent, well-known action in the small space of a toolbar, such as "New note" or "Open settings".
+
+<Canvas of={IconButtonStories.Playground} />
+
+## 2. When to use
+
+- Toolbars and the title bar, where several actions sit in a row (R01.7).
+- Actions with a widely understood icon: new note, new folder, search, settings.
+- Repeated actions in a list row, when a text button for every row would crowd the list.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The action is rare or the icon is not obvious. | [Button](?path=/docs/primitives-button--docs) with a text label. |
+| The action is the main action of a view. | Button, variant `primary`. |
+| The control opens a page. | [TextLink](?path=/docs/primitives-textlink--docs). |
+| The meaning depends on the icon only. | A text label. Icons alone are not enough for unfamiliar actions (proposal). |
+
+## 4. Anatomy
+
+1. Container: a 28 x 28 px square (`size-icon-button`), `rounded-control`. In the `activity` size: 36 x 36 px (`size-activity-button`).
+2. Icon: 16 px (`size-icon`), Lucide outline, `icon-default`, `icon-active` on hover. In the `activity` size: 20 px (`size-activity-icon`).
+3. Accessible name: required `aria-label`, also shown as a [Tooltip](?path=/docs/primitives-tooltip--docs) on hover and keyboard focus.
+
+## 5. Variants
+
+| Variant | Use it for | Look |
+|---|---|---|
+| `ghost` (default) | Toolbars, title bar, list rows. | No fill, `state-hover` on hover. |
+| `secondary` | An icon action that must stand out from the surface, for example next to an input. | `button-secondary-bg` with a 1 px `border-divider`. |
+
+| Size | Use it for | Look |
+|---|---|---|
+| `default` | Toolbars, the title bar, list rows. | 28 px button, 16 px icon. |
+| `activity` | The [ActivityBar](?path=/docs/product-activitybar--docs) only. | 36 px button, 20 px icon. |
+
+<Canvas of={IconButtonStories.ActivitySize} />
+
+There is no `primary` or `destructive` icon button. A destructive action needs a text label (YAGNI, proposal).
+
+<Controls of={IconButtonStories.Playground} />
+
+<Canvas of={IconButtonStories.Variants} />
+
+## 6. States
+
+<Canvas of={IconButtonStories.States} />
+
+| State | What the user sees | Notes |
+|---|---|---|
+| Default | `icon-default` icon. | |
+| Hover | `icon-active` icon on `state-hover` (ghost) or `state-selected` (secondary). | R01.12 |
+| Focus | 2 px `focus-ring` outline, 2 px offset. | Focus appearance accepted in the token specification. |
+| Active | `icon-active` icon, no fill (`active` prop, `data-active`). For the open section of the activity bar and for the toggle of an open panel. | The prop only styles. The consumer sets `aria-current` or `aria-expanded`. |
+| Pressed | Same as hover. | Proposal. |
+| Disabled | `text-muted` icon, `not-allowed` cursor. | Proposal (open question 3). Say why in nearby text if the user could expect the action. |
+| Loading | Not supported. | Proposal. |
+
+## 7. Behavior and accessibility
+
+- Native `button`, `type="button"` by default.
+- `aria-label` is required by the type. It names the action ("New note"), not the icon ("Plus").
+- Tooltip: the tooltip text defaults to the `aria-label` (resolved open question 4: the native `title` was replaced by the Tooltip component in Batch 3). It appears on hover and on keyboard focus and closes with Escape. It does not appear on touch, so the accessible name must never carry information that the visible UI lacks. Pass `tooltip={false}` where the label is obvious and a tooltip would be noise, for example the close button of a dialog.
+- Keyboard: Tab to focus, Enter or Space to activate.
+- The icon is decorative: give it `aria-hidden="true"`.
+- Target: 28 x 28 px, above the 24 x 24 px minimum (WCAG 2.5.8). Icon contrast: `icon-default` on `surface-*` is at least 3:1 (WCAG 1.4.11, measured in `contrast.test.ts`).
+
+## 8. Content
+
+- The `aria-label` is a verb and an object: "New note", "Open settings". No "button" in the name.
+- Add the shortcut to the tooltip when one exists: `tooltip="Settings (Ctrl+,)"`.
+- Icons come from Lucide outline at one stroke width (see Icons). Do not use emoji.
+
+## 9. Responsiveness
+
+The control is the same size at every width. In a toolbar, keep at most the icons that fit at 320 px and move the rest into a menu (Menu is planned in Batch 3).
+
+<Canvas of={IconButtonStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `aria-label` | `string` | required | Accessible name. |
+| `children` | `ReactNode` | required | The icon. |
+| `variant` | `"ghost" \| "secondary"` | `"ghost"` | Look. |
+| `size` | `"default" \| "activity"` | `"default"` | Button and icon size. |
+| `active` | `boolean` | `false` | Shows the `icon-active` colour for an open section or panel. Set the ARIA attribute yourself. |
+| `tooltip` | `ReactNode \| false` | the `aria-label` | Tooltip text, or `false` for no tooltip. |
+| `type` | `"button" \| "submit" \| "reset"` | `"button"` | Button type. |
+| `disabled` | `boolean` | `false` | Blocks interaction. |
+| ...rest | `ButtonHTMLAttributes` | | Passed to the element. |
+
+## 11. Code
+
+```tsx
+import { IconButton } from "@basalt/ui";
+import { FilePlus } from "lucide-react";
+
+<IconButton aria-label="New note" onClick={createNote}>
+    <FilePlus aria-hidden="true" />
+</IconButton>
+```
+
+```tsx
+<IconButton aria-label="Open settings" tooltip="Settings (Ctrl+,)">
+    <Settings aria-hidden="true" />
+</IconButton>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: (
+                <IconButton aria-label="New note">
+                    <FilePlus aria-hidden="true" />
+                </IconButton>
+            ),
+            reason: "The name says what the action does.",
+        }}
+        bad={{
+            children: (
+                <IconButton aria-label="Plus">
+                    <FilePlus aria-hidden="true" />
+                </IconButton>
+            ),
+            reason: "The name describes the picture, not the action.",
+        }}
+    />
+</Unstyled>
+
+```tsx bad
+<button><FilePlus /></button>
+```
+
+Don't build an icon-only control from a bare `button` or a `div`: it has no name, no focus style and no hit area.
+
+## 13. Related
+
+[Button](?path=/docs/primitives-button--docs), [TextLink](?path=/docs/primitives-textlink--docs), [Icons](?path=/docs/foundations-icons--docs).

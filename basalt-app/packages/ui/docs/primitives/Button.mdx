@@ -1,0 +1,183 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { DoDont } from "../../.storybook/blocks";
+import { Button } from "../../src/components/Button";
+import * as ButtonStories from "../../src/components/Button.stories";
+
+<Meta of={ButtonStories} />
+
+# Button
+
+## 1. What it is for
+
+A button starts an action the user has decided to take, such as saving a note, choosing a workspace folder or deleting a note.
+
+<Canvas of={ButtonStories.Playground} />
+
+## 2. When to use
+
+- The user confirms a change: "Save note", "Create new workspace".
+- The user starts something that does not leave the screen: "New note", "Choose a workspace".
+- The user cancels or dismisses a dialog: "Cancel".
+- The user starts a destructive action: "Delete note" (the confirmation dialog is a separate step).
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The action only moves the user to another page or section. | [TextLink](?path=/docs/primitives-textlink--docs) |
+| The control has an icon and no visible text. | [IconButton](?path=/docs/primitives-iconbutton--docs) |
+| The control turns a setting on or off. | Switch or Checkbox (Switch is planned in Batch 2) |
+| The label is a state, not an action ("Synced"). | StatusIndicator (planned in Batch 2) |
+
+## 4. Anatomy
+
+1. Container: 28 px high, `rounded-control` (4 px), `px-between-groups` (12 px).
+2. Label: `text-size-ui` (13 px), normal weight. Required.
+3. Icon: 16 px (`size-icon`), before the label. Optional. An icon never replaces the label here; use IconButton for that.
+
+## 5. Variants
+
+| Variant | Use it for | Look | Source |
+|---|---|---|---|
+| `primary` | The one main action of a view. At most one per view. | `action-primary` fill, `text-on-accent` label. | R01.2, R02.3, R02.7 |
+| `secondary` | Other actions next to the main one. | `button-secondary-bg` fill, 1 px `border-divider`. | R01.5, tokens.md `button-secondary-bg` |
+| `ghost` | Low-emphasis actions such as "Cancel" and actions inside toolbars. | No fill, `state-hover` on hover. | R01.12 |
+| `destructive` | Actions that delete data. | No fill, `status-danger` label. Never a danger background (tokens.md: `status-danger` is not for button backgrounds). | tokens.md `status-danger` |
+
+Sizes: `default` is 28 px. `lg` is 36 px (`activity-button` token) and is a proposal for a single prominent action such as the welcome screen (open question 2).
+
+Compatibility: `default` and `outline` are temporary aliases of `primary` and `secondary`, kept so that `packages/app` keeps working without edits (open question 1). New code uses the Basalt names.
+
+<Controls of={ButtonStories.Playground} />
+
+<Canvas of={ButtonStories.Variants} />
+
+## 6. States
+
+<Canvas of={ButtonStories.States} />
+
+| State | What the user sees | Notes |
+|---|---|---|
+| Default | Variant colors. | |
+| Hover | Fill changes to `action-primary-hover`, `state-selected` (secondary) or `state-hover` (ghost, destructive). No scaling and no opacity change. | R01.12 |
+| Focus | 2 px `focus-ring` outline with a 2 px offset, shown for keyboard focus only. | Focus appearance is a proposal accepted in the token specification. |
+| Pressed | Same as hover. There is no separate pressed style. | Proposal: no source defines one. |
+| Disabled | `text-muted` label on `state-hover`, `not-allowed` cursor. | Proposal (open question 3): no disabled token exists in the sources. |
+| Loading | Not a state of this component. The caller disables the button and changes the label ("Saving..."). | Proposal. |
+
+A disabled button does not say why it is unavailable. Put the reason in text next to it, or leave the button enabled and explain the problem when the user presses it (WCAG 3.3.1). Do not rely on `title` for the reason.
+
+## 7. Behavior and accessibility
+
+- Native `button` element, `type="button"` by default so it never submits a form by accident. Use `type="submit"` for the form's main action.
+- Keyboard: Tab moves focus to it, Enter and Space activate it.
+- Role and name come from the element and its text. Do not add `role` or `aria-label` when the visible text is enough.
+- The target is 28 px high, above the 24 x 24 px minimum (WCAG 2.5.8).
+- Label contrast: all variants meet 4.5:1 on their backgrounds (WCAG 1.4.3, measured in `contrast.test.ts`). The border of `secondary` is a divider and the button is identified by its label, not by the border (WCAG 1.4.11 applies to the label).
+- With `asChild` the child keeps its own semantics. A link rendered as a button is still announced as a link.
+
+## 8. Content
+
+- Start with a verb and name the object: "Save note", "Delete note", "Choose a workspace". Never "OK" or "Yes".
+- Sentence case, no final period.
+- Keep it to 1 to 3 words where possible. A longer label is allowed but must still fit on one line at 320 px; if it does not, rewrite it.
+- The label never wraps (`whitespace-nowrap`). Do not put counts that change length in the label without a fixed width.
+- The interface is English only for now. Keep text in props, never in the component, so it can be translated later.
+
+## 9. Responsiveness
+
+- 320 px: place related buttons in a column and let them fill the width with `className="w-full"`.
+- 768 px and 1440 px: buttons keep their natural width and sit in a row, with `gap-between-groups` between them.
+- The button never changes its height between breakpoints.
+
+<Canvas of={ButtonStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `variant` | `"primary" \| "secondary" \| "ghost" \| "destructive"` (also `"default" \| "outline"`, deprecated aliases) | `"primary"` | Visual emphasis. |
+| `size` | `"default" \| "lg"` | `"default"` | 28 px or 36 px. `lg` is a proposal. |
+| `asChild` | `boolean` | `false` | Render the child element with the button's styles. |
+| `type` | `"button" \| "submit" \| "reset"` | `"button"` | Not forwarded when `asChild` is set. |
+| `disabled` | `boolean` | `false` | Blocks interaction and dims the label. |
+| `className` | `string` | | Layout only (width, margins). Do not use it to change colors. |
+| ...rest | `ButtonHTMLAttributes` | | Passed to the element. |
+
+## 11. Code
+
+```tsx
+import { Button } from "@basalt/ui";
+
+<Button>Save note</Button>
+```
+
+```tsx
+import { Button } from "@basalt/ui";
+import { FilePlus } from "lucide-react";
+
+<div className="flex items-center gap-between-groups">
+    <Button variant="ghost" onClick={closeDialog}>Cancel</Button>
+    <Button type="submit">Save note</Button>
+</div>
+
+<Button variant="secondary">
+    <FilePlus aria-hidden="true" />
+    New note
+</Button>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: <Button>Save note</Button>,
+            reason: "The label names the action and its object.",
+        }}
+        bad={{
+            children: <Button>OK</Button>,
+            reason: "The user has to remember what OK confirms.",
+        }}
+    />
+</Unstyled>
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: (
+                <>
+                    <Button variant="ghost">Cancel</Button>
+                    <Button>Save note</Button>
+                </>
+            ),
+            reason: "One primary action, other actions are quieter.",
+        }}
+        bad={{
+            children: (
+                <>
+                    <Button>Cancel</Button>
+                    <Button>Save note</Button>
+                </>
+            ),
+            reason: "Two primary buttons compete for attention.",
+        }}
+    />
+</Unstyled>
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: <Button variant="destructive">Delete note</Button>,
+            reason: "Danger is shown by the label color, so the button does not shout.",
+        }}
+        bad={{
+            children: <Button variant="primary">Delete note</Button>,
+            reason: "A primary button invites a click on a destructive action.",
+        }}
+    />
+</Unstyled>
+
+## 13. Related
+
+[IconButton](?path=/docs/primitives-iconbutton--docs), [TextLink](?path=/docs/primitives-textlink--docs), [Field](?path=/docs/primitives-field--docs), [Color](?path=/docs/foundations-color--docs), [Shape and depth](?path=/docs/foundations-shape-and-depth--docs).

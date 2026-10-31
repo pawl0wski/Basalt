@@ -1,0 +1,102 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as ActivityBarStories from "../../src/product/ActivityBar.stories";
+
+<Meta of={ActivityBarStories} />
+
+# ActivityBar
+
+## 1. What it is for
+
+The narrow column at the left edge of the window that switches between the sections of the application: Notes, Search, Bookmarks and, at the bottom, Settings. Source: R02.1, `tokeny.md`.
+
+<Canvas of={ActivityBarStories.Playground} />
+
+## 2. When to use
+
+- Inside [AppShell](?path=/docs/product-appshell--docs), on every screen of an open workspace.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| Actions on a note or the list (new note, sort). | [IconButton](?path=/docs/primitives-iconbutton--docs) in the header of the panel. |
+| Sibling views of one object. | [Tabs](?path=/docs/primitives-tabs--docs). |
+| A count or a status on an icon. | Not built, see [What is missing](?path=/docs/design-system-what-is-missing--docs). |
+
+## 4. Anatomy
+
+1. Container: `nav` named "Sections", 48 px wide (`w-activity-bar`), `surface-frame`, `p-in-group`.
+2. Section: an [IconButton](?path=/docs/primitives-iconbutton--docs) in the `activity` size: a 36 px button (`size-activity-button`) with a 20 px icon (`size-activity-icon`).
+3. Active section: the icon is `icon-active`, and the button has `aria-current="page"`.
+4. Footer: the sections pinned to the bottom (Settings).
+
+| Section | Icon | Accessible name |
+|---|---|---|
+| Notes | `Files` | Notes |
+| Search | `Search` | Search |
+| Bookmarks | `Bookmark` | Bookmarks |
+| Settings (footer) | `Settings` | Settings |
+
+## 5. Variants
+
+One layout. No section is active in a window where none applies.
+
+<Canvas of={ActivityBarStories.NothingActive} />
+
+## 6. States
+
+<Canvas of={ActivityBarStories.States} />
+
+| State | What the user sees |
+|---|---|
+| Default | `icon-default` icon. |
+| Hover | `icon-active` icon on `state-hover`. |
+| Focus | 2 px `focus-ring`. |
+| Active | `icon-active` icon. No fill, so that hover still reads on top of it. |
+
+The matrix repeats the component, so the "unique landmark" accessibility rule is switched off on that one story. The real screen has one.
+
+## 7. Behavior and accessibility
+
+- `nav` "Sections". Every section is a native button with a name and a tooltip (the name).
+- The current section has `aria-current="page"`; a click calls `onSelect(id)`.
+- The footer sections follow the others in the tab order.
+
+## 8. Content
+
+A section is named by what the user finds there, in one word: "Notes", not "Open notes panel".
+
+## 9. Responsiveness
+
+Fixed 48 px. Desktop only.
+
+## 10. API
+
+| Prop | Type | Description |
+|---|---|---|
+| `items` | `{ id, label, icon }[]` | Sections from the top. |
+| `footerItems` | `{ id, label, icon }[]` | Sections pinned to the bottom. |
+| `activeId` | `string` | The current section. |
+| `onSelect` | `(id: string) => void` | Called with the id of the clicked section. |
+| `className` | `string` | |
+
+## 11. Code
+
+```tsx
+<ActivityBar
+    items={[{ id: "notes", label: "Notes", icon: <Files aria-hidden="true" /> }]}
+    footerItems={[{ id: "settings", label: "Settings", icon: <Settings aria-hidden="true" /> }]}
+    activeId="notes"
+    onSelect={openSection}
+/>
+```
+
+## 12. Do and don't
+
+- Do give every icon `aria-hidden="true"` and put the name in `label`.
+- Don't add a count badge: there is no token for it yet.
+- Don't use it for tools of a single note.
+
+## 13. Related
+
+[AppShell](?path=/docs/product-appshell--docs), [IconButton](?path=/docs/primitives-iconbutton--docs), [Icons](?path=/docs/foundations-icons--docs).

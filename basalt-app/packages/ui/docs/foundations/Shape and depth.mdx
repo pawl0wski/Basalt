@@ -1,0 +1,24 @@
+import { Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { ShapeDepth } from "../../.storybook/blocks";
+
+<Meta title="Foundations/Shape and depth" tags={["!autodocs"]} />
+
+# Shape and depth
+
+Flat surfaces with small radii. Layers are told apart by shade and a 1 px line, never by shadow (R01.1, A01).
+
+## Rules
+
+| Rule | Source |
+|---|---|
+| Two radii only: 4 px for controls and 8 px for containers. | R01.12, R01.5 |
+| Do not use a radius larger than 8 px. `rounded-2xl` and `rounded-full` are not available. The switch track is the only pill, through `rounded-switch` (proposal). | A01, tokens.md |
+| No shadows, no blur, no glow. The utilities do not exist. | R01.1, A01, tokens.md rule 2 |
+| A layer above content (menu, dialog, tooltip, popover) is `surface-raised` with a `border-divider` outline. | tokens.md |
+| Do not nest a card in a card. A group is one card with divided rows. | R01.5, A01 |
+
+## Preview
+
+<Unstyled>
+    <ShapeDepth />
+</Unstyled>

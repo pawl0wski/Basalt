@@ -1,0 +1,30 @@
+import { Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { TypeRoles } from "../../.storybook/blocks";
+
+<Meta title="Foundations/Typography" tags={["!autodocs"]} />
+
+# Typography
+
+One sans-serif family for the whole product, and a monospace family only for code and technical values (R01.9, R02.5). The interface is quieter than the note, so UI text is smaller than note text (R01.10). The fonts are the system fonts for now (tokens.md rule 9), so nothing is downloaded.
+
+## Rules
+
+| Rule | Source |
+|---|---|
+| One family for the interface and the notes. | R01.9 |
+| Monospace only in code, inline code and technical values (a path, a colour value). Never in the interface or in note prose. | R02.5 |
+| The largest text in the product is note heading 1 at 26 px. Interface titles are never larger than the 13 px section heading. | T5, tokens.md rule 8 |
+| Note text has a generous line height (1.6), tree rows are tight and equal. | R01.11 |
+| Running text stays at about 65 characters per line. Use `max-w-prose` for interface prose. | design system brief; proposal for the token |
+| Do not use decorative fonts. | R01.9 |
+
+## Roles
+
+<Unstyled>
+    <TypeRoles />
+</Unstyled>
+
+## Decisions that need the owner
+
+- **Line length of notes.** The note column is 700 px, about 75 characters at 16 px. That is wider than the 65 characters rule. The owner approved 700 px (R01.8, tokens.md). Interface prose uses `max-w-prose` (65 ch). Decision needed: keep 700 px or reduce to about 620 px.
+- **System fonts.** On Linux the 600 and 700 weights can look like regular text because the system font has no bold face (tokens.md rule 9). Bundling a font stays an open decision.

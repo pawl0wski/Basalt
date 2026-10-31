@@ -1,0 +1,96 @@
+import { Canvas, Controls, Meta } from "@storybook/addon-docs/blocks";
+import * as ErrorStateStories from "../../src/components/ErrorState.stories";
+
+<Meta of={ErrorStateStories} />
+
+# ErrorState
+
+## 1. What it is for
+
+An error state replaces a view that could not be shown, says what went wrong in plain words and offers a way to try again, such as a workspace folder that cannot be opened.
+
+<Canvas of={ErrorStateStories.WithDetails} />
+
+## 2. When to use
+
+- A whole view or region failed to load or open.
+- The user can do something about it: retry, choose another folder.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| A problem with one field. | The error message of a [Field](?path=/docs/primitives-field--docs). |
+| A problem that leaves the view usable. | [Alert](?path=/docs/primitives-alert--docs). |
+| An empty list. | [EmptyState](?path=/docs/primitives-emptystate--docs). |
+| Only the sync state. | [StatusIndicator](?path=/docs/primitives-statusindicator--docs). |
+
+## 4. Anatomy
+
+Same as [EmptyState](?path=/docs/primitives-emptystate--docs), with:
+
+1. Icon: a `status-danger` alert circle (decorative; the words carry the meaning).
+2. Title and description: what happened and what to do.
+3. Action: usually a Button ("Try again", "Choose a workspace").
+4. Details (optional): technical text in a code block (`code-block-bg`, `font-code`), for support or for copying.
+
+## 5. Variants
+
+One layout. `details` is optional.
+
+<Controls of={ErrorStateStories.Playground} />
+
+## 6. States
+
+An error state is a state of the view. Its action button has the Button states. After a retry, the view shows a Skeleton, then the content or the error again.
+
+## 7. Behavior and accessibility
+
+- `role="alert"`: appears after a failed load and is announced at once.
+- Move focus to the action button only when the view was the user's current task; otherwise leave focus where it is.
+- The details block is focusable (`tabIndex=0`) so a keyboard user can scroll long lines.
+- Color is not the only signal: the title says what failed.
+- Contrast: `status-danger` on `surface-editor` is at least 4.5:1 (measured in `contrast.test.ts`).
+
+## 8. Content
+
+- Title: what failed ("Could not open the workspace"), not "Error" or "Oops".
+- Description: the reason if known, then what to do ("The folder is not available. Reconnect the drive or choose another folder.").
+- Do not blame the user, do not show a bare error code as the only message; put codes in `details`.
+
+## 9. Responsiveness
+
+Text wraps at 320 px. The details block scrolls horizontally inside its own box.
+
+<Canvas of={ErrorStateStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `title` | `ReactNode` | required | What failed. |
+| `description` | `ReactNode` | required | Why and what to do. |
+| `action` | `ReactNode` | | Retry or alternative. |
+| `details` | `string` | | Technical text. |
+
+## 11. Code
+
+```tsx
+import { Button, ErrorState } from "@basalt/ui";
+
+<ErrorState
+    title="Could not open the workspace"
+    description="The folder is not available. Reconnect the drive or choose another folder."
+    action={<Button>Choose a workspace</Button>}
+/>
+```
+
+## 12. Do and don't
+
+- Do say what happened and give one next step.
+- Don't show only "Something went wrong".
+- Don't use it for errors the rest of the view can survive; use an Alert.
+
+## 13. Related
+
+[EmptyState](?path=/docs/primitives-emptystate--docs), [Alert](?path=/docs/primitives-alert--docs), [Skeleton](?path=/docs/primitives-skeleton--docs).

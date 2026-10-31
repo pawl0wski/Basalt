@@ -1,0 +1,61 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Design system/Contributing" />
+
+# Contributing
+
+## When to add something
+
+| Situation                                                                     | Do this                                                                                      |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| The same need appears in at least two places and no component covers it       | Add a component.                                                                             |
+| An existing component almost fits and the difference is a real, repeated need | Add a variant or a prop, and update every page that lists the variants.                      |
+| It is needed once, for one screen                                             | Add nothing. Compose existing components, or keep it local to the screen until a second use. |
+| The change is only about looks                                                | Change the token, not the component.                                                         |
+
+## What a new component must have
+
+1. A component in `src/components/` (base) or `src/product/` (tied to a story), using only token classes.
+2. A unit test next to it for behavior and accessibility (Vitest).
+3. Stories: a playground with controls, every variant and size, a state matrix (hover and focus frozen with `data-preview-state`), long content, narrow screen, and a `play` test for the main behavior.
+4. A docs page with the same 13 sections: what it is for, when to use, when not to, anatomy, variants, states, behavior and accessibility, content, responsiveness, API, code, do and don't, related.
+5. An entry in the catalog (`.storybook/blocks/catalog.tsx`) and in `docs/design-system.md`.
+6. An export in `src/index.ts`.
+7. Every story passes the accessibility check, or the exception is written down on the page.
+
+## What a screen story must have
+
+A screen is a story that composes the product components, never a new component. It lives in `docs/screens/` and is built with package imports only: no local copy of a region, no shell `div`, no token override.
+
+1. A default story with every region of the window and realistic data.
+2. The states of the screen: no note open, loading, error, a conflict, a sync error, a closed right panel.
+3. Both reference widths: 1440 px and 768 px (`globals: { viewport }`). 320 px is not a width of screens.
+4. Every story passes the accessibility check and `npm run check:tokens` reports 0.
+5. Anything the screen needs and the system lacks is recorded in `What is missing`, not solved inside the story.
+
+## When a token changes
+
+1. Change it in `src/tokens/` with a comment that names the source.
+2. Run `npm run test`: the contrast tests read the CSS and fail on a pair below 4.5:1 (text) or 3:1 (controls).
+3. Check Color and the pages that use it in Storybook, in both themes and with each accent.
+4. Update `.storybook/blocks/tokenData.ts` and the agent file.
+5. Record why in a lesson (`.ai/lessons/`).
+
+## Who approves
+
+The owner (Jakub Pawłowski) approves new components, new variants, token changes and anything marked "proposal". The agent that builds writes the proposal and the reason; it does not decide.
+
+## Commands
+
+Run from `basalt-app/`:
+
+```bash
+npm run safety-net          # check:tokens + test:stories:themes, the same gate CI runs
+npm run check:tokens        # values outside the tokens in packages/ui and packages/app (exit code 1 on violations)
+npm run test                # unit tests (jsdom), includes the contrast tests
+npm run test:stories:themes # stories as tests with accessibility checks (Chromium)
+npm run lint                # eslint, no warnings
+npm run typecheck           # all workspaces
+npm run build-storybook     # production build
+npm run storybook           # dev server on port 6006
+```

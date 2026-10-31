@@ -1,0 +1,92 @@
+import { Canvas, Controls, Meta } from "@storybook/addon-docs/blocks";
+import * as ImagePlaceholderStories from "../../src/product/ImagePlaceholder.stories";
+
+<Meta of={ImagePlaceholderStories} />
+
+# ImagePlaceholder and NoteImage
+
+## 1. What it is for
+
+`NoteImage` shows an image that a note links to. `ImagePlaceholder` takes its place when the image is loading or cannot be shown, without ever changing the note text. Source: E01-S03 UI/UX (display and placeholders).
+
+<Canvas of={ImagePlaceholderStories.LoadedImage} />
+
+## 2. When to use
+
+- Below the line that holds an image link in the editor.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| A file that is not an image. | The link as text. |
+| An error about a whole note. | [NoteBanner](?path=/docs/product-notebanner--docs). |
+
+## 4. Anatomy
+
+- `NoteImage`: an `img` scaled to the column width (`max-w-full`), height from its aspect ratio, 1 px `border-divider`, `rounded-control`. When width and height are known the aspect ratio is reserved so the text does not jump while scrolling (E01-S03 G5).
+- `ImagePlaceholder`: a bordered box (`surface-card`, `border-divider`, `rounded-container`) with a 16 px icon and a short text.
+
+## 5. Variants (problems)
+
+| Problem | Text (from E01-S03) |
+|---|---|
+| `loading` | Loading image (the text is a proposal) |
+| `not-found` | Image not found: attachments/x.png |
+| `unreadable` | Image could not be read |
+| `unsupported` | Format not supported |
+| `too-large` | Image is too large (over 20 MiB or 100 megapixels) |
+| `remote` | Remote images are not loaded |
+| `invalid` | Invalid image link |
+
+<Controls of={ImagePlaceholderStories.Playground} />
+
+<Canvas of={ImagePlaceholderStories.AllProblems} />
+
+## 6. States
+
+An image has no interactive state: widgets are not focusable and do not trap the cursor (E01-S03). A placeholder is replaced by the image when it loads, and shown again briefly when an image evicted from the cache scrolls back into view.
+
+## 7. Behavior and accessibility
+
+- `img` keeps the alt text of the Markdown link. For pasted images the alt text is a timestamp name (accepted compromise in E01-S03).
+- Placeholders are text, so screen readers read them. The icon is decorative.
+- Contrast: `text-muted` on `surface-card` is at least 4.5:1.
+
+## 8. Content
+
+- The placeholder says what is wrong in plain words, with the path only for a missing file.
+- Long paths wrap (`break-words`).
+
+<Canvas of={ImagePlaceholderStories.LongPath} />
+
+## 9. Responsiveness
+
+The image and the placeholder fill the note column (700 px at most) and never overflow it.
+
+## 10. API
+
+`ImagePlaceholder`: `problem` (required), `path`, `className`.
+
+`NoteImage`: `src`, `alt`, `width`, `height`.
+
+## 11. Code
+
+```tsx
+import { ImagePlaceholder, NoteImage } from "@basalt/ui";
+
+{state === "ready" ? (
+    <NoteImage src={url} alt={alt} width={width} height={height} />
+) : (
+    <ImagePlaceholder problem={problem} path={path} />
+)}
+```
+
+## 12. Do and don't
+
+- Do reserve the final height when the dimensions are known.
+- Don't change the note text because an image failed.
+
+## 13. Related
+
+[NoteBanner](?path=/docs/product-notebanner--docs), [Skeleton](?path=/docs/primitives-skeleton--docs), [Notes screens](?path=/docs/screens-map-of-states--docs).

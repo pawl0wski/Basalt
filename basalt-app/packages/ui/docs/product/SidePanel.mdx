@@ -1,0 +1,89 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as SidePanelStories from "../../src/product/SidePanel.stories";
+
+<Meta of={SidePanelStories} />
+
+# SidePanel
+
+## 1. What it is for
+
+The right panel of the window: a titled frame with a search and a close action, and a slot for the content. The first content is the outline of the open note. Source: R01.14, `tokeny.md`.
+
+<Canvas of={SidePanelStories.Playground} />
+
+## 2. When to use
+
+- The right section of [AppShell](?path=/docs/product-appshell--docs) while a note is open.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The left column with the note list. | [NoteSidebar](?path=/docs/product-notesidebar--docs). |
+| A short task that blocks the rest. | [Dialog](?path=/docs/primitives-dialog--docs). |
+| A few controls next to a button. | [Popover](?path=/docs/primitives-popover--docs). |
+
+## 4. Anatomy
+
+1. Container: `aside` named by the title, 300 px wide (`w-sidebar`, as the left panel), `surface-card`.
+2. Header: `p-panel`, a 1 px `border-divider` below. The title (`font-ui-strong`, truncated), then a search icon button and a close icon button (`PanelRightClose`).
+3. Content slot: scrolls on its own and is focusable by keyboard.
+
+## 5. Variants
+
+| Variant | Use it for |
+|---|---|
+| With search (default when `onSearch` is given) | A panel whose content can be searched. |
+| Without search | A panel with nothing to search. |
+
+<Canvas of={SidePanelStories.WithoutSearch} />
+
+## 6. States
+
+The panel is a frame. What its content shows (empty, list, loading, error) belongs to the content. The outline content and its loading and error states are not designed yet (see [What is missing](?path=/docs/design-system-what-is-missing--docs)). For an empty outline use one grey sentence, as in R01.14: "No headings found."
+
+<Canvas of={SidePanelStories.LongContent} />
+
+## 7. Behavior and accessibility
+
+- `aside` named by `title`. The content slot has `tabindex="0"` so that a keyboard user can scroll it.
+- The actions are named after the panel: "Search Outline", "Close Outline".
+- Closing is the application's job: `onClose` is called, and the application stops passing the panel to the shell.
+
+## 8. Content
+
+A noun for the title: "Outline", not "Document outline panel". Empty text is one sentence.
+
+## 9. Responsiveness
+
+Fixed 300 px. Below 1440 px the application starts with the panel closed; see [AppShell](?path=/docs/product-appshell--docs).
+
+<Canvas of={SidePanelStories.LongTitle} />
+
+## 10. API
+
+| Prop | Type | Description |
+|---|---|---|
+| `title` | `string` | Visible title and landmark name. |
+| `onClose` | `() => void` | Close action. |
+| `onSearch` | `() => void` | Optional. Without it there is no search button. |
+| `children` | `ReactNode` | The content. |
+| `className` | `string` | |
+
+## 11. Code
+
+```tsx
+<SidePanel title="Outline" onClose={closePanel} onSearch={searchOutline}>
+    <p className="p-panel text-size-ui-small text-text-muted">No headings found.</p>
+</SidePanel>
+```
+
+## 12. Do and don't
+
+- Do keep the header: it says what the panel is.
+- Don't show the panel when no note is open.
+- Don't add more header actions without a spec.
+
+## 13. Related
+
+[AppShell](?path=/docs/product-appshell--docs), [NoteSidebar](?path=/docs/product-notesidebar--docs), [IconButton](?path=/docs/primitives-iconbutton--docs).

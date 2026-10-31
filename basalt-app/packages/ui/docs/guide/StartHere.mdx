@@ -1,0 +1,34 @@
+import { Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { ComponentTable } from "../../.storybook/blocks";
+
+<Meta title="Design system/Start here" />
+
+# Start here
+
+Basalt is a focused, graphite, self-owned, tool-like and orderly note application. It keeps the note in the middle and every tool in its own visible section. It speaks in plain technical language, never in marketing language. (Source: the character and anti-character chosen by the owner in `referencje.md`.)
+
+**Character:** focused, graphite, own, tool-like, orderly.
+**Not:** generic, loud, childish, function-hiding, cloud-corporate.
+
+## Build a screen in five steps
+
+1. **Find a pattern.** Look in [Patterns](?path=/docs/screens-map-of-states--docs) and the [Notes screens](?path=/docs/screens-map-of-states--docs). If a pattern fits, start from it. If none does, say so in your pull request.
+2. **Choose components with [How to choose](?path=/docs/design-system-how-to-choose--docs).** Use the component that fits the user's task, not the one that looks right.
+3. **Use semantic tokens.** Colors, spacing, radii and type sizes come from tokens (`bg-surface-card`, `text-text-muted`, `gap-in-group`). A value that is not a token does not ship. Run `npm run check:tokens`.
+4. **Design the data states.** For every list or object: loading, empty, error, partial, many, long text. Each one is a story.
+5. **Check [What to avoid](?path=/docs/design-system-what-to-avoid--docs).** Then run the checks in [Contributing](?path=/docs/design-system-contributing--docs).
+
+## All components
+
+Every component with its import, when to use it and when not. The full catalog with previews is on the [Components](?path=/docs/design-system-components--docs) page.
+
+<Unstyled>
+    <ComponentTable />
+</Unstyled>
+
+## Where things are
+
+- Foundations: [Color](?path=/docs/foundations-color--docs), [Typography](?path=/docs/foundations-typography--docs), [Spacing and layout](?path=/docs/foundations-spacing-and-layout--docs), [Shape and depth](?path=/docs/foundations-shape-and-depth--docs), [Motion](?path=/docs/foundations-motion--docs), [Icons](?path=/docs/foundations-icons--docs), [Themes](?path=/docs/foundations-themes--docs).
+- Rules for everyone: [Usage and accessibility](?path=/docs/design-system-usage-and-accessibility--docs), [Content](?path=/docs/design-system-content--docs).
+- Gaps and plans: [What is missing](?path=/docs/design-system-what-is-missing--docs), [Epics](?path=/docs/design-system-epics-e01-local-markdown-notes--docs).
+- Agents: read `basalt-app/packages/ui/docs/design-system.md` first.

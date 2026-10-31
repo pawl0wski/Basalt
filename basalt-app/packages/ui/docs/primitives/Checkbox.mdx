@@ -1,0 +1,131 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { DoDont } from "../../.storybook/blocks";
+import { Checkbox } from "../../src/components/Checkbox";
+import * as CheckboxStories from "../../src/components/Checkbox.stories";
+
+<Meta of={CheckboxStories} />
+
+# Checkbox
+
+## 1. What it is for
+
+A checkbox lets the user choose an option that is saved with the form or the setting, such as "Show word count".
+
+<Canvas of={CheckboxStories.Playground} />
+
+## 2. When to use
+
+- A setting with two values where the change is applied with a button or later: settings cards, forms.
+- A list of independent options where several can be chosen.
+- Task items in a note, when the task editor arrives.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The change applies immediately, like turning sync on. | Switch (Batch 2). |
+| Exactly one option of several. | RadioGroup (Batch 3). |
+| An action. | [Button](?path=/docs/primitives-button--docs). |
+| A choice among many items. | Select (Batch 2). |
+
+## 4. Anatomy
+
+1. Box: 16 px (`size-icon`), `rounded-control`, 1 px `border-control`, `surface-frame` fill. Checked: `action-primary` fill with a `text-on-accent` check mark.
+2. Label: `text-size-ui`, to the right, `gap-between-groups`. Required.
+3. Hit area: the whole row, at least 28 px high (`min-h-icon-button`). The label is part of the target.
+
+Box size 16 px inside a 28 px row is a proposal (open question 5).
+
+## 5. Variants
+
+One variant. The indeterminate state is not supported yet; it is added with the first select-all use.
+
+<Controls of={CheckboxStories.Playground} />
+
+<Canvas of={CheckboxStories.Group} />
+
+## 6. States
+
+<Canvas of={CheckboxStories.States} />
+
+| State | What the user sees | Notes |
+|---|---|---|
+| Unchecked | Empty box with `border-control`. | |
+| Checked | `action-primary` fill and a check mark. The shape (check mark) is the signal, not color only (WCAG 1.4.1). | R01.2 |
+| Hover | Unchecked: the border becomes `text-muted`. Checked: fill `action-primary-hover`. | Proposal. |
+| Focus | 2 px `focus-ring` outline, 2 px offset. | |
+| Invalid | `status-danger` border. Show the reason as text next to the group. | |
+| Disabled | `state-hover` fill and `text-muted` label. | Proposal (open question 3). |
+| Loading | Not supported. | |
+
+Checkboxes never stand on `surface-raised`: `action-primary` on it is 2.80:1, below 3:1 (tokens.md rule 15). Put them on `surface-frame`, `surface-editor` or `surface-card`.
+
+## 7. Behavior and accessibility
+
+- Built on the Radix checkbox: `button` with `role="checkbox"` and `aria-checked`.
+- The visible label wraps the control, so clicking the text toggles it and the name is announced with the state ("Show word count, checkbox, checked").
+- Keyboard: Tab to focus, Space toggles.
+- Group related checkboxes in a `fieldset` with a `legend` (see the Group story).
+- Box contrast against the surface is at least 3:1 (`border-control`, WCAG 1.4.11, measured in `contrast.test.ts`). The checked fill `action-primary` is at least 3:1 on `surface-frame`, `surface-editor` and `surface-card`.
+- Label contrast: `text-ui` at least 4.5:1.
+
+## 8. Content
+
+- State the option in the positive: "Show word count", not "Don't hide word count".
+- The label says what happens when it is checked. No "Enable", no question marks.
+- Sentence case, no final period. Long labels wrap and stay aligned to the box.
+
+<Canvas of={CheckboxStories.LongLabel} />
+
+## 9. Responsiveness
+
+The row keeps its height and wraps the label at narrow widths.
+
+<Canvas of={CheckboxStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | `ReactNode` | required | Visible label, also the accessible name. |
+| `checked` | `boolean` | | Controlled value. |
+| `defaultChecked` | `boolean` | `false` | Initial value when uncontrolled. |
+| `onCheckedChange` | `(checked) => void` | | Called with the new value. |
+| `disabled` | `boolean` | `false` | Blocks interaction. |
+| `name`, `value`, `required` | | | Passed to the Radix checkbox for forms. |
+| `aria-invalid` | `boolean` | | Switches on the error border. |
+
+## 11. Code
+
+```tsx
+import { Checkbox } from "@basalt/ui";
+
+<Checkbox label="Show word count" checked={showWordCount} onCheckedChange={setShowWordCount} />
+```
+
+```tsx
+<fieldset>
+    <legend>Status bar</legend>
+    <Checkbox label="Show word count" defaultChecked />
+    <Checkbox label="Show character count" />
+</fieldset>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: <Checkbox label="Show word count" defaultChecked />,
+            reason: "A positive label that says what happens when it is checked.",
+        }}
+        bad={{
+            children: <Checkbox label="Don't hide word count" defaultChecked />,
+            reason: "A negative label forces the user to reason about a double negative.",
+        }}
+    />
+</Unstyled>
+
+## 13. Related
+
+[Field](?path=/docs/primitives-field--docs), [Input](?path=/docs/primitives-input--docs), [Button](?path=/docs/primitives-button--docs), [Color](?path=/docs/foundations-color--docs).

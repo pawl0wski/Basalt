@@ -1,0 +1,139 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { DoDont } from "../../.storybook/blocks";
+import { Checkbox } from "../../src/components/Checkbox";
+import { RadioGroup } from "../../src/components/RadioGroup";
+import * as RadioGroupStories from "../../src/components/RadioGroup.stories";
+
+<Meta of={RadioGroupStories} />
+
+# RadioGroup
+
+## 1. What it is for
+
+A radio group lets the user choose exactly one option from a short list, with every option visible so they can be compared, such as where attachments are stored. Approved by the owner in Stage 0.
+
+<Canvas of={RadioGroupStories.Playground} />
+
+## 2. When to use
+
+- Two to five options that exclude each other and benefit from descriptions.
+- A choice the user should see completely before deciding.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| More than about five options. | [Select](?path=/docs/primitives-select--docs). |
+| Independent options. | [Checkbox](?path=/docs/primitives-checkbox--docs). |
+| An immediate on/off setting. | [Switch](?path=/docs/primitives-switch--docs). |
+| Navigation between views. | [Tabs](?path=/docs/primitives-tabs--docs). |
+
+## 4. Anatomy
+
+1. Legend: `font-ui-strong`, names the group. Required.
+2. Option row: 16 px round control, label to its right, `gap-between-groups`, row at least 28 px high.
+3. Description: `text-size-ui-small`, `text-muted`, under the label. Optional.
+
+The round control is the only other full-radius shape besides the switch track, through `rounded-switch` (proposal in tokens.md). Checked: `action-primary` fill with a small `text-on-accent` dot.
+
+## 5. Variants
+
+One variant, vertical. A horizontal layout is not needed yet.
+
+<Controls of={RadioGroupStories.Playground} />
+
+## 6. States
+
+<Canvas of={RadioGroupStories.States} />
+
+| State | What the user sees | Notes |
+|---|---|---|
+| Unchecked / Checked | Empty circle, or filled `action-primary` circle with a dot. The dot is the second signal next to color (WCAG 1.4.1). | |
+| Hover | Unchecked: border `text-muted`. Checked: `action-primary-hover`. | Proposal. |
+| Focus | 2 px `focus-ring` outline on the focused radio. | |
+| Disabled | `state-hover` fill and `text-muted` label. | Proposal (open question 3). |
+| Invalid | `aria-invalid` on the group; show the message next to the group. | |
+
+Radios never stand on `surface-raised` (tokens.md rule 15: `action-primary` is 2.80:1 on it).
+
+## 7. Behavior and accessibility
+
+- Built on the Radix radio group: `role="radiogroup"` named by the legend; each option is `role="radio"` with `aria-checked`.
+- The group is one tab stop. Arrow keys move focus and select; disabled options are skipped; Tab leaves the group.
+- Clicking the label text selects the option.
+- Provide a default value when one option is the natural choice, so the group never starts with nothing selected unless the form requires a choice.
+- The description is part of the option's accessible name.
+
+## 8. Content
+
+- Legend: a noun phrase ("Interface text size").
+- Option labels are short and parallel; put the explanation in the description.
+- Sentence case, no final period.
+
+<Canvas of={RadioGroupStories.LongLabels} />
+
+## 9. Responsiveness
+
+Rows wrap long labels and keep the control aligned to the first line.
+
+<Canvas of={RadioGroupStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `legend` | `ReactNode` | required | Group name. |
+| `options` | `{ value, label, description?, disabled? }[]` | required | Choices. |
+| `value`, `defaultValue`, `onValueChange` | | | Controlled or uncontrolled value. |
+| `name` | `string` | | For form submission. |
+| `disabled` | `boolean` | `false` | Disables the group. |
+| `aria-invalid` | `boolean` | | Marks the group invalid. |
+
+## 11. Code
+
+```tsx
+import { RadioGroup } from "@basalt/ui";
+
+<RadioGroup
+    legend="Attachments"
+    value={mode}
+    onValueChange={setMode}
+    options={[
+        { value: "next-to-note", label: "Next to the note", description: "Moving a note moves its images." },
+        { value: "shared", label: "One shared folder" },
+    ]}
+/>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: (
+                <RadioGroup
+                    legend="Attachments"
+                    defaultValue="a"
+                    options={[
+                        { value: "a", label: "Next to the note" },
+                        { value: "b", label: "One shared folder" },
+                    ]}
+                />
+            ),
+            reason: "One choice among a few, all visible.",
+        }}
+        bad={{
+            children: (
+                <div className="flex flex-col">
+                    <Checkbox label="Next to the note" defaultChecked />
+                    <Checkbox label="One shared folder" />
+                </div>
+            ),
+            reason: "Checkboxes allow both, which the setting does not.",
+        }}
+    />
+</Unstyled>
+
+## 13. Related
+
+[Checkbox](?path=/docs/primitives-checkbox--docs), [Select](?path=/docs/primitives-select--docs), [Switch](?path=/docs/primitives-switch--docs), [Field](?path=/docs/primitives-field--docs).

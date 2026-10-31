@@ -1,0 +1,113 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as AppShellStories from "../../src/product/AppShell.stories";
+
+<Meta of={AppShellStories} />
+
+# AppShell
+
+## 1. What it is for
+
+The frame of the application window. It places the regions of an open workspace (title bar, activity bar, left panel, note, right panel, status bar), draws the 1 px lines between them and gives the note area its own scroll. A screen never builds its own shell.
+
+<Canvas of={AppShellStories.AllRegions} />
+
+## 2. When to use
+
+- Every screen of an open workspace: the main screen, an open note, a note with a conflict.
+- Any screen that needs the title bar or the status bar of the window.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The welcome screen (no workspace yet). | [WelcomeScreen](?path=/docs/product-welcomescreen--docs). |
+| A dialog or a menu on top of the window. | [Dialog](?path=/docs/primitives-dialog--docs), [Menu](?path=/docs/primitives-menu--docs). |
+
+## 4. Anatomy
+
+1. Title bar, full width, 36 px (`titleBar`), with a 1 px `border-divider` under it.
+2. Activity bar, 48 px (`activityBar`), with a divider on its right.
+3. Left panel (`sidebar`), with a divider on its right.
+4. Main area (`children`): the note or an empty state. It scrolls on its own and is focusable by keyboard.
+5. Right panel (`sidePanel`), with a divider on its left.
+6. Status bar (`statusBar`), 24 px, on `surface-frame`. No line above it: the shade separates it.
+
+Surfaces: title bar, activity bar and status bar are `surface-frame` (darker). The left panel, the note and the right panel have the shade of the editor.
+
+The shell owns the lines between regions, so a region component has no outer divider and keeps exactly its token size.
+
+## 5. Variants
+
+One layout. A region that is not passed is not drawn, together with its line.
+
+<Canvas of={AppShellStories.WithoutRightPanel} />
+<Canvas of={AppShellStories.WithoutSidebar} />
+
+## 6. States
+
+The shell has no states of its own. What the regions show in a state is described on their pages.
+
+| Situation | Shell |
+|---|---|
+| A note is open | All regions. The right panel is open on a wide window. |
+| No note is open | Title bar without tabs, no right panel. |
+| Window narrower than 1440 px | The right panel starts closed (see section 9). |
+
+## 7. Behavior and accessibility
+
+- The root is a `div`. The main area is a `main` landmark with `tabindex="0"` so that a keyboard user can scroll it.
+- The regions bring their own landmarks: `header`, `nav` "Sections", `nav` "Workspace", `aside`.
+- Focus order follows the visual order: title bar, activity bar, left panel, note, right panel, status bar.
+
+## 8. Content
+
+The shell has no text of its own.
+
+## 9. Responsiveness
+
+Desktop only (open question Q6). The shell fills the window (`h-screen`).
+
+| Window width | Rule |
+|---|---|
+| 1440 px and more | Activity bar, left panel, note and right panel fit side by side. The right panel is open by default when a note is open. |
+| 768 to 1439 px | The right panel starts closed. The user can open it with the title bar toggle and it takes width from the note. |
+| Below 768 px | Not designed. |
+
+This is state of the application, not CSS: the application passes `sidePanel` only while the panel is open, so the shell does not hide anything by itself.
+
+## 10. API
+
+| Prop | Type | Description |
+|---|---|---|
+| `titleBar` | `ReactNode` | Usually [TitleBar](?path=/docs/product-titlebar--docs). |
+| `activityBar` | `ReactNode` | Usually [ActivityBar](?path=/docs/product-activitybar--docs). |
+| `sidebar` | `ReactNode` | Usually [NoteSidebar](?path=/docs/product-notesidebar--docs). |
+| `sidePanel` | `ReactNode` | Usually [SidePanel](?path=/docs/product-sidepanel--docs). Leave it out when the panel is closed. |
+| `statusBar` | `ReactNode` | Usually StatusBar. |
+| `children` | `ReactNode` | The note, or an empty state. |
+
+## 11. Code
+
+```tsx
+<AppShell
+    titleBar={<TitleBar {...titleBar} />}
+    activityBar={<ActivityBar {...activityBar} />}
+    sidebar={<NoteSidebar {...sidebar}>{list}</NoteSidebar>}
+    sidePanel={panelOpen ? <SidePanel title="Outline" onClose={closePanel}>{outline}</SidePanel> : undefined}
+    statusBar={<StatusBar {...status} />}
+>
+    {note}
+</AppShell>
+```
+
+The note column in a screen is a recipe, not a component: `mx-auto flex w-full max-w-note flex-col gap-note-block px-note-x py-section`. The editor package owns the real column.
+
+## 12. Do and don't
+
+- Do pass every region through the shell, so the lines and surfaces stay the same on every screen.
+- Don't write a `div` with `h-screen` and `flex-col` in a screen.
+- Don't draw a divider around a region: the shell does it.
+
+## 13. Related
+
+[TitleBar](?path=/docs/product-titlebar--docs), [ActivityBar](?path=/docs/product-activitybar--docs), [NoteSidebar](?path=/docs/product-notesidebar--docs), [SidePanel](?path=/docs/product-sidepanel--docs), [Spacing and layout](?path=/docs/foundations-spacing-and-layout--docs).

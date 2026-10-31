@@ -1,0 +1,101 @@
+import { Canvas, Controls, Meta } from "@storybook/addon-docs/blocks";
+import * as TabsStories from "../../src/components/Tabs.stories";
+
+<Meta of={TabsStories} />
+
+# Tabs
+
+## 1. What it is for
+
+Tabs switch between sibling views of the same object, such as the sections of the settings, without leaving the page.
+
+<Canvas of={TabsStories.Playground} />
+
+## 2. When to use
+
+- Two to six sections of equal weight that belong to one screen (settings sections).
+- The user needs one section at a time and switching must be quick.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The sections are different pages with their own address. | [TextLink](?path=/docs/primitives-textlink--docs) navigation. |
+| Steps in a flow. | Sequential screens with a Button. |
+| Choosing a value. | [RadioGroup](?path=/docs/primitives-radiogroup--docs) or [Select](?path=/docs/primitives-select--docs). |
+| Open notes in the editor. | The note tabs of the [TitleBar](?path=/docs/product-titlebar--docs), which are a different pattern. |
+
+## 4. Anatomy
+
+1. List: a row of tabs with a 1 px `border-divider` line below.
+2. Tab: 28 px high, `px-between-groups`, `text-size-ui`. Inactive `text-muted`, active `text-note`.
+3. Active indicator: `tab-indicator` (2 px) bar in `action-primary` under the active tab. The component token exists because an active tab marked by color alone was 1.08:1 against its neighbours (tokens.md contrast fix).
+4. Panel: the content of the selected tab.
+
+## 5. Variants
+
+One variant (horizontal). Vertical tabs are not needed yet.
+
+<Controls of={TabsStories.Playground} />
+
+## 6. States
+
+| State | What the user sees |
+|---|---|
+| Inactive | `text-muted`. |
+| Hover | `text-ui`. |
+| Active | `text-note` and the accent indicator. The indicator is the second signal next to text color (WCAG 1.4.1). |
+| Focus | 2 px `focus-ring` outline. |
+| Disabled, loading, error | Not supported. |
+
+<Canvas of={TabsStories.States} />
+
+## 7. Behavior and accessibility
+
+- Built on the Radix tabs: `role="tablist"` named by `label`, `role="tab"` with `aria-selected`, `role="tabpanel"` labelled by its tab.
+- The list is one tab stop. Left and Right arrows move between tabs and select them; Home and End jump to the first and last; Tab moves into the panel.
+- The panel is focusable only when it has no focusable content (the focus ring shows then).
+- Contrast: `text-muted` is at least 4.5:1 on `surface-frame`, `surface-editor` and `surface-card`; the indicator `action-primary` is at least 3:1 on those surfaces (measured in `contrast.test.ts`).
+
+## 8. Content
+
+- Tab labels are one or two words, nouns, sentence case ("General", "Appearance").
+- Keep them short enough to stay on one line; long labels scroll the list rather than wrap.
+
+## 9. Responsiveness
+
+At 320 px the list scrolls horizontally instead of wrapping. Keep the most used tab first.
+
+<Canvas of={TabsStories.ManyTabs} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `tabs` | `{ value, label, content }[]` | required | Tabs and panels. |
+| `label` | `string` | required | Accessible name of the tab list. |
+| `value`, `defaultValue`, `onValueChange` | | first tab | Controlled or uncontrolled selection. |
+
+## 11. Code
+
+```tsx
+import { Tabs } from "@basalt/ui";
+
+<Tabs
+    label="Settings sections"
+    tabs={[
+        { value: "general", label: "General", content: <GeneralSettings /> },
+        { value: "appearance", label: "Appearance", content: <AppearanceSettings /> },
+    ]}
+/>
+```
+
+## 12. Do and don't
+
+- Do keep every tab at the same level and of the same kind.
+- Don't nest tabs in tabs.
+- Don't hide an action the user must find (such as "Save") inside a tab that is not selected.
+
+## 13. Related
+
+[RadioGroup](?path=/docs/primitives-radiogroup--docs), [Card](?path=/docs/primitives-card--docs), [Color](?path=/docs/foundations-color--docs).
