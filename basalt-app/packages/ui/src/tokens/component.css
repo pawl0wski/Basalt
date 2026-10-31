@@ -1,0 +1,50 @@
+/* Layer 3: component tokens, only where a component needs its own value. */
+:root,
+[data-theme="dark"] {
+    /* R01.3, R02.8 */
+    --bs-titlebar-height: 36px;
+    /* contrast fix: the active tab was 1.08:1 */
+    --bs-tab-active-indicator: 2px;
+    /* PROPOSAL (owner decision 2026-10-30: tab width is elastic up to a limit): a note tab shrinks from the maximum to the minimum, then the tabs overflow into a menu */
+    --bs-note-tab-min-width: 128px;
+    --bs-note-tab-max-width: 200px;
+    /* R02.1 */
+    --bs-activity-bar-width: 48px;
+    /* R02.1, R01.7 */
+    --bs-sidebar-width: 300px;
+    /* owner decision 2026-10-30: the width of menus, popovers and toasts is its own token, equal to the panel width today but free to change separately */
+    --bs-overlay-width: 300px;
+    /* R01.6 */
+    --bs-status-bar-height: 24px;
+    /* R01.11 (about 27 px) */
+    --bs-tree-row-height: 28px;
+    /* Owner decision 2026-10-30 (option C): the selected row of a list or tree is an accent-tinted fill while the list has focus; the neutral state-selected is used otherwise. 1.57:1 to surface-card, an accepted deviation from 3:1 (as in VS Code). Follows the user accent. */
+    --bs-tree-selected: var(--bs-editor-selection);
+    /* R01.8 (about 626 px in a 1539 px window) */
+    --bs-note-column-max-width: 700px;
+    /* R01.8 */
+    --bs-note-column-padding-x: var(--raw-space-8);
+    /* R01.11, gap found in the mockup */
+    --bs-note-block-gap: var(--raw-space-4);
+    /* R01.10, gap found in the mockup */
+    --bs-note-heading-gap: var(--raw-space-6);
+    /* R02.5, gap found in the mockup */
+    --bs-code-block-bg: var(--bs-surface-frame);
+    /* R01.5 (button #333333 in a row), gap found in the mockup */
+    --bs-button-secondary-bg: var(--bs-surface-raised);
+    /* R01.2: accent on selections */
+    --bs-editor-selection: var(--raw-blue-900);
+    /* R01.5 */
+    --bs-settings-card-padding: var(--raw-space-4);
+    /* R02.4 */
+    --bs-icon-size: 16px;
+    /* icon-size row in tokens.md: activity bar icons are 20 px, in a 36 px button */
+    --bs-activity-icon-size: 20px;
+    --bs-activity-button-size: 36px;
+    /* PROPOSAL: reading width for interface prose, about 65 characters (design system brief). The note column keeps its owner-approved 700 px. */
+    --bs-prose-max-width: 65ch;
+    /* R01.7, WCAG 2.5.8 (target at least 24 px) */
+    --bs-icon-button-size: 28px;
+    /* PROPOSAL: Switch track and thumb need a full radius; not in tokens.md */
+    --bs-switch-radius: var(--raw-radius-full);
+}

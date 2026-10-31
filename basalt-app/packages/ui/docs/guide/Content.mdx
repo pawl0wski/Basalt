@@ -1,0 +1,80 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Design system/Content" />
+
+# Content
+
+How Basalt writes. The tone comes from the references: no exclamation marks, emoji or marketing text; one factual sentence under a setting; an empty place is a plain statement (R01.13, R01.14, W3). The words "sync", "E2EE" and "vault" are allowed because the users host their own server.
+
+## Tone
+
+**Basalt says:**
+
+1. "No headings found." (R01.14, an empty panel)
+2. "The folder is read-only. Choose a folder you can write to."
+3. "Another program changed this file while you had unsaved edits. Saving is paused until you choose."
+
+**Basalt does not say:**
+
+1. "Oops! Something went wrong 😢" (exclamation mark, emoji, no information)
+2. "Upgrade to Pro to unlock sync" (cloud-corporate, AB1)
+3. "Your notes are in good hands ✨" (marketing language and a sparkle, A01)
+
+## Buttons
+
+- A verb and the object: "Save note", "Delete note", "Choose a workspace". Never "OK", "Yes" or "Submit".
+- Sentence case, no final period, one to three words where possible.
+- A button that opens another step may end with an ellipsis only if it asks for more input.
+
+## Errors
+
+- Say what happened and what the user can do: "Could not save the note. The folder is read-only. Choose a folder you can write to."
+- Name the object when it helps: `Could not save "Weekly plan"`.
+- Do not blame the user, do not show a bare code as the message. Technical detail goes in a code block below.
+
+## Empty states
+
+- Say why it is empty, then the next step: "Notes you create are saved as Markdown files in this folder." with a "New note" button.
+- Two different empty cases get two different messages: nothing exists yet, nothing matches the filter.
+- No illustrations, mascots or encouragement.
+
+## Settings
+
+- Under each setting, one factual sentence: what it does and what happens when it is changed (R01.13). Example: "Shown at the right of the status bar."
+
+## Accessible names of the window
+
+One action has one name everywhere: in the `aria-label`, in the tooltip and in the tests. A name is a verb and an object, in sentence case, with no "button" in it. A name that repeats on one screen carries the object.
+
+| Action | Name | Where |
+|---|---|---|
+| Show or hide the left panel | Toggle sidebar | [TitleBar](?path=/docs/product-titlebar--docs) |
+| Show or hide the right panel | Toggle right panel | TitleBar |
+| Create a note | New note | TitleBar, [NoteSidebar](?path=/docs/product-notesidebar--docs) |
+| Close an open note | `Close {note name}` | TitleBar |
+| List all open notes | Show all open notes | TitleBar |
+| Window controls | Minimize window, Maximize window, Close window | TitleBar |
+| Switch app section | Notes, Search, Bookmarks, Settings | [ActivityBar](?path=/docs/product-activitybar--docs) |
+| Search a side panel | `Search {panel title}` | [SidePanel](?path=/docs/product-sidepanel--docs) |
+| Close a side panel | `Close {panel title}` | SidePanel |
+
+| Landmark | Name |
+|---|---|
+| Title bar | Window title bar |
+| Open notes list | Open notes |
+| Activity bar | Sections |
+| Left panel | Workspace |
+| Right panel | The panel title |
+
+## Formats
+
+| Thing | Rule | Source |
+|---|---|---|
+| Numbers | Thousands separator, English style: 1,204 words. | `StatusBar`; proposal for other numbers |
+| Dates | Year-month-day (2026-10-18), as in the file names of the journal examples. | Proposal; no source defines it |
+| Times | 24-hour clock. | Proposal; no source defines it |
+| Currency | Not used: there is no payment in the product (AB1, N02). | Brief |
+| File sizes | Binary units: 5 MiB, 20 MiB. | E01-S01, E01-S03 |
+| Language | English only; no language switcher yet. | E01-S01 G10 |
+
+Text goes in through props or the translation layer, so components never contain text that cannot be translated later.

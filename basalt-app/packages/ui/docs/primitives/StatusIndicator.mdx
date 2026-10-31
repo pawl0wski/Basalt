@@ -1,0 +1,106 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { DoDont } from "../../.storybook/blocks";
+import { StatusIndicator } from "../../src/components/StatusIndicator";
+import * as StatusIndicatorStories from "../../src/components/StatusIndicator.stories";
+
+<Meta of={StatusIndicatorStories} />
+
+# StatusIndicator
+
+## 1. What it is for
+
+A status indicator tells the user whether their notes are in step with the other copy, in words, so sync is never invisible (AB3).
+
+<Canvas of={StatusIndicatorStories.Playground} />
+
+## 2. When to use
+
+- The status bar, at the right (tokens.md: sync state "Synced", "Syncing" or an error).
+- Next to a workspace or note when its sync state matters to the next step.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| A one-off result of an action ("Note saved"). | Toast (Batch 3). |
+| An error that blocks the user and needs action. | [Alert](?path=/docs/primitives-alert--docs) with an action. |
+| A switch for sync. | [Switch](?path=/docs/primitives-switch--docs). |
+| Progress of a long task. | A progress element. It is not in the current plan; see "What is missing". |
+
+## 4. Anatomy
+
+1. Icon: 16 px (`size-icon`), decorative.
+2. Word: `text-size-ui-small`, 4 px from the icon (`gap-in-group`). Required, always shown.
+
+## 5. Variants (statuses)
+
+| Status | Word | Color | Source |
+|---|---|---|---|
+| `synced` | Synced | `text-muted` | tokens.md status bar, R01.6, R02.6 |
+| `syncing` | Syncing | `text-muted` | tokens.md status bar |
+| `conflict` | Sync conflict | `status-warning` | tokens.md `status-warning` ("conflict of synchronization") |
+| `error` | Sync error | `status-danger` | tokens.md status bar, AB3 |
+
+Words and icons for `conflict` and `error` are proposals; the sources name "Synced", "Syncing" and "an error". The component has no animation (the `syncing` icon is static) because the sources define no spinner motion; this is a proposal.
+
+<Controls of={StatusIndicatorStories.Playground} />
+
+<Canvas of={StatusIndicatorStories.AllStatuses} />
+
+## 6. States
+
+The statuses are the states. There is no hover, focus, pressed, disabled or selected state: the indicator is not interactive. If the user needs to act on a conflict or error, put a Button or TextLink next to it.
+
+## 7. Behavior and accessibility
+
+- `role="status"` (a polite live region): a change from "Syncing" to "Synced" is announced without moving focus.
+- The meaning is carried by the word and the icon, never by color alone (WCAG 1.4.1).
+- The icon has `aria-hidden="true"`.
+- Contrast: `text-muted`, `status-warning` and `status-danger` are at least 4.5:1 on `surface-frame`, `surface-editor` and `surface-raised` (WCAG 1.4.3, measured in `contrast.test.ts`).
+- Render the indicator once per place. Several `role="status"` regions with changing text make screen readers noisy.
+
+## 8. Content
+
+- One or two words, sentence case, no final period.
+- Do not add times or counts ("Synced 2 min ago") here; they change every minute and would be announced.
+- The interface is English only for now.
+
+## 9. Responsiveness
+
+The indicator is as wide as its text and stays on one line. In the 24 px status bar at 320 px it is the last item; secondary items (word count) are hidden first.
+
+<Canvas of={StatusIndicatorStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `status` | `"synced" \| "syncing" \| "conflict" \| "error"` | required | Which state to show. |
+| `className` | `string` | | Layout only. |
+
+## 11. Code
+
+```tsx
+import { StatusIndicator } from "@basalt/ui";
+
+<StatusIndicator status={syncStatus} />
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: <StatusIndicator status="error" />,
+            reason: "A word and an icon name the problem; color supports them.",
+        }}
+        bad={{
+            children: <span className="size-icon rounded-switch bg-status-danger" aria-hidden="true" />,
+            reason: "A colored dot alone is invisible to some users and says nothing.",
+        }}
+    />
+</Unstyled>
+
+## 13. Related
+
+[Alert](?path=/docs/primitives-alert--docs), [Switch](?path=/docs/primitives-switch--docs), [Color](?path=/docs/foundations-color--docs).

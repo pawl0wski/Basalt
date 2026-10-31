@@ -1,0 +1,113 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { Settings } from "lucide-react";
+import { DoDont } from "../../.storybook/blocks";
+import { IconButton } from "../../src/components/IconButton";
+import * as TooltipStories from "../../src/components/Tooltip.stories";
+
+<Meta of={TooltipStories} />
+
+# Tooltip
+
+## 1. What it is for
+
+A tooltip names an icon-only control, or adds a keyboard shortcut to it, when the user points at it or focuses it.
+
+<Canvas of={TooltipStories.Playground} />
+
+## 2. When to use
+
+- Icon-only controls ([IconButton](?path=/docs/primitives-iconbutton--docs) already includes one).
+- A shortcut hint next to a name: "Open settings (Ctrl+,)".
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| Information the user needs to complete the task. | Visible text, a hint in a [Field](?path=/docs/primitives-field--docs), or an [Alert](?path=/docs/primitives-alert--docs). |
+| Interactive content (links, buttons). | [Popover](?path=/docs/primitives-popover--docs). |
+| An error or a warning. | Field error or Alert. |
+| Touch-only flows. | Visible text: a tooltip does not appear on touch. |
+
+## 4. Anatomy
+
+1. Bubble: `surface-raised`, 1 px `border-divider`, `rounded-control`, `text-size-ui-small`, `text-ui`. No arrow, no shadow (R01.1, tokens.md layer rule).
+2. Trigger: any focusable element.
+
+## 5. Variants
+
+One variant. `side` sets where it opens (`top` by default); it flips automatically near the screen edge.
+
+<Controls of={TooltipStories.Playground} />
+
+## 6. States
+
+| State | Notes |
+|---|---|
+| Hidden | Default. |
+| Visible | After 400 ms of hover (proposal), at once on keyboard focus. Stays while the pointer is on the bubble (WCAG 1.4.13 hoverable). |
+| Dismissed | Escape closes it without moving focus (WCAG 1.4.13 dismissible). |
+| Hover, pressed, disabled, error, loading | Not applicable: the tooltip is not interactive. A disabled control does not show it. |
+
+## 7. Behavior and accessibility
+
+- Built on the Radix tooltip: the bubble has `role="tooltip"` and the trigger gets `aria-describedby` while it is open.
+- The accessible name of the trigger comes from the control itself (`aria-label` or text), not from the tooltip.
+- The text must not contain information that is missing elsewhere: it is not shown on touch and not announced when the user does not open it.
+- Contrast: `text-ui` on `surface-raised` is at least 4.5:1 (measured in `contrast.test.ts`).
+- Persistent while hovered or focused, dismissible with Escape, hoverable (WCAG 1.4.13).
+
+## 8. Content
+
+- A verb and an object, 1 to 4 words: "New note". Add the shortcut in parentheses.
+- One line, no final period. Never a sentence of help.
+
+## 9. Responsiveness
+
+The bubble stays on one line and is moved by collision handling so it never leaves the viewport at 320 px.
+
+<Canvas of={TooltipStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `content` | `ReactNode` | required | Tooltip text. |
+| `children` | `ReactElement` | required | The trigger (rendered with `asChild`). |
+| `side` | `"top" \| "right" \| "bottom" \| "left"` | `"top"` | Preferred side. |
+
+## 11. Code
+
+```tsx
+import { Button, Tooltip } from "@basalt/ui";
+
+<Tooltip content="Create a note (Ctrl+N)">
+    <Button variant="ghost">New</Button>
+</Tooltip>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: (
+                <IconButton aria-label="Open settings" tooltip="Open settings (Ctrl+,)">
+                    <Settings aria-hidden="true" />
+                </IconButton>
+            ),
+            reason: "A short name and the shortcut.",
+        }}
+        bad={{
+            children: (
+                <IconButton aria-label="Settings" tooltip="Change the folder, the text size and the accent color in settings.">
+                    <Settings aria-hidden="true" />
+                </IconButton>
+            ),
+            reason: "Help text hidden in a tooltip is missed on touch and by keyboard users who never open it.",
+        }}
+    />
+</Unstyled>
+
+## 13. Related
+
+[IconButton](?path=/docs/primitives-iconbutton--docs), [Popover](?path=/docs/primitives-popover--docs), [Shape and depth](?path=/docs/foundations-shape-and-depth--docs).

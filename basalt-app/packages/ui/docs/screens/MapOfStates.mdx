@@ -1,0 +1,53 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Screens/Map of states" />
+
+# Map of states
+
+Key screens of the epics in the backlog, as full-screen stories in "E01-S01 Local notes" (the E01-S03 stories are in the same group, named with the story id). The platform is desktop only (Q6), so screens are checked at 768 and 1440 px.
+
+## E01: Local Markdown notes that work offline
+
+### E01-S01: create and edit notes stored as plain Markdown files
+
+| State from the specification | Story |
+|---|---|
+| No workspace | Welcome |
+| Workspace gone, explanatory notice | Welcome after workspace lost |
+| Workspace open, note open, saved | Workspace with note open |
+| Empty workspace ("Create your first note") | Empty workspace |
+| List loading | Loading the list |
+| List cannot be read | List could not be read |
+| Many notes | Many notes |
+| Watcher cannot start, notice (G4) | Watcher fallback notice |
+| Autosave in progress / not saved | Saving, Not saved |
+| New note dialog, prefilled | New note dialog open |
+| Name taken or invalid | New note name taken |
+| External change, dirty note | Conflict with the file on disk |
+| File deleted or moved | Note deleted on disk |
+| Read-only folder (AC3) | Folder is read-only |
+| Save failed when leaving the note | Save failed when leaving the note |
+| File over 5 MiB | Note too large |
+| File not UTF-8 | Note is not UTF-8 |
+
+### E01-S03: add images to notes
+
+| State from the specification | Story |
+|---|---|
+| Image shown below its link | E01-S03 Image in a note |
+| Placeholders (not found, format, remote, loading) | E01-S03 Images that cannot be shown |
+| Several files, some skipped | E01-S03 Some dropped files were skipped |
+
+Not shown: the drop caret and paste feedback of the editor (they belong to the editor package, `@basalt/editor`).
+
+## E02: Self-hosted sync with client-side E2EE
+
+No screens. E02-S01 (connect to a server), E02-S02 (encryption) and E02-S03 (sync) have no specification yet; the only prepared part is the sync words in [StatusIndicator](?path=/docs/primitives-statusindicator--docs). See "What is missing".
+
+## E03: Later
+
+Parked in the backlog, no stories, so no screens.
+
+## Patterns
+
+[Form](?path=/docs/patterns-form--docs), [List with filters](?path=/docs/patterns-list-with-filters--docs), [Detail view](?path=/docs/patterns-detail-view--docs), [Delete confirmation](?path=/docs/patterns-delete-confirmation--docs). All four are proposals (see each page).

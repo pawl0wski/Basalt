@@ -1,0 +1,90 @@
+import { Canvas, Controls, Meta } from "@storybook/addon-docs/blocks";
+import * as SaveStatusStories from "../../src/product/SaveStatus.stories";
+
+<Meta of={SaveStatusStories} />
+
+# SaveStatus and StatusBar
+
+## 1. What it is for
+
+`SaveStatus` tells the user, in words, whether the open note is saved. `StatusBar` is the 24 px bar that holds it, with the word and character counts. Source: E01-S01 UI/UX ("Saved" / "Saving…" / "Not saved"), tokens.md status bar.
+
+<Canvas of={SaveStatusStories.InStatusBar} />
+
+## 2. When to use
+
+- The bar at the bottom of the workspace window while a note is open.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| Sync state between devices (E02). | [StatusIndicator](?path=/docs/primitives-statusindicator--docs). |
+| A save failure the user must act on. | [NoteBanner](?path=/docs/product-notebanner--docs) and [SaveFailedDialog](?path=/docs/product-savefaileddialog--docs). |
+| A one-off result. | Toast. |
+
+## 4. Anatomy
+
+Surface: `surface-frame`, the same darker shade as the title bar and the activity bar. No line above it: the shade separates it.
+
+1. Counts at the left, `text-muted`, `text-size-ui-small`, separated by a middle dot. Optional (the owner can turn them off in settings, tokens.md).
+2. An optional trailing slot.
+3. `SaveStatus` at the right: 16 px icon and a word.
+4. Bar: `surface-frame`, 24 px (`status-bar`).
+
+## 5. Variants
+
+| State | Word | Color |
+|---|---|---|
+| `saved` | Saved | `text-muted` |
+| `saving` | Saving… | `text-muted` |
+| `unsaved` | Not saved | `status-warning` |
+
+<Controls of={SaveStatusStories.Playground} />
+
+<Canvas of={SaveStatusStories.AllStates} />
+
+## 6. States
+
+The states are the variants. The bar has no hover, focus, pressed or disabled state. The icon of "Saving…" is static (no motion is defined for it; proposal).
+
+## 7. Behavior and accessibility
+
+- `role="status"`: a change from "Saving…" to "Saved" is announced politely without moving focus. Autosave saves at most once per second (1 000 ms debounce), so the announcement is not constant.
+- The meaning is in the word and the icon, not only in color (WCAG 1.4.1).
+- Contrast: `text-muted` and `status-warning` on `surface-frame` are at least 4.5:1 (measured in `contrast.test.ts`).
+
+## 8. Content
+
+- Words come from `messages` (typed keys in the app); defaults are English.
+- Counts use thousands separators: "1,204 words".
+- Do not show "Saved 3 minutes ago"; it changes constantly.
+
+## 9. Responsiveness
+
+The counts truncate with an ellipsis; the save status never wraps or shrinks.
+
+<Canvas of={SaveStatusStories.StatusBarWithoutCounts} />
+
+## 10. API
+
+`SaveStatus`: `state` (required), `messages` (partial override), `className`.
+
+`StatusBar`: `wordCount`, `characterCount`, `saveState`, `trailing` (ReactNode), `className`.
+
+## 11. Code
+
+```tsx
+import { StatusBar } from "@basalt/ui";
+
+<StatusBar wordCount={words} characterCount={characters} saveState={saveState} />
+```
+
+## 12. Do and don't
+
+- Do show "Not saved" in the warning color and keep the text visible until the problem is solved.
+- Don't add a second indicator for the same thing.
+
+## 13. Related
+
+[NoteBanner](?path=/docs/product-notebanner--docs), [StatusIndicator](?path=/docs/primitives-statusindicator--docs), [Color](?path=/docs/foundations-color--docs).

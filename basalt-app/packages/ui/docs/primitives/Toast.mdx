@@ -1,0 +1,116 @@
+import { Canvas, Controls, Meta } from "@storybook/addon-docs/blocks";
+import * as ToastStories from "../../src/components/Toast.stories";
+
+<Meta of={ToastStories} />
+
+# Toast
+
+## 1. What it is for
+
+A toast confirms a short result that does not need a decision, such as "Note moved to trash", and goes away by itself. Approved by the owner in Stage 0.
+
+<Canvas of={ToastStories.WithAction} />
+
+## 2. When to use
+
+- A result of an action the user just took, with nothing left to do.
+- A reversible action with an "Undo" button.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| An error that needs action. **Never a toast.** | [Alert](?path=/docs/primitives-alert--docs) or a field error. |
+| The state of sync. | [StatusIndicator](?path=/docs/primitives-statusindicator--docs). |
+| A decision. | [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs). |
+| Information the user must read. | Text on the screen. |
+
+## 4. Anatomy
+
+1. Container: `surface-raised`, 1 px `border-divider`, `rounded-container`, padding `panel`, no shadow.
+2. Title: `font-ui-strong`. Required.
+3. Description: `text-size-ui-small`, `text-muted`. Optional.
+4. Action: a `secondary` Button. Optional, at most one.
+5. Dismiss button: an icon button with `aria-label="Dismiss"`.
+
+Position: bottom right at 768 px and above, full width at the bottom at 320 px (proposal; no source defines it).
+
+## 5. Variants
+
+One variant. Danger and warning toasts are not provided, on purpose: an error worth showing needs an Alert.
+
+<Controls of={ToastStories.Playground} />
+
+## 6. States
+
+| State | Notes |
+|---|---|
+| Visible | For 5 seconds by default (`duration` in ms to change). |
+| Paused | The timer pauses while the pointer is over the toast or focus is inside it (WCAG 2.2.1). |
+| Dismissed | By the close button, by Escape when focused, by swiping right, or by timeout. |
+| Hover, focus, pressed | Belong to the buttons inside. |
+| Loading, error | Not applicable. |
+
+## 7. Behavior and accessibility
+
+- Built on the Radix toast. Messages are announced politely by a live region ("Notifications"), without moving focus.
+- The viewport is reachable with F8; it is not in the normal tab order until used.
+- An action needs a short text alternative so it can be performed without seeing the toast; the action label is used.
+- Do not rely on the toast alone: anything that matters must be visible in the UI as well, because the toast can disappear before it is read.
+- Several toasts stack and are removed one by one.
+
+## 8. Content
+
+- Title: the result in the past tense ("Note moved to trash").
+- Description: the name of the object ("Weekly plan").
+- Action: a verb ("Undo").
+- One short sentence, no final period, no exclamation marks.
+
+## 9. Responsiveness
+
+<Canvas of={ToastStories.NarrowScreen} />
+
+## 10. API
+
+`ToastProvider`: wrap the app once. `children` required.
+
+`useToast()` returns a function `toast(options)`:
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `title` | `ReactNode` | required | Result. |
+| `description` | `ReactNode` | | Object name. |
+| `action` | `{ label, onClick }` | | One action. |
+| `duration` | `number` | `5000` | Milliseconds before it closes. |
+
+`useToast` throws outside `ToastProvider`.
+
+## 11. Code
+
+```tsx
+import { ToastProvider, useToast } from "@basalt/ui";
+
+function DeleteButton({ note }) {
+    const toast = useToast();
+    return (
+        <Button
+            onClick={() => {
+                trashNote(note);
+                toast({ title: "Note moved to trash", description: note.title, action: { label: "Undo", onClick: () => restoreNote(note) } });
+            }}
+        >
+            Delete note
+        </Button>
+    );
+}
+```
+
+## 12. Do and don't
+
+- Do use a toast for a short confirmation, with "Undo" when it helps.
+- Don't use a toast for an error the user must act on.
+- Don't put the only copy of important information in a toast.
+
+## 13. Related
+
+[Alert](?path=/docs/primitives-alert--docs), [StatusIndicator](?path=/docs/primitives-statusindicator--docs), [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs).

@@ -1,0 +1,52 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as ListStories from "./ListWithFilters.stories";
+
+<Meta of={ListStories} />
+
+# List with filters
+
+Pattern. Status: proposal (owner decision, Stage 0). Search is out of scope of E01-S01, so this shows how the note list would filter once it is needed; no behavior here is specified by a story.
+
+## What it is for
+
+Narrowing a long list to what the user is looking for, while always showing how much is hidden and how to get it back.
+
+<Canvas of={ListStories.FilteringShowsTheCountAndAWayBack} />
+
+## Rules
+
+| Rule | Source |
+|---|---|
+| The result count is always visible and announced politely (`role="status"`): "Showing 1 of 7 notes". | Proposal (design brief) |
+| An active filter is visible and removable in one action ("Clear filter"). | Proposal |
+| Two different empty states: no match for the filter (action: clear the filter) and nothing exists yet (action: create). | Proposal (design brief) |
+| The filter field has a visible label. | WCAG 3.3.2 |
+| The filter is local and instant; no "Apply" button. | Proposal |
+
+## States (each is a story)
+
+| State | Story |
+|---|---|
+| All notes | Unfiltered |
+| Filtered, with count and clear | Filtering shows the count and a way back |
+| No match | No results for the filter |
+| Nothing exists yet | Nothing here yet |
+| Loading | Loading |
+| Many notes | Many notes (400, filtered) |
+
+<Canvas of={ListStories.NoResultsForTheFilter} />
+<Canvas of={ListStories.NothingHereYet} />
+
+## Accessibility
+
+- The list stays a `listbox`; the count is a separate live region, so the list is not re-announced.
+- Clearing the filter should keep focus in the filter field (proposal, not built in the story).
+
+## Content
+
+- "No notes match "budget"" names the filter; the description says what to do.
+- Do not use the same message for the two empty cases.
+
+## Related
+
+[NoteList](?path=/docs/product-notelist--docs), [EmptyState](?path=/docs/primitives-emptystate--docs), [Input](?path=/docs/primitives-input--docs).

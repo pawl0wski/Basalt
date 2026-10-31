@@ -67,6 +67,7 @@ tags: [sync, e2ee]
 
 - For complex tasks, plan before implementation and write a specific spec in `.ai/specs/`. If work goes off track, stop and re-plan.
 - Follow existing code conventions in `basalt-app/`; check neighboring files before writing new code.
+- When you build or change UI, read `basalt-app/packages/ui/docs/design-system.md` first: use `@basalt/ui` components and design tokens, and run `npm run check:tokens`.
 - Write and maintain repository documentation, specifications, and AI-generated artifacts in English. User-facing application text should follow the product's localization requirements.
 - Follow the current engineering standards specification at `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` for package boundaries, coding principles, React component/presentation patterns, testing, PRs, and CI.
 - Apply YAGNI, DRY, and SRP pragmatically: build current requirements, share genuinely common rules rather than superficial similarities, and keep modules/components focused without splitting cohesive code mechanically.

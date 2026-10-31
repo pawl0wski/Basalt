@@ -1,0 +1,119 @@
+/* Tailwind theme: exposes only Basalt tokens as utilities. Default palette, spacing scale, radii and shadows are removed. */
+@theme inline {
+    --color-*: initial;
+    --spacing-*: initial;
+    --radius-*: initial;
+    --shadow-*: initial;
+    --inset-shadow-*: initial;
+    --drop-shadow-*: initial;
+    --text-shadow-*: initial;
+    --blur-*: initial;
+    --font-*: initial;
+    --text-*: initial;
+    --breakpoint-*: initial;
+    --container-*: initial;
+    --ease-*: initial;
+    --animate-*: initial;
+
+    --color-surface-frame: var(--bs-surface-frame);
+    --color-surface-editor: var(--bs-surface-editor);
+    --color-surface-card: var(--bs-surface-card);
+    --color-surface-raised: var(--bs-surface-raised);
+    --color-state-hover: var(--bs-state-hover);
+    --color-state-selected: var(--bs-state-selected);
+    --color-border-divider: var(--bs-border-divider);
+    --color-border-control: var(--bs-border-control);
+    --color-text-note: var(--bs-text-note);
+    --color-text-ui: var(--bs-text-ui);
+    --color-text-muted: var(--bs-text-muted);
+    --color-text-link: var(--bs-text-link);
+    --color-text-on-accent: var(--bs-text-on-accent);
+    --color-icon-default: var(--bs-icon-default);
+    --color-icon-active: var(--bs-icon-active);
+    --color-action-primary: var(--bs-action-primary);
+    --color-action-primary-hover: var(--bs-action-primary-hover);
+    --color-focus-ring: var(--bs-focus-ring);
+    --color-status-danger: var(--bs-status-danger);
+    --color-status-warning: var(--bs-status-warning);
+    --color-code-block-bg: var(--bs-code-block-bg);
+    --color-button-secondary-bg: var(--bs-button-secondary-bg);
+    --color-editor-selection: var(--bs-editor-selection);
+    --color-tree-selected: var(--bs-tree-selected);
+
+    --spacing-in-group: var(--bs-space-in-group);
+    --spacing-between-groups: var(--bs-space-between-groups);
+    --spacing-panel: var(--bs-space-panel);
+    --spacing-section: var(--bs-space-section);
+    --spacing-note-x: var(--bs-note-column-padding-x);
+    --spacing-note-block: var(--bs-note-block-gap);
+    --spacing-note-heading: var(--bs-note-heading-gap);
+    --spacing-settings-card: var(--bs-settings-card-padding);
+    --spacing-titlebar: var(--bs-titlebar-height);
+    --spacing-activity-bar: var(--bs-activity-bar-width);
+    --spacing-sidebar: var(--bs-sidebar-width);
+    --spacing-overlay: var(--bs-overlay-width);
+    --spacing-status-bar: var(--bs-status-bar-height);
+    --spacing-tree-row: var(--bs-tree-row-height);
+    --spacing-icon: var(--bs-icon-size);
+    --spacing-activity-icon: var(--bs-activity-icon-size);
+    --spacing-activity-button: var(--bs-activity-button-size);
+    --spacing-icon-button: var(--bs-icon-button-size);
+    --spacing-tab-indicator: var(--bs-tab-active-indicator);
+    --spacing-note-tab-min: var(--bs-note-tab-min-width);
+    --spacing-note-tab-max: var(--bs-note-tab-max-width);
+    --spacing-none: 0px;
+
+    --container-note: var(--bs-note-column-max-width);
+    --container-prose: var(--bs-prose-max-width);
+
+    --radius-control: var(--bs-radius-control);
+    --radius-container: var(--bs-radius-container);
+    --radius-switch: var(--bs-switch-radius);
+
+    --font-text: var(--bs-font-text);
+    --font-code: var(--bs-font-code);
+
+    --text-size-note: var(--bs-text-size-note);
+    --text-size-note--line-height: var(--bs-text-size-note-line-height);
+    --text-size-note-h1: var(--bs-text-size-note-h1);
+    --text-size-note-h1--line-height: var(--bs-text-size-note-h1-line-height);
+    --text-size-note-h2: var(--bs-text-size-note-h2);
+    --text-size-note-h2--line-height: var(--bs-text-size-note-h2-line-height);
+    --text-size-note-h3: var(--bs-text-size-note-h3);
+    --text-size-note-h3--line-height: var(--bs-text-size-note-h3-line-height);
+    --text-size-code: var(--bs-text-size-code);
+    --text-size-code--line-height: var(--bs-text-size-code-line-height);
+    --text-size-ui: var(--bs-text-size-ui);
+    --text-size-ui--line-height: var(--bs-text-size-ui-line-height);
+    --text-size-ui-small: var(--bs-text-size-ui-small);
+    --text-size-ui-small--line-height: var(--bs-text-size-ui-small-line-height);
+
+    --font-weight-normal: 400;
+    --font-weight-bold: 700;
+    --font-weight-ui-strong: var(--bs-font-weight-ui-strong);
+
+    --breakpoint-tablet: 768px;
+    --breakpoint-desktop: 1440px;
+}
+
+@utility focus-ring {
+    outline: 2px solid var(--bs-focus-ring);
+    outline-offset: 2px;
+}
+
+@utility focus-ring-inset {
+    outline: 2px solid var(--bs-focus-ring);
+    outline-offset: -2px;
+}
+
+@utility motion-feedback {
+    transition-property: color, background-color, border-color, outline-color;
+    transition-duration: var(--bs-motion-feedback-duration);
+    transition-timing-function: var(--bs-motion-ease);
+}
+
+@utility motion-panel {
+    transition-property: opacity, transform, visibility;
+    transition-duration: var(--bs-motion-panel-duration);
+    transition-timing-function: var(--bs-motion-ease);
+}

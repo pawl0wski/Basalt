@@ -1,0 +1,43 @@
+import { Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { SpacingRelations, LayoutWidths } from "../../.storybook/blocks";
+
+<Meta title="Foundations/Spacing and layout" tags={["!autodocs"]} />
+
+# Spacing and layout
+
+Spacing expresses a relation, not a size. Components use the relation tokens (`gap-in-group`, `p-panel`, `gap-section`), never a number scale. The numeric Tailwind scale is switched off, so `p-4` and `p-[13px]` do not exist.
+
+## Rules
+
+| Rule | Source |
+|---|---|
+| One 4 px scale underneath. Raw steps are used only in the token files. | tokens.md |
+| Window sections are separated by shade and a 1 px line, with a gap of 0. Space is for content inside a section. | R01.1, R02.2, tokens.md rule 14 |
+| Every function lives in its own section. Nothing lies on top of something else. | R01.7 |
+| The note is a centred column of at most 700 px, with 32 px side padding in a narrow window. | R01.8 |
+| Three sections sit side by side from 1440 px: the left panel and the right panel are 300 px each (`sidebar`). Below 1440 px the right panel starts closed and the user can open it. | R01.7, owner decision 2026-10-30 |
+| The shell draws the lines between regions; a region has no outer line. | tokens.md rule 14 |
+| Interactive targets are at least 24 × 24 px. Icon buttons are 28 px. | WCAG 2.5.8, R01.7 |
+
+## Window regions
+
+| Region | Size | Inner spacing | Source |
+|---|---|---|---|
+| Title bar | 36 px high (`h-titlebar`) | `px-between-groups` at the edges, `gap-between-groups` between the toggles, the tabs and the window buttons, `gap-in-group` between tabs and buttons | owner decision 2026-10-30 |
+| Note tab | 28 px high (`h-icon-button`), 128 to 200 px wide (`note-tab-min-width`, `note-tab-max-width`) | `pl-between-groups` before the icon, `gap-in-group` to the name and the close button, `mr-in-group` after it | proposal |
+| Activity bar | 48 px wide (`w-activity-bar`) | `p-in-group`, `gap-in-group`, 36 px buttons | R02.1 |
+| Left and right panel | 300 px wide (`w-sidebar`) | `p-panel` in the header | R02.1, R01.7 |
+| Status bar | 24 px high (`h-status-bar`) | `px-between-groups` | R01.6 |
+| Menu, popover, toast | 300 px (`w-overlay`) | `p-in-group` (menu), `p-panel` (popover) | owner decision 2026-10-30 |
+
+## Relations
+
+<Unstyled>
+    <SpacingRelations />
+</Unstyled>
+
+## Layout and widths
+
+<Unstyled>
+    <LayoutWidths />
+</Unstyled>

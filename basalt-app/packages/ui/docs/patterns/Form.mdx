@@ -1,0 +1,64 @@
+import { Canvas, Controls, Meta } from "@storybook/addon-docs/blocks";
+import * as FormStories from "./Form.stories";
+
+<Meta of={FormStories} />
+
+# Form
+
+Pattern. Status: proposal, built from the rules of the design brief and E01-S01 (new note). The API is simulated in Storybook: change the `scenario` control to see each outcome.
+
+## What it is for
+
+Collecting a value from the user, checking it, sending it and showing the result, so the user never loses what they typed.
+
+<Canvas of={FormStories.Success} />
+
+## Rules
+
+| Rule | Source |
+|---|---|
+| Every field has a visible label; the placeholder is never the label. | WCAG 3.3.2, [Field](?path=/docs/primitives-field--docs) |
+| Validate when the user leaves a field and when the form is submitted, not while typing the first time. Once a field has an error, re-check on every change. | Proposal (design brief) |
+| After a failed submit, move focus to the first field with an error. | WCAG 3.3.1, proposal |
+| The typed data stays after an error. | E01-S01 ("The editor text is never cleared by an error") |
+| While sending, disable the submit button and the fields and ignore a second submit. | Proposal |
+| Show success only after the result is confirmed, not before. | Proposal |
+| An error about one field goes under that field; an error about the whole form goes in an [Alert](?path=/docs/primitives-alert--docs) above the form. | Proposal |
+
+## States (each is a story)
+
+| State | Story |
+|---|---|
+| Success after confirmation | Success |
+| Error shown when leaving the field | Validates on leaving the field |
+| Failed submit moves focus to the first error | Failed submit focuses first error |
+| Field error returned by the server (name taken) | Field error from the server |
+| Server error, input kept | Server error keeps the input |
+| Folder unavailable (replaces "no network" for a local-first app) | Folder unavailable |
+| Waiting, second submit blocked | Pending blocks a second submit |
+
+<Controls of={FormStories.Success} />
+
+<Canvas of={FormStories.ValidatesOnLeavingTheField} />
+<Canvas of={FormStories.FieldErrorFromTheServer} />
+<Canvas of={FormStories.ServerErrorKeepsTheInput} />
+
+## Accessibility
+
+- The form has `noValidate` so the browser does not show its own bubbles; Basalt messages are the only ones.
+- Errors are linked to the field with `aria-describedby`; invalid fields have `aria-invalid`.
+- The form has `aria-busy` while sending.
+- The server error uses `role="alert"`; the success message uses `role="status"`.
+
+## Content
+
+- Errors say what is wrong and what to do ("Enter a name for the note."), never "Invalid".
+- The submit button names the action ("Create note") and shows "Creating…" while sending.
+
+## Code
+
+See `docs/patterns/Form.stories.tsx` (`NewNoteForm`) for the full flow with a simulated `createNote`.
+
+## Related
+
+[Field](?path=/docs/primitives-field--docs), [Input](?path=/docs/primitives-input--docs), [NewNoteDialog](?path=/docs/product-newnotedialog--docs), [Alert](?path=/docs/primitives-alert--docs).

@@ -1,0 +1,139 @@
+import { Canvas, Controls, Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { DoDont } from "../../.storybook/blocks";
+import { Button } from "../../src/components/Button";
+import * as ConfirmDialogStories from "../../src/components/ConfirmDialog.stories";
+
+<Meta of={ConfirmDialogStories} />
+
+# ConfirmDialog
+
+## 1. What it is for
+
+A confirm dialog makes sure the user means an action that is hard to undo, such as deleting a note. This is a proposal pattern for the planned delete story (E01-S04); it has no direct specification.
+
+<Canvas of={ConfirmDialogStories.CancelIsFocused} />
+
+## 2. When to use
+
+- Deleting a note or a folder.
+- Discarding unsaved changes.
+- Any action that cannot be undone from a Toast "Undo".
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| The action can be undone right after. | Do it and show a Toast with "Undo". |
+| The user needs to fill in something. | [Dialog](?path=/docs/primitives-dialog--docs). |
+| A harmless choice. | Do not ask. |
+
+## 4. Anatomy
+
+Same container as [Dialog](?path=/docs/primitives-dialog--docs), with:
+
+1. Title: the question with the name of the object ("Delete \"Weekly plan\"?").
+2. Description: the consequence, one sentence.
+3. Cancel button (ghost), explicit.
+4. Confirm button named with the verb ("Delete note"); `destructive` style for destructive actions.
+
+## 5. Variants
+
+| `destructive` | Confirm button | Use it for |
+|---|---|---|
+| `true` | `destructive` (danger text, no danger fill) | Deleting data. |
+| `false` | `primary` | Discarding changes, leaving a view. |
+
+<Controls of={ConfirmDialogStories.Playground} />
+
+<Canvas of={ConfirmDialogStories.NotDestructive} />
+
+## 6. States
+
+| State | Notes |
+|---|---|
+| Closed / Open | Controlled with `open` and `onOpenChange`. |
+| Confirming | If the action takes time, keep the dialog open and disable both buttons; this is not built in yet. |
+| Hover, focus, pressed, disabled | Belong to the two buttons. |
+
+## 7. Behavior and accessibility
+
+- `role="alertdialog"`: screen readers announce the title and description at once.
+- Initial focus is on **Cancel**, the safe choice, so Enter or Space does not delete by accident.
+- Escape closes the dialog and does **not** confirm.
+- Confirm calls `onConfirm`, then closes.
+- Focus returns to the element that opened the dialog.
+
+<Canvas of={ConfirmDialogStories.EscapeDoesNotConfirm} />
+
+## 8. Content
+
+- Title: the question, with the name of the object. Never "Are you sure?".
+- Confirm: a verb and an object ("Delete note"), never "OK" or "Yes".
+- Cancel: "Cancel".
+- Description: what happens and whether it can be undone ("The file is moved to the trash and can be restored from there.").
+
+## 9. Responsiveness
+
+Same as Dialog: stacked buttons at 320 px, the main action on top.
+
+<Canvas of={ConfirmDialogStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `open` | `boolean` | required | Whether it is shown. |
+| `onOpenChange` | `(open: boolean) => void` | required | Called when it should open or close. |
+| `title` | `ReactNode` | required | The question. |
+| `description` | `ReactNode` | | Consequence. |
+| `confirmLabel` | `string` | required | Verb button label. |
+| `cancelLabel` | `string` | `"Cancel"` | Cancel label. |
+| `onConfirm` | `() => void` | required | Run when the user confirms. |
+| `destructive` | `boolean` | `false` | Use the destructive style for the confirm button. |
+
+## 11. Code
+
+```tsx
+import { ConfirmDialog } from "@basalt/ui";
+
+<ConfirmDialog
+    open={open}
+    onOpenChange={setOpen}
+    title={`Delete "${note.title}"?`}
+    description="The file is moved to the trash and can be restored from there."
+    confirmLabel="Delete note"
+    destructive
+    onConfirm={() => deleteNote(note)}
+/>
+```
+
+## 12. Do and don't
+
+<Unstyled>
+    <DoDont
+        good={{
+            children: (
+                <>
+                    <Button variant="ghost">Cancel</Button>
+                    <Button variant="destructive">Delete note</Button>
+                </>
+            ),
+            reason: "The button names the action and danger is shown by the label color.",
+        }}
+        bad={{
+            children: (
+                <>
+                    <Button variant="ghost">No</Button>
+                    <Button>Yes</Button>
+                </>
+            ),
+            reason: "Yes and No hide what will happen, and a primary fill invites a click.",
+        }}
+    />
+</Unstyled>
+
+Don't ask for confirmation of actions that can be undone: do them and show a Toast with "Undo".
+
+## 13. Related
+
+[Dialog](?path=/docs/primitives-dialog--docs), [Button](?path=/docs/primitives-button--docs), [Alert](?path=/docs/primitives-alert--docs).

@@ -1,0 +1,69 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Design system/Usage and accessibility" />
+
+# Usage and accessibility
+
+Rules for everyone who builds a screen. Every rule has a source: a reference (R01, R02, A01 ...), a WCAG criterion, a decision in the brief or a specification, or it is marked as a proposal.
+
+## Keyboard and focus
+
+| Rule | Source |
+|---|---|
+| Every interactive element is reachable and usable with the keyboard. | WCAG 2.1.1 |
+| Keyboard focus is always visible: a 2 px `focus-ring` outline with a 2 px offset. | Token specification (focus appearance accepted by the owner), WCAG 2.4.7 |
+| Lists, tabs and radio groups are one tab stop and move with the arrow keys. | WAI-ARIA authoring practices; component pages |
+| Dialogs trap focus, close with Escape and return focus to the control that opened them. | E01-S01 UI/UX ("dialogs trap focus"), WCAG 2.4.3 |
+| A destructive dialog puts focus on the safe choice (Cancel); Escape never confirms. | Proposal ([ConfirmDialog](?path=/docs/primitives-confirmdialog--docs)) |
+| Do not remove the outline without replacing it. | WCAG 2.4.7 |
+
+## Forms and messages
+
+| Rule | Source |
+|---|---|
+| Every field has a visible label. A placeholder is an example, not a name. | WCAG 3.3.2 |
+| An error says what is wrong and what to do, next to the field, linked with `aria-describedby`. | WCAG 3.3.1, 3.3.3 |
+| Validate when the user leaves a field and when the form is submitted. After a failed submit move focus to the first error. | Proposal ([Form](?path=/docs/patterns-form--docs)) |
+| Typed data is never cleared by an error. | E01-S01 UI/UX |
+| An error that needs action is an Alert or a banner, never a Toast. | Proposal (design brief) |
+| A disabled control says why, in nearby text, or stays enabled and explains when pressed. | WCAG 3.3.1, proposal |
+
+## Color
+
+| Rule | Source |
+|---|---|
+| Text is at least 4.5:1 and control outlines at least 3:1 against their background. Every used pair is measured in `contrast.test.ts`. | WCAG 1.4.3, 1.4.11 |
+| Color is never the only signal: errors, statuses and selection also use words, icons, shape or position. | WCAG 1.4.1 |
+| The accent (`action-primary`, `text-link`) is used on links, primary buttons, switches, checkboxes, selections and active indicators only. Never on surfaces, headings or decorative icons. | R01.2, tokens.md rule 6 |
+| `status-danger` is never a button background. | tokens.md |
+| Switches, checkboxes and radios never stand on `surface-raised` (2.80:1). | tokens.md rule 15 |
+| Text inside a selection is `text-note`, also links. | tokens.md rule 16 |
+| A selected list or tree row is a rounded fill: `tree-selected` (accent tint) while the list has focus, `state-selected` otherwise, with `text-note` text. The fill is below 3:1 against the surface; this is an accepted deviation. | Owner decision 2026-10-30 (option C), VS Code |
+| Only the dark theme exists for now. | Owner decision, Stage 0 |
+
+## Motion
+
+| Rule | Source |
+|---|---|
+| Feedback takes 100 ms, panels 150 ms; no springs, no decorative animation. | Motion foundation, A01 |
+| With `prefers-reduced-motion` all durations are zero. | WCAG 2.3.3, token specification |
+| Nothing moves on its own for more than 5 seconds. Toasts pause on hover and focus. | WCAG 2.2.1 |
+
+## Content and layout
+
+| Rule | Source |
+|---|---|
+| The note column is at most 700 px wide and centered. Interface prose is at most 65 characters wide. | R01.8 (owner decision), proposal for prose |
+| Targets are at least 24 x 24 px; compact controls are 28 px high. | WCAG 2.5.8, R01.7 |
+| Components and note content work from 320 px. Screens are desktop only and are checked at 768 and 1440 px; there is no window layout below 768 px. | WCAG 1.4.10, Spacing and layout, What is missing |
+| Related things are 4 px apart, groups 12 px, sections 32 px. | R01.7, R02.1 |
+| Two radii only: 4 px for controls and 8 px for containers. No shadows, blur or glow. | R01.12, R01.1, A01 |
+
+## Product rules
+
+| Rule | Source |
+|---|---|
+| The app opens on notes; there is no login screen before them. | AB1 |
+| Sync state is always visible as a word in the status bar. | AB3, R01.6 |
+| Every feature is built from the shared components and tokens, so it looks like part of the core. | AB2 |
+| Interface text is English only for now and comes from props, not from the component. | E01-S01 G10 |

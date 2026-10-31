@@ -1,0 +1,31 @@
+import { Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { MotionDemo } from "../../.storybook/blocks";
+
+<Meta title="Foundations/Motion" tags={["!autodocs"]} />
+
+# Motion
+
+The tool reacts immediately. Motion never gets in the way of writing (M2). The screenshots are static, so all motion rules are accepted proposals, not observations (referencje.md, gap "motion").
+
+## Rules
+
+| Rule | Source |
+|---|---|
+| Hover and selection change only the background or text colour, in 100 ms. No scaling, no glow. | R01.12, M1 |
+| Panels, menus and dialogs open with no animation or in 150 ms, with no spring. | M2 |
+| With `prefers-reduced-motion: reduce`, all durations are 0. | M2, WCAG 2.3.3 |
+| Do not use motion for decoration. | M2 |
+| A change of sync state is shown as a word in the status bar, not only as a transient notification. | M3, AB3 |
+
+## Preview
+
+<Unstyled>
+    <MotionDemo />
+</Unstyled>
+
+## Tokens
+
+| Token | Value | Class | Source |
+|---|---|---|---|
+| `motion-feedback` | 100 ms, ease-out | `motion-feedback` | R01.12, M1, M2 |
+| `motion-panel` | 150 ms, ease-out, or 0 | `motion-panel` | M2 |

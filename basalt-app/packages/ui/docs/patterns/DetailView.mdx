@@ -1,0 +1,49 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as DetailStories from "./DetailView.stories";
+
+<Meta of={DetailStories} />
+
+# Detail view
+
+Pattern. Status: proposal (owner decision, Stage 0), derived from the open note of E01-S01. Rename and delete belong to E01-S04, which is not specified yet.
+
+## What it is for
+
+Showing one object, here a note, with the most important information and the main action visible without scrolling, and an honest state when the object is gone.
+
+<Canvas of={DetailStories.Ready} />
+
+## Rules
+
+| Rule | Source |
+|---|---|
+| The title is the first heading of the content; the header does not repeat it as another heading. | Proposal |
+| The path and the save state are visible in the header; secondary actions are in a [Menu](?path=/docs/primitives-menu--docs). | Proposal |
+| A destructive action is last in the menu and opens a [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs). | Proposal |
+| The note column is at most 700 px wide and centered. | R01.8, owner decision |
+| When the object does not exist or cannot be opened, replace the view with an [ErrorState](?path=/docs/primitives-errorstate--docs) that says why and offers a way back. | Proposal (design brief) |
+
+## States (each is a story)
+
+| State | Story |
+|---|---|
+| Ready | Ready |
+| The note no longer exists | Note does not exist |
+| The note cannot be opened (no permission) | No access |
+
+<Canvas of={DetailStories.NoteDoesNotExist} />
+<Canvas of={DetailStories.NoAccess} />
+
+## Accessibility
+
+- One `h1` per view (the note title in the content).
+- The error state is `role="alert"` and its action returns the user to the list.
+
+## Content
+
+- "This note no longer exists": say what happened and that other notes are fine.
+- Buttons: "Back to notes", not "Back".
+
+## Related
+
+[Menu](?path=/docs/primitives-menu--docs), [ErrorState](?path=/docs/primitives-errorstate--docs), [Notes screens](?path=/docs/screens-map-of-states--docs).

@@ -1,0 +1,73 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as SaveFailedDialogStories from "../../src/product/SaveFailedDialog.stories";
+
+<Meta of={SaveFailedDialogStories} />
+
+# SaveFailedDialog
+
+## 1. What it is for
+
+A dialog that asks what to do with unsaved text when leaving a note failed to save it: Retry, Discard changes or Cancel. Source: E01-S01 UI/UX ("only if that save fails does the Save-failed dialog appear, with Retry / Discard changes / Cancel").
+
+<Canvas of={SaveFailedDialogStories.Playground} />
+
+## 2. When to use
+
+- When switching note, changing workspace or closing the window and the flush save failed.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| A save fails while the user stays in the note. | [NoteBanner](?path=/docs/product-notebanner--docs). |
+| Confirming a deletion. | [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs). |
+
+## 4. Anatomy
+
+An alert [Dialog](?path=/docs/primitives-dialog--docs): title with the note name, description with the reason, and three buttons: Cancel (ghost), Discard changes (destructive), Retry (primary).
+
+## 5. Variants
+
+One. `reason` replaces the default description.
+
+<Canvas of={SaveFailedDialogStories.WithReason} />
+
+## 6. States
+
+Open or closed (controlled). Hover, focus and pressed belong to the buttons.
+
+## 7. Behavior and accessibility
+
+- `role="alertdialog"`, announced at once; focus stays inside; Escape means Cancel, never Discard.
+- Retry is the primary action because it keeps the user's text; Discard is a destructive-colored ghost button and is not the default.
+- Initial focus is on Retry, the choice that keeps the user's text (proposal; the specification does not say).
+
+<Canvas of={SaveFailedDialogStories.EscapeCancels} />
+
+## 8. Content
+
+- Title: `Could not save "<note name>"`.
+- Buttons: verbs, no "OK".
+
+## 9. Responsiveness
+
+Buttons stack at 320 px with the main action on top, as in [Dialog](?path=/docs/primitives-dialog--docs).
+
+## 10. API
+
+`open`, `noteName`, `reason`, `onRetry`, `onDiscard`, `onCancel`.
+
+## 11. Code
+
+```tsx
+<SaveFailedDialog open={failed} noteName={note.name} onRetry={retry} onDiscard={discard} onCancel={stay} />
+```
+
+## 12. Do and don't
+
+- Do keep the user's text until they choose Discard.
+- Don't close the dialog on a failed Retry; show the reason again.
+
+## 13. Related
+
+[NoteBanner](?path=/docs/product-notebanner--docs), [Dialog](?path=/docs/primitives-dialog--docs), [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs).

@@ -1,0 +1,74 @@
+@import "../src/styles.css";
+
+@source "../src";
+@source "../docs";
+@source "./blocks";
+
+/* Documentation only: repeats the :hover / :focus-visible declarations of the components so a state can be shown frozen. */
+[data-preview-state="hover"] .bs-button[data-variant="primary"],
+[data-preview-state="hover"] .bs-button[data-variant="default"]:not(:disabled) {
+    background-color: var(--bs-action-primary-hover);
+}
+[data-preview-state="hover"] .bs-button[data-variant="secondary"],
+[data-preview-state="hover"] .bs-button[data-variant="outline"] {
+    background-color: var(--bs-state-selected);
+}
+[data-preview-state="hover"] .bs-button[data-variant="ghost"],
+[data-preview-state="hover"] .bs-button[data-variant="destructive"] {
+    background-color: var(--bs-state-hover);
+}
+[data-preview-state="hover"] .bs-icon-button {
+    color: var(--bs-icon-active);
+}
+[data-preview-state="hover"] .bs-icon-button[data-variant="ghost"] {
+    background-color: var(--bs-state-hover);
+}
+[data-preview-state="hover"] .bs-icon-button[data-variant="secondary"] {
+    background-color: var(--bs-state-selected);
+}
+[data-preview-state="hover"] .bs-note-tab:not([data-active]) {
+    background-color: var(--bs-state-hover);
+}
+[data-preview-state="hover"] .bs-note-tab:not([data-active]) > button {
+    color: var(--bs-text-ui);
+}
+[data-preview-state="hover"] .bs-note-tab [data-unsaved-dot],
+[data-preview-state="focus"] .bs-note-tab [data-unsaved-dot] {
+    display: none;
+}
+[data-preview-state="hover"] .bs-note-tab .bs-icon-button svg,
+[data-preview-state="focus"] .bs-note-tab .bs-icon-button svg {
+    display: block;
+}
+[data-preview-state="hover"] .bs-link {
+    color: var(--bs-text-note);
+}
+[data-preview-state="hover"] .bs-link[data-variant="standalone"] {
+    text-decoration-line: underline;
+}
+[data-preview-state="hover"] .bs-checkbox[data-state="unchecked"] {
+    border-color: var(--bs-text-muted);
+}
+[data-preview-state="hover"] .bs-checkbox[data-state="checked"] {
+    background-color: var(--bs-action-primary-hover);
+}
+[data-preview-state="hover"] .bs-radio[data-state="unchecked"] {
+    border-color: var(--bs-text-muted);
+}
+[data-preview-state="hover"] .bs-radio[data-state="checked"],
+[data-preview-state="hover"] .bs-switch[data-state="checked"] {
+    background-color: var(--bs-action-primary-hover);
+}
+[data-preview-state="focus"] .bs-button,
+[data-preview-state="focus"] .bs-icon-button,
+[data-preview-state="focus"] .bs-link,
+[data-preview-state="focus"] .bs-input,
+[data-preview-state="focus"] .bs-checkbox,
+[data-preview-state="focus"] .bs-select,
+[data-preview-state="focus"] .bs-radio,
+[data-preview-state="focus"] .bs-tab,
+[data-preview-state="focus"] .bs-note-tab > button,
+[data-preview-state="focus"] .bs-switch {
+    outline: 2px solid var(--bs-focus-ring);
+    outline-offset: 2px;
+}

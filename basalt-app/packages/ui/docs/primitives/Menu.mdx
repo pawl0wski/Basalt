@@ -1,0 +1,114 @@
+import { Canvas, Controls, Meta } from "@storybook/addon-docs/blocks";
+import * as MenuStories from "../../src/components/Menu.stories";
+
+<Meta of={MenuStories} />
+
+# Menu
+
+## 1. What it is for
+
+A menu gathers several actions behind one button, such as the actions of a note, so the screen stays quiet until the user needs them.
+
+<Canvas of={MenuStories.Open} />
+
+## 2. When to use
+
+- Three or more actions on one object (rename, duplicate, delete).
+- Actions that do not fit in a toolbar at 320 px.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| One or two actions. | [Button](?path=/docs/primitives-button--docs) or [IconButton](?path=/docs/primitives-iconbutton--docs). |
+| Navigation. | [TextLink](?path=/docs/primitives-textlink--docs) or [Tabs](?path=/docs/primitives-tabs--docs). |
+| Choosing a value for a setting. | [Select](?path=/docs/primitives-select--docs) or [RadioGroup](?path=/docs/primitives-radiogroup--docs). |
+| Content with forms or links inside. | [Popover](?path=/docs/primitives-popover--docs). |
+
+## 4. Anatomy
+
+1. Trigger: any button; it names the menu.
+2. Panel: `surface-raised`, 1 px `border-divider`, `rounded-container`, padding `in-group`, minimum width `overlay` (300 px); no shadow.
+3. Items: 28 px high, `px-between-groups`, `rounded-control`, optional 16 px icon.
+4. Separator: a 1 px `border-divider` line between groups.
+
+## 5. Variants (item kinds)
+
+| Item | Use it for |
+|---|---|
+| Default | Normal action. |
+| `destructive` | Actions that delete data, `status-danger` text. Put it last, after a separator. |
+| `disabled` | Not available now. Explain why in the screen, not in the menu. |
+
+Only the dropdown menu is built. A context (right-click) menu is not built yet; it needs a second use, such as the file tree (YAGNI, proposal), and is listed in "What is missing".
+
+<Controls of={MenuStories.Playground} />
+
+## 6. States
+
+| State | What the user sees |
+|---|---|
+| Closed / Open | The panel is shown below the trigger. |
+| Highlighted (hover or keyboard) | `state-selected` fill. `state-hover` equals `surface-raised`, so it cannot be used inside the panel. |
+| Disabled | `text-muted`, skipped by the arrow keys. |
+| Focus | The highlighted item is the focused one; there is no separate outline inside the panel. |
+| Loading, error, selected | Not supported. |
+
+## 7. Behavior and accessibility
+
+- Built on the Radix dropdown menu: the trigger has `aria-haspopup="menu"` and `aria-expanded`; the panel is `role="menu"` named by its trigger; items are `role="menuitem"`.
+- Keyboard: Enter, Space or ArrowDown opens it; arrows move (disabled items are skipped); Enter or Space selects; Escape closes and returns focus to the trigger; typing a letter jumps to a matching item.
+- Selecting an item closes the menu.
+- The menu is not modal: the page behind stays reachable by pointer and outside click closes it.
+- Item contrast: `text-ui` and `status-danger` on `state-selected` are at least 4.5:1 (measured in `contrast.test.ts`).
+- Icons are decorative (`aria-hidden`).
+
+<Canvas of={MenuStories.Playground} />
+
+## 8. Content
+
+- Items are a verb and an object: "Rename", "Delete note". The object can be left out when the trigger names it.
+- Sentence case, no final period, no ellipsis unless the action opens a dialog that asks for more input.
+- Keep the menu to about 7 items.
+
+## 9. Responsiveness
+
+The panel moves and flips with collision handling so it stays inside the viewport at 320 px. `align="end"` is used when the trigger is at the right edge.
+
+<Canvas of={MenuStories.NarrowScreen} />
+
+## 10. API
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `trigger` | `ReactNode` | required | Element that opens it. |
+| `items` | `(MenuAction \| "separator")[]` | required | Entries. |
+| `align` | `"start" \| "center" \| "end"` | `"start"` | Alignment to the trigger. |
+| `defaultOpen` | `boolean` | | Start open (documentation and tests). |
+
+`MenuAction`: `label`, `onSelect`, optional `icon`, `destructive`, `disabled`.
+
+## 11. Code
+
+```tsx
+import { Button, Menu } from "@basalt/ui";
+
+<Menu
+    trigger={<Button variant="secondary">Note actions</Button>}
+    items={[
+        { label: "Rename", onSelect: rename },
+        "separator",
+        { label: "Delete note", onSelect: askToDelete, destructive: true },
+    ]}
+/>
+```
+
+## 12. Do and don't
+
+- Do put the destructive item last, after a separator.
+- Don't hide the only way to do a primary task in a menu.
+- Don't put a menu inside a menu.
+
+## 13. Related
+
+[Button](?path=/docs/primitives-button--docs), [IconButton](?path=/docs/primitives-iconbutton--docs), [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs), [Popover](?path=/docs/primitives-popover--docs).
