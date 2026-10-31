@@ -84,3 +84,53 @@ describe("IconButton", () => {
         expect(onClick).toHaveBeenCalledOnce();
     });
 });
+
+describe("IconButton size and active state", () => {
+    it("uses the activity button and icon tokens for the activity size", () => {
+        render(
+            <IconButton aria-label="Notes" size="activity">
+                <Settings aria-hidden="true" />
+            </IconButton>,
+        );
+
+        const className = screen.getByRole("button", {
+            name: "Notes",
+        }).className;
+        expect(className).toContain("size-activity-button");
+        expect(className).toContain("[&_svg]:size-activity-icon");
+        expect(className).not.toContain("size-icon-button");
+    });
+
+    it("keeps the default size when no size is given", () => {
+        render(
+            <IconButton aria-label="Notes">
+                <Settings aria-hidden="true" />
+            </IconButton>,
+        );
+
+        const className = screen.getByRole("button", {
+            name: "Notes",
+        }).className;
+        expect(className).toContain("size-icon-button");
+        expect(className).not.toContain("size-activity-button");
+    });
+
+    it("marks the button active without changing its accessible state", () => {
+        const { rerender } = render(
+            <IconButton aria-label="Notes">
+                <Settings aria-hidden="true" />
+            </IconButton>,
+        );
+        const button = screen.getByRole("button", { name: "Notes" });
+        expect(button.hasAttribute("data-active")).toBe(false);
+
+        rerender(
+            <IconButton aria-label="Notes" active>
+                <Settings aria-hidden="true" />
+            </IconButton>,
+        );
+
+        expect(button.hasAttribute("data-active")).toBe(true);
+        expect(button.hasAttribute("aria-current")).toBe(false);
+    });
+});

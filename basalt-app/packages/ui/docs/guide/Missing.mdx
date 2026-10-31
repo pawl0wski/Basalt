@@ -28,12 +28,11 @@ What is ready, what is not, and how it covers the backlog. Priorities are propos
 | Command palette | `CommandPalette` | "Should have" in the brief | Low |
 | Several lines of text | `Textarea` | No story needs it yet | Low |
 | Comparing data in columns | `Table` | No story needs it yet | Low |
-| Side panel (outline, backlinks) | `SidePanel` | R01.14 shows an outline panel, no story | Low |
 | Long tasks | Progress bar | Moving a workspace is not specified | Low |
 | Select-all | Indeterminate checkbox | No use yet | Low |
 | Dismissing alerts | Close button on `Alert` | No use yet | Low |
-| Title bar with tabs | `TitleBar`, `Tab` for open notes | R01.3 describes it, E01-S01 has no tabs | Medium |
-| Activity bar | `ActivityBar` | R02.1 describes it, no story | Low |
+| Count badge on an activity bar icon | `Badge` | R02.1 mentions it. No feature needs a count yet, and there is no token for its size. Owner decision 2026-10-30: none for now | Not planned |
+| Outline content of the right panel | Headings list, loading and error states | `SidePanel` is a frame with a header and a slot. What the outline shows while a note loads or when headings cannot be read is not designed | Low, with the editor |
 | Note file icons, PDF annotation | None | "Should have" in the brief | Low |
 
 ## Behavior not built
@@ -42,7 +41,7 @@ What is ready, what is not, and how it covers the backlog. Priorities are propos
 |---|---|
 | Light theme | Only the dark theme exists, by the owner's decision. A light theme would be a separate epic later. |
 | Accent switching in the app | The Storybook toolbar switches the accent; the settings screen for it is not designed. Accent warning in `status-warning` (tokens.md rule 5) is not built. |
-| Narrow windows | Screens are desktop only (Q6). The sidebar has no collapsed or stacked layout below 768 px. |
+| Narrow windows | Screens are desktop only (Q6). The sidebar has no collapsed or stacked layout below 768 px. Between 768 and 1439 px the right panel starts closed. |
 | Dialog taller than the screen | The dialog does not scroll its content yet. |
 | Spinner or pulse motion | Neither exists: no motion is defined for loading (proposal). |
 | Virtualized long lists | E01-S01 dropped the entry cap (G9); 400 to 500 notes were checked, not thousands. |

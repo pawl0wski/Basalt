@@ -42,6 +42,30 @@ How Basalt writes. The tone comes from the references: no exclamation marks, emo
 
 - Under each setting, one factual sentence: what it does and what happens when it is changed (R01.13). Example: "Shown at the right of the status bar."
 
+## Accessible names of the window
+
+One action has one name everywhere: in the `aria-label`, in the tooltip and in the tests. A name is a verb and an object, in sentence case, with no "button" in it. A name that repeats on one screen carries the object.
+
+| Action | Name | Where |
+|---|---|---|
+| Show or hide the left panel | Toggle sidebar | [TitleBar](?path=/docs/product-titlebar--docs) |
+| Show or hide the right panel | Toggle right panel | TitleBar |
+| Create a note | New note | TitleBar, [NoteSidebar](?path=/docs/product-notesidebar--docs) |
+| Close an open note | `Close {note name}` | TitleBar |
+| List all open notes | Show all open notes | TitleBar |
+| Window controls | Minimize window, Maximize window, Close window | TitleBar |
+| Switch app section | Notes, Search, Bookmarks, Settings | [ActivityBar](?path=/docs/product-activitybar--docs) |
+| Search a side panel | `Search {panel title}` | [SidePanel](?path=/docs/product-sidepanel--docs) |
+| Close a side panel | `Close {panel title}` | SidePanel |
+
+| Landmark | Name |
+|---|---|
+| Title bar | Window title bar |
+| Open notes list | Open notes |
+| Activity bar | Sections |
+| Left panel | Workspace |
+| Right panel | The panel title |
+
 ## Formats
 
 | Thing | Rule | Source |

@@ -5,7 +5,7 @@ import { cn } from "../lib/utils";
 import { Tooltip } from "./Tooltip";
 
 const iconButtonVariants = cva(
-    "bs-icon-button inline-flex size-icon-button shrink-0 items-center justify-center rounded-control text-icon-default motion-feedback hover:text-icon-active focus-visible:focus-ring disabled:cursor-not-allowed disabled:text-text-muted [&_svg]:pointer-events-none [&_svg]:size-icon [&_svg]:shrink-0",
+    "bs-icon-button inline-flex shrink-0 items-center justify-center rounded-control text-icon-default motion-feedback hover:text-icon-active focus-visible:focus-ring disabled:cursor-not-allowed disabled:text-text-muted data-[active]:text-icon-active [&_svg]:pointer-events-none [&_svg]:shrink-0",
     {
         variants: {
             variant: {
@@ -13,8 +13,12 @@ const iconButtonVariants = cva(
                 secondary:
                     "border border-border-divider bg-button-secondary-bg hover:bg-state-selected",
             },
+            size: {
+                default: "size-icon-button [&_svg]:size-icon",
+                activity: "size-activity-button [&_svg]:size-activity-icon",
+            },
         },
-        defaultVariants: { variant: "ghost" },
+        defaultVariants: { variant: "ghost", size: "default" },
     },
 );
 
@@ -26,11 +30,14 @@ type IconButtonProps = Omit<
         "aria-label": string;
         children: ReactNode;
         tooltip?: ReactNode | false;
+        active?: boolean;
     };
 
 function IconButton({
     className,
     variant = "ghost",
+    size = "default",
+    active = false,
     type = "button",
     tooltip,
     "aria-label": ariaLabel,
@@ -39,9 +46,10 @@ function IconButton({
     const button = (
         <button
             data-variant={variant}
+            data-active={active ? "" : undefined}
             type={type}
             aria-label={ariaLabel}
-            className={cn(iconButtonVariants({ variant, className }))}
+            className={cn(iconButtonVariants({ variant, size, className }))}
             {...props}
         />
     );

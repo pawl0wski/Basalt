@@ -23,6 +23,16 @@ import { Meta } from "@storybook/addon-docs/blocks";
 6. An export in `src/index.ts`.
 7. Every story passes the accessibility check, or the exception is written down on the page.
 
+## What a screen story must have
+
+A screen is a story that composes the product components, never a new component. It lives in `docs/screens/` and is built with package imports only: no local copy of a region, no shell `div`, no token override.
+
+1. A default story with every region of the window and realistic data.
+2. The states of the screen: no note open, loading, error, a conflict, a sync error, a closed right panel.
+3. Both reference widths: 1440 px and 768 px (`globals: { viewport }`). 320 px is not a width of screens.
+4. Every story passes the accessibility check and `npm run check:tokens` reports 0.
+5. Anything the screen needs and the system lacks is recorded in `What is missing`, not solved inside the story.
+
 ## When a token changes
 
 1. Change it in `src/tokens/` with a comment that names the source.

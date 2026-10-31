@@ -34,7 +34,7 @@ function Popover({
                     aria-label={label}
                     align={align}
                     sideOffset={4}
-                    className="bs-popover max-w-sidebar rounded-container border border-border-divider bg-surface-raised p-panel text-size-ui text-text-ui"
+                    className="bs-popover max-w-overlay rounded-container border border-border-divider bg-surface-raised p-panel text-size-ui text-text-ui"
                 >
                     {children}
                 </PopoverPrimitive.Content>

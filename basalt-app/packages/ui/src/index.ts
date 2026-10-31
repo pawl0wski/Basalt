@@ -47,6 +47,10 @@ export { useToast } from "./components/toastContext";
 export type { ToastOptions } from "./components/toastContext";
 export { Tooltip } from "./components/Tooltip";
 export type { TooltipProps } from "./components/Tooltip";
+export { ActivityBar } from "./product/ActivityBar";
+export type { ActivityBarItem, ActivityBarProps } from "./product/ActivityBar";
+export { AppShell } from "./product/AppShell";
+export type { AppShellProps } from "./product/AppShell";
 export { ImagePlaceholder, NoteImage } from "./product/ImagePlaceholder";
 export type {
     ImagePlaceholderProps,
@@ -65,8 +69,16 @@ export { SaveFailedDialog } from "./product/SaveFailedDialog";
 export type { SaveFailedDialogProps } from "./product/SaveFailedDialog";
 export { SaveStatus } from "./product/SaveStatus";
 export type { SaveState, SaveStatusProps } from "./product/SaveStatus";
+export { SidePanel } from "./product/SidePanel";
+export type { SidePanelProps } from "./product/SidePanel";
 export { StatusBar } from "./product/StatusBar";
 export type { StatusBarProps } from "./product/StatusBar";
+export { TitleBar } from "./product/TitleBar";
+export type {
+    TitleBarProps,
+    TitleBarTab,
+    WindowControls,
+} from "./product/TitleBar";
 export { WelcomeScreen } from "./product/WelcomeScreen";
 export type { WelcomeScreenProps } from "./product/WelcomeScreen";
 export { cn } from "./lib/utils";

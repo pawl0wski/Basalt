@@ -5,10 +5,15 @@
     --bs-titlebar-height: 36px;
     /* contrast fix: the active tab was 1.08:1 */
     --bs-tab-active-indicator: 2px;
+    /* PROPOSAL (owner decision 2026-10-30: tab width is elastic up to a limit): a note tab shrinks from the maximum to the minimum, then the tabs overflow into a menu */
+    --bs-note-tab-min-width: 128px;
+    --bs-note-tab-max-width: 200px;
     /* R02.1 */
     --bs-activity-bar-width: 48px;
     /* R02.1, R01.7 */
     --bs-sidebar-width: 300px;
+    /* owner decision 2026-10-30: the width of menus, popovers and toasts is its own token, equal to the panel width today but free to change separately */
+    --bs-overlay-width: 300px;
     /* R01.6 */
     --bs-status-bar-height: 24px;
     /* R01.11 (about 27 px) */

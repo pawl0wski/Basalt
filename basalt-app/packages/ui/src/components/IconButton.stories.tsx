@@ -17,6 +17,8 @@ const meta = {
     },
     argTypes: {
         variant: { control: "inline-radio", options: variants },
+        size: { control: "inline-radio", options: ["default", "activity"] },
+        active: { control: "boolean" },
         disabled: { control: "boolean" },
     },
 } satisfies Meta<typeof IconButton>;
@@ -65,16 +67,31 @@ export const States: Story = {
                 { label: "Default" },
                 { label: "Hover", previewState: "hover" },
                 { label: "Focus", previewState: "focus" },
+                { label: "Active" },
                 { label: "Disabled" },
             ]}
             cell={(column, row) => (
                 <IconButton
                     {...args}
                     variant={column as (typeof variants)[number]}
+                    active={row.label === "Active"}
                     disabled={row.label === "Disabled"}
                 />
             )}
         />
+    ),
+};
+
+export const ActivitySize: Story = {
+    render: (args) => (
+        <div className="flex items-center gap-in-group">
+            <IconButton {...args} size="activity" aria-label="Notes" active>
+                <Settings aria-hidden="true" />
+            </IconButton>
+            <IconButton {...args} size="activity" aria-label="Search">
+                <Search aria-hidden="true" />
+            </IconButton>
+        </div>
     ),
 };
 

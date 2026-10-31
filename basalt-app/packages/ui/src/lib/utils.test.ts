@@ -26,6 +26,12 @@ describe("cn", () => {
         );
     });
 
+    it("lets a later width token replace an earlier one, including the newer tokens", () => {
+        expect(cn("w-sidebar", "w-overlay")).toBe("w-overlay");
+        expect(cn("max-w-note-tab-max", "max-w-overlay")).toBe("max-w-overlay");
+        expect(cn("min-w-note-tab-min", "min-w-overlay")).toBe("min-w-overlay");
+    });
+
     it("lets a later radius replace an earlier one", () => {
         expect(cn("rounded-control", "rounded-container")).toBe(
             "rounded-container",

@@ -31,8 +31,8 @@ An icon button gives the user a frequent, well-known action in the small space o
 
 ## 4. Anatomy
 
-1. Container: a 28 x 28 px square (`size-icon-button`), `rounded-control`.
-2. Icon: 16 px (`size-icon`), Lucide outline, `icon-default`, `icon-active` on hover.
+1. Container: a 28 x 28 px square (`size-icon-button`), `rounded-control`. In the `activity` size: 36 x 36 px (`size-activity-button`).
+2. Icon: 16 px (`size-icon`), Lucide outline, `icon-default`, `icon-active` on hover. In the `activity` size: 20 px (`size-activity-icon`).
 3. Accessible name: required `aria-label`, also shown as a [Tooltip](?path=/docs/primitives-tooltip--docs) on hover and keyboard focus.
 
 ## 5. Variants
@@ -41,6 +41,13 @@ An icon button gives the user a frequent, well-known action in the small space o
 |---|---|---|
 | `ghost` (default) | Toolbars, title bar, list rows. | No fill, `state-hover` on hover. |
 | `secondary` | An icon action that must stand out from the surface, for example next to an input. | `button-secondary-bg` with a 1 px `border-divider`. |
+
+| Size | Use it for | Look |
+|---|---|---|
+| `default` | Toolbars, the title bar, list rows. | 28 px button, 16 px icon. |
+| `activity` | The [ActivityBar](?path=/docs/product-activitybar--docs) only. | 36 px button, 20 px icon. |
+
+<Canvas of={IconButtonStories.ActivitySize} />
 
 There is no `primary` or `destructive` icon button. A destructive action needs a text label (YAGNI, proposal).
 
@@ -57,6 +64,7 @@ There is no `primary` or `destructive` icon button. A destructive action needs a
 | Default | `icon-default` icon. | |
 | Hover | `icon-active` icon on `state-hover` (ghost) or `state-selected` (secondary). | R01.12 |
 | Focus | 2 px `focus-ring` outline, 2 px offset. | Focus appearance accepted in the token specification. |
+| Active | `icon-active` icon, no fill (`active` prop, `data-active`). For the open section of the activity bar and for the toggle of an open panel. | The prop only styles. The consumer sets `aria-current` or `aria-expanded`. |
 | Pressed | Same as hover. | Proposal. |
 | Disabled | `text-muted` icon, `not-allowed` cursor. | Proposal (open question 3). Say why in nearby text if the user could expect the action. |
 | Loading | Not supported. | Proposal. |
@@ -89,6 +97,8 @@ The control is the same size at every width. In a toolbar, keep at most the icon
 | `aria-label` | `string` | required | Accessible name. |
 | `children` | `ReactNode` | required | The icon. |
 | `variant` | `"ghost" \| "secondary"` | `"ghost"` | Look. |
+| `size` | `"default" \| "activity"` | `"default"` | Button and icon size. |
+| `active` | `boolean` | `false` | Shows the `icon-active` colour for an open section or panel. Set the ARIA attribute yourself. |
 | `tooltip` | `ReactNode \| false` | the `aria-label` | Tooltip text, or `false` for no tooltip. |
 | `type` | `"button" \| "submit" \| "reset"` | `"button"` | Button type. |
 | `disabled` | `boolean` | `false` | Blocks interaction. |

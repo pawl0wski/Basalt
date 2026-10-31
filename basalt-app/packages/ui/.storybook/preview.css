@@ -26,6 +26,20 @@
 [data-preview-state="hover"] .bs-icon-button[data-variant="secondary"] {
     background-color: var(--bs-state-selected);
 }
+[data-preview-state="hover"] .bs-note-tab:not([data-active]) {
+    background-color: var(--bs-state-hover);
+}
+[data-preview-state="hover"] .bs-note-tab:not([data-active]) > button {
+    color: var(--bs-text-ui);
+}
+[data-preview-state="hover"] .bs-note-tab [data-unsaved-dot],
+[data-preview-state="focus"] .bs-note-tab [data-unsaved-dot] {
+    display: none;
+}
+[data-preview-state="hover"] .bs-note-tab .bs-icon-button svg,
+[data-preview-state="focus"] .bs-note-tab .bs-icon-button svg {
+    display: block;
+}
 [data-preview-state="hover"] .bs-link {
     color: var(--bs-text-note);
 }
@@ -53,6 +67,7 @@
 [data-preview-state="focus"] .bs-select,
 [data-preview-state="focus"] .bs-radio,
 [data-preview-state="focus"] .bs-tab,
+[data-preview-state="focus"] .bs-note-tab > button,
 [data-preview-state="focus"] .bs-switch {
     outline: 2px solid var(--bs-focus-ring);
     outline-offset: 2px;

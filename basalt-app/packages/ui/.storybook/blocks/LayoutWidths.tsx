@@ -8,13 +8,13 @@ const widths = [
     {
         name: "768 px",
         utility: "tablet:",
-        note: "Breakpoint token (PROPOSAL, widths are from the design system brief). Behavior of the three sections below this width is not decided.",
-        source: "proposal",
+        note: "Breakpoint token (PROPOSAL, widths are from the design system brief). The activity bar, the left panel and the note fit; the right panel starts closed below 1440 px and the user can open it.",
+        source: "owner decision 2026-10-30",
     },
     {
         name: "1440 px",
         utility: "desktop:",
-        note: "Breakpoint token (PROPOSAL). The desktop reference width: activity bar, side panel, note and right panel fit side by side.",
+        note: "Breakpoint token (PROPOSAL). The desktop reference width: activity bar, left panel, note and right panel fit side by side, and the right panel starts open when a note is open.",
         source: "proposal, R01.7",
     },
 ];
@@ -35,8 +35,20 @@ const parts = [
     {
         token: "sidebar-width",
         utility: "w-sidebar",
-        value: "300 px",
-        source: "R02.1, R01.7",
+        value: "300 px, for the left and the right panel",
+        source: "owner decision 2026-10-30",
+    },
+    {
+        token: "note-tab-min-width, note-tab-max-width",
+        utility: "min-w-note-tab-min, max-w-note-tab-max",
+        value: "128 px and 200 px (PROPOSAL)",
+        source: "owner decision 2026-10-30",
+    },
+    {
+        token: "overlay-width",
+        utility: "w-overlay",
+        value: "300 px, for menus, popovers and toasts",
+        source: "owner decision 2026-10-30",
     },
     {
         token: "status-bar-height",
@@ -77,16 +89,19 @@ export function LayoutWidths() {
                         <div className="flex w-activity-bar shrink-0 justify-center border-r border-border-divider bg-surface-frame py-panel text-size-ui-small text-text-muted">
                             bar
                         </div>
-                        <div className="w-sidebar shrink-0 border-r border-border-divider bg-surface-frame p-panel text-text-muted">
-                            left section
+                        <div className="w-sidebar shrink-0 border-r border-border-divider bg-surface-card p-panel text-text-muted">
+                            left panel
                         </div>
                         <div className="flex flex-1 justify-center bg-surface-editor p-panel text-text-muted">
                             <div className="w-full max-w-note border border-border-divider p-panel">
                                 note column
                             </div>
                         </div>
+                        <div className="w-sidebar shrink-0 border-l border-border-divider bg-surface-card p-panel text-text-muted">
+                            right panel
+                        </div>
                     </div>
-                    <div className="flex h-status-bar items-center border-t border-border-divider bg-surface-editor px-between-groups text-size-ui-small text-text-muted">
+                    <div className="flex h-status-bar items-center bg-surface-frame px-between-groups text-size-ui-small text-text-muted">
                         status bar
                     </div>
                 </div>

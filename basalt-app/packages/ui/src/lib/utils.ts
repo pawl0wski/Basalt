@@ -50,6 +50,7 @@ const spacing = [
     "titlebar",
     "activity-bar",
     "sidebar",
+    "overlay",
     "status-bar",
     "tree-row",
     "icon",
@@ -57,6 +58,8 @@ const spacing = [
     "activity-button",
     "icon-button",
     "tab-indicator",
+    "note-tab-min",
+    "note-tab-max",
     "none",
 ];
 

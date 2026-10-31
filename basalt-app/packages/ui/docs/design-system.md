@@ -48,6 +48,10 @@ Focused, graphite, own, tool-like, orderly. Not generic, loud, childish, functio
 | ErrorState                  | `ErrorState`                    | A view that could not be shown                                              | Problems the view survives             |
 | NoteList                    | `NoteList`                      | The flat note list (listbox)                                                | Form choices                           |
 | NoteSidebar                 | `NoteSidebar`                   | Left column of an open workspace                                            | The welcome screen                     |
+| AppShell                    | `AppShell`                      | The window regions: title bar, activity bar, panels, status bar             | Building your own shell in a screen    |
+| TitleBar                    | `TitleBar`                      | Panel toggles, open-note tabs, new note, window buttons                     | Sibling views of one object (Tabs)     |
+| ActivityBar                 | `ActivityBar`                   | Switching between the app sections (Notes, Search, Bookmarks, Settings)     | Actions on a note                      |
+| SidePanel                   | `SidePanel`                     | The right panel: a titled frame with search and close, content in a slot    | The left note column (NoteSidebar)     |
 | SaveStatus, StatusBar       | `SaveStatus`, `StatusBar`       | Save state and counts in the bottom bar                                     | Sync state                             |
 | NoteBanner                  | `NoteBanner`                    | Why the open note cannot save or open                                       | Failures while leaving the note        |
 | SaveFailedDialog            | `SaveFailedDialog`              | What to do with text that could not be saved                                | Failures while staying in the note     |
@@ -61,9 +65,9 @@ Patterns (proposals, see Storybook): Form, List with filters, Detail view, Delet
 
 | Token                         | Class                                   | Use it for                                                                                 |
 | ----------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `surface-frame`               | `bg-surface-frame`                      | Title bar, side panels, status bar, field fill                                             |
+| `surface-frame`               | `bg-surface-frame`                      | Title bar, activity bar, status bar, field fill                                             |
 | `surface-editor`              | `bg-surface-editor`                     | Editor and page background                                                                 |
-| `surface-card`                | `bg-surface-card`                       | Cards grouping settings, sidebar                                                           |
+| `surface-card`                | `bg-surface-card`                       | Cards grouping settings, side panels                                                           |
 | `surface-raised`              | `bg-surface-raised`                     | Menus, dialogs, tooltips, popovers, alerts                                                 |
 | `state-hover`                 | `bg-state-hover`                        | Row or control hover (not inside `surface-raised`)                                         |
 | `state-selected`              | `bg-state-selected`                     | Selected row when the list has no focus, active item, hover inside `surface-raised`        |

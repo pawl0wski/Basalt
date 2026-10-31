@@ -1,0 +1,123 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as TitleBarStories from "../../src/product/TitleBar.stories";
+
+<Meta of={TitleBarStories} />
+
+# TitleBar
+
+## 1. What it is for
+
+The window's own title bar: the left panel toggle, the tabs of the open notes, "New note", the right panel toggle and the window buttons. No File to Help menu and no file name in the middle. Source: R01.3, R02.8, `tokeny.md`.
+
+<Canvas of={TitleBarStories.Playground} />
+
+## 2. When to use
+
+- Inside [AppShell](?path=/docs/product-appshell--docs), on every screen of an open workspace.
+
+## 3. When not to use
+
+| Situation | Use instead |
+|---|---|
+| Sibling views of one object (settings sections). | [Tabs](?path=/docs/primitives-tabs--docs). |
+| Navigation between app sections. | [ActivityBar](?path=/docs/product-activitybar--docs). |
+
+## 4. Anatomy
+
+1. Bar: `header`, 36 px (`h-titlebar`), `surface-frame`, `px-between-groups`. [AppShell](?path=/docs/product-appshell--docs) draws a 1 px `border-divider` under it.
+2. Left panel toggle (`PanelLeft`).
+3. Note tabs: a list named "Open notes". Each tab is 28 px high (`h-icon-button`), a note icon, the name (truncated) and a close button. Elastic: up to 200 px (`note-tab-max-width`), down to 128 px (`note-tab-min-width`).
+4. Open note: `surface-editor` fill, `text-note` name and a 2 px `tab-indicator` in `action-primary` at the bottom of the tab. Other tabs are transparent, `text-muted`, `state-hover` on hover.
+5. When the tabs do not fit: the extra tabs are clipped, the open tab is scrolled into view and a "Show all open notes" menu appears after the list.
+6. "New note" (`Plus`).
+7. Right panel toggle (`PanelRight`), then the window buttons (Minimize, Maximize, Close) if the application passes `windowControls`.
+
+A toggle for an open panel has `icon-active` and `aria-expanded`.
+
+## 5. Variants
+
+| Variant | When |
+|---|---|
+| With tabs | A note is open. |
+| No note open | No tabs. The toggles, "New note" and the window buttons stay. |
+| Without window buttons | The platform draws them. |
+
+<Canvas of={TitleBarStories.NoNoteOpen} />
+<Canvas of={TitleBarStories.WithoutWindowButtons} />
+
+## 6. States
+
+<Canvas of={TitleBarStories.States} />
+
+| State of a tab | What the user sees |
+|---|---|
+| Inactive | Transparent, `text-muted`. |
+| Hover | `state-hover` fill, `text-ui` name. |
+| Focus | 2 px `focus-ring` on the name, or on the close button. |
+| Open | `surface-editor` fill, `text-note` name, bottom indicator. |
+| Not saved | A dot in place of the close button. The close button comes back on hover and on keyboard focus. The name carries "not saved" for screen readers. |
+
+<Canvas of={TitleBarStories.UnsavedNote} />
+
+A save failure is not shown on the tab. It is in the status bar and in the note banner.
+
+The matrix repeats the component, so the "unique landmark" and "one banner" accessibility rules are switched off on that one story. The real screen has one title bar.
+
+## 7. Behavior and accessibility
+
+- `header` named "Window title bar". The open notes are a list of buttons with `aria-current="true"` on the open one. They are not ARIA tabs, because a tab cannot hold a second button (close).
+- Every icon button has a name: "Toggle sidebar", "New note", `Close {name}`, "Show all open notes", "Toggle right panel", "Minimize window", "Maximize window", "Close window".
+- The window buttons have no tooltip: their names are fixed by the platform.
+- Overflow: `ResizeObserver` decides when to show the menu. The menu lists every open note and marks the open one.
+
+## 8. Content
+
+The tab shows the note name without the folder and without ".md". Two notes with the same name look the same in the tab; the menu has the same limit.
+
+## 9. Responsiveness
+
+<Canvas of={TitleBarStories.TooManyNotes} />
+
+Long names are cut with an ellipsis (`LongNoteName`). Desktop only.
+
+<Canvas of={TitleBarStories.LongNoteName} />
+
+## 10. API
+
+| Prop | Type | Description |
+|---|---|---|
+| `tabs` | `{ id, name, unsaved? }[]` | The open notes. |
+| `activeTabId` | `string` | The open note. |
+| `onSelectTab`, `onCloseTab` | `(id) => void` | |
+| `onNewNote` | `() => void` | |
+| `onToggleSidebar`, `onToggleSidePanel` | `() => void` | |
+| `sidebarOpen`, `sidePanelOpen` | `boolean` | Marks the toggles active and sets `aria-expanded`. |
+| `windowControls` | `{ onMinimize, onToggleMaximize, onClose }` | Draws the window buttons. |
+| `className` | `string` | |
+
+## 11. Code
+
+```tsx
+<TitleBar
+    tabs={[{ id: "weekly", name: "Weekly plan", unsaved: false }]}
+    activeTabId="weekly"
+    sidebarOpen
+    sidePanelOpen={false}
+    windowControls={{ onMinimize, onToggleMaximize, onClose }}
+    onSelectTab={open}
+    onCloseTab={close}
+    onNewNote={createNote}
+    onToggleSidebar={toggleSidebar}
+    onToggleSidePanel={toggleSidePanel}
+/>
+```
+
+## 12. Do and don't
+
+- Do show an unsaved note with the dot, and the failure in the status bar and the banner.
+- Don't show an avatar, a "Pro" badge or a menu bar (tokens.md rule 12).
+- Don't use [Tabs](?path=/docs/primitives-tabs--docs) for open notes.
+
+## 13. Related
+
+[AppShell](?path=/docs/product-appshell--docs), [ActivityBar](?path=/docs/product-activitybar--docs), [SaveStatus](?path=/docs/product-savestatus--docs), [IconButton](?path=/docs/primitives-iconbutton--docs).

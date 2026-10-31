@@ -29,7 +29,7 @@ function Menu({ trigger, items, align = "start", defaultOpen }: MenuProps) {
                 <DropdownMenuPrimitive.Content
                     align={align}
                     sideOffset={4}
-                    className="bs-menu flex min-w-sidebar flex-col rounded-container border border-border-divider bg-surface-raised p-in-group text-size-ui text-text-ui"
+                    className="bs-menu flex min-w-overlay flex-col rounded-container border border-border-divider bg-surface-raised p-in-group text-size-ui text-text-ui"
                 >
                     {items.map((item, index) =>
                         item === "separator" ? (
