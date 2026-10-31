@@ -77,7 +77,10 @@ function NoteBody() {
                 </code>
                 .
             </p>
-            <pre className="m-none overflow-x-auto rounded-control bg-code-block-bg p-panel font-code text-size-code text-text-ui">
+            <pre
+                tabIndex={0}
+                className="m-none overflow-x-auto rounded-control bg-code-block-bg p-panel font-code text-size-code text-text-ui focus-visible:focus-ring"
+            >
                 {"basalt sync --workspace ~/Basalt --status"}
             </pre>
         </>

@@ -65,9 +65,9 @@ Patterns (proposals, see Storybook): Form, List with filters, Detail view, Delet
 
 | Token                         | Class                                   | Use it for                                                                                 |
 | ----------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `surface-frame`               | `bg-surface-frame`                      | Title bar, activity bar, status bar, field fill                                             |
+| `surface-frame`               | `bg-surface-frame`                      | Title bar, activity bar, status bar, field fill                                            |
 | `surface-editor`              | `bg-surface-editor`                     | Editor and page background                                                                 |
-| `surface-card`                | `bg-surface-card`                       | Cards grouping settings, side panels                                                           |
+| `surface-card`                | `bg-surface-card`                       | Cards grouping settings, side panels                                                       |
 | `surface-raised`              | `bg-surface-raised`                     | Menus, dialogs, tooltips, popovers, alerts                                                 |
 | `state-hover`                 | `bg-state-hover`                        | Row or control hover (not inside `surface-raised`)                                         |
 | `state-selected`              | `bg-state-selected`                     | Selected row when the list has no focus, active item, hover inside `surface-raised`        |
