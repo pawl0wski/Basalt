@@ -10,6 +10,8 @@ tags: [notes, workspace, architecture, primitives, tauri, editor, autosave, watc
 
 Source issue: #8 (E01-S01, epic #5). Design authority: `.ai/specs/product-brief.md`. Engineering law: `AGENTS.md` and `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` (the "standards spec").
 
+Prototype: `prototypes/workspace-basic/` (screen map: `prototypes/e01-screen-map.md`; review notes: `prototypes/feedback/prototype-feedback-consolidated.md`). Screen ids (s01, s02, …) in this spec refer to that map.
+
 ## 📝 TLDR
 
 The owner needs notes stored as plain `.md` files in a directory they choose (D05). Today the app is a static welcome screen whose buttons do nothing. This spec (future behavior) delivers E01-S01 as a **local-first** desktop app: the local files are the source of truth, and the app is fully usable without any server or account. It also delivers the small set of primitives this story needs and later stories will reuse: platform ports with contract tests, a workspace-scoped file model with a file watcher, autosave, i18n (English only for now), and a custom Obsidian-style editor package. The backend is out of scope (E02). File management (rename, delete, move, folders, folder tree) is a separate story, E01-S04.
@@ -33,12 +35,12 @@ The owner needs notes stored as plain `.md` files in a directory they choose (D0
 | Id  | Topic                         | Decision (owner)                                                                                                                                                                                                       |
 | --- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | G1  | Primary scenario              | Workspaces created and used by Basalt. Opening an existing Obsidian vault is not a goal now; no special handling for `.obsidian/` or Obsidian syntax beyond the generic rules.                                       |
-| G2  | Per-device state              | `lastOpenedNote` is stored per workspace in `$APPCONFIG/basalt.json`. E01-S01 writes nothing into the workspace except notes, so per-device UI state never syncs (E02) or conflicts between devices.                  |
+| G2  | Per-device state              | `openNotes` and `activeNote` (open tabs; originally a single `lastOpenedNote`) are stored per workspace in `$APPCONFIG/basalt.json`. E01-S01 writes nothing into the workspace except notes, so per-device UI state never syncs (E02) or conflicts between devices.                  |
 | G3  | Conflict check                | `saveNote` always re-reads the file before writing; no mtime/size shortcut.                                                                                                                                          |
 | G4  | Note list refresh             | A recursive file watcher refreshes the list and detects external changes to the open note. Fallback to re-listing on window focus if the watcher cannot start.                                                       |
 | G5  | Out of scope                  | Rename, delete, move, folder creation, notes in sub-folders, folder tree. They form a new story **E01-S04** with its own spec; epic #5 is done only when S01, S03 and S04 are done.                                  |
 | G6  | E2E strategy                  | Playwright against the memory platform (as designed below). Real desktop e2e (`tauri-driver`) is revisited when E02 makes real-disk behavior riskier.                                                              |
-| G7  | Sidebar                       | Flat list with relative paths in S01; the folder tree arrives in S04.                                                                                                                                                |
+| G7  | Sidebar                       | Flat list with relative paths in S01; replaced by the folder tree in E01-S04 (`2026-11-01-manage-notes-and-folders.md`, owner review of the prototype, 2026-11-01).                                                                                                                                                |
 | G8  | What a workspace is           | Any directory the owner picks. No marker file, no warnings, one welcome action.                                                                                                                                     |
 | G9  | Protection rules kept/dropped | Kept: EOL/BOM preservation, `not-utf8` never written, 5 MiB limit, symlink rejection, conflict detection. Dropped: the 10 000-entry cap.                                                                             |
 | G10 | i18n                          | i18n from the start with `i18next` + `react-i18next` and typed keys. English (`en`) is the only language for now; no language detection or switcher yet.                                                            |
@@ -61,6 +63,8 @@ The owner needs notes stored as plain `.md` files in a directory they choose (D0
 - Search, several open workspaces, opening Obsidian vaults as a goal (G1).
 - Languages other than English, language detection and a language switcher (G10).
 - Images (E01-S03), sync and anything server-side (E02).
+- Activity bar sections (Search, Bookmarks, Settings), the note outline panel, word and character counts in the status bar, and a sync word in the status bar (prototype decisions D-6 and D-7, 2026-10-31). The prototype shows the first three as inert; the product does not build them in E01.
+- A Settings screen. "Change workspace" will move there when settings are built (owner, 2026-11-01); until then it is reachable only with Ctrl/Cmd+O.
 
 ## 📝 Problem Statement
 
@@ -175,11 +179,11 @@ core, ui, api ──► unchanged rules
   {
       "version": 1,
       "lastWorkspace": "<WorkspaceRoot> | null",
-      "workspaces": { "<WorkspaceRoot>": { "lastOpenedNote": "<WorkspacePath> | null" } }
+      "workspaces": { "<WorkspaceRoot>": { "openNotes": ["<WorkspacePath>"], "activeNote": "<WorkspacePath> | null" } }
   }
   ```
 
-  The last workspace cannot live inside the workspace, because the app must know it before it can open the workspace; `lastOpenedNote` is per-device state and must not sync (G2). Validated at runtime: invalid content means "no last workspace"; an invalid entry under `workspaces` is dropped; an invalid `lastOpenedNote` (not a valid `WorkspacePath` or no longer present) simply means no note is reopened. A failed write is logged (without paths or content) and does not affect the workspace.
+  The last workspace cannot live inside the workspace, because the app must know it before it can open the workspace; `openNotes` and `activeNote` (the open tabs, D-4 of the screen map; they replace the single `lastOpenedNote`) are per-device state and must not sync (G2). Validated at runtime: invalid content means "no last workspace"; an invalid entry under `workspaces` is dropped; an invalid or missing entry in `openNotes`, or an `activeNote` that is not open, is dropped and the rest is reopened. A failed write is logged (without paths or content) and does not affect the workspace.
 - **In memory:** `Note { path: WorkspacePath, name }`, `NoteSession` (above).
 
 ### Line endings and BOM
@@ -245,21 +249,56 @@ Tauri changes:
 All user-facing text comes from `locales/en.json`.
 
 - **No workspace:** welcome screen with one "Open folder as workspace" action (native picker, which can also create a folder). Cancel leaves the screen unchanged.
-- **Workspace open:** left sidebar lists notes as a flat list (relative path, sorted case-insensitively), "New note" button, workspace name with a "Change workspace" action. The last opened note of that workspace is reopened. Empty workspace shows "Create your first note". The list updates live when files change on disk (G4); in focus-fallback mode a small notice says the list refreshes when the window is focused.
-- **New note:** dialog with a name field prefilled with `suggestNoteName` (`Untitled`, or `Untitled 1` if taken, ...). The note is created in the workspace root. If the owner types a name that is invalid or already exists, an inline message is shown and the Create button is disabled. No hidden renaming.
+- **Workspace open:** left sidebar lists notes as a flat list (relative path, sorted case-insensitively; E01-S04 replaces it with a folder tree), a "New note" button and the workspace folder name in the header. There is no "Change workspace" button in the sidebar; Ctrl/Cmd+O opens the picker. The open notes of that workspace are reopened as tabs. Empty workspace shows "Create your first note". The list updates live when files change on disk (G4); in focus-fallback mode a small notice says the list refreshes when the window is focused.
+- **New note:** no dialog. The button (or Ctrl/Cmd+N) immediately creates an empty note named by `suggestNoteName` (`Untitled`, or `Untitled 1` if taken, ...) in the workspace root and opens it; the owner moves or renames it later (E01-S04). Owner decision after the prototype review, 2026-11-01; it replaces the New note dialog (s04), so name validation applies to rename and new folders only.
+- **Tabs:** several notes can be open at once (D-4). Clicking a note that is already open focuses its tab. A tab with unsaved text shows a dot. Closing a tab (close button or middle mouse button click) flushes the save first; the Save-failed dialog appears only if that fails. There is no limit on open tabs.
+- **Status bar:** shows the save state only. There is no sync word in E01.
 - **Editing and saving:** autosave; a `SaveStatus` indicator shows "Saved" / "Saving…" / "Not saved". Ctrl/Cmd+S saves immediately.
 - **External changes to the open note:** clean → reloaded silently; dirty → conflict banner at once; deleted → deleted-file banner.
 - **Leaving a note** (switch note, change workspace, close window): pending changes are flushed. Only if that save fails does the Save-failed dialog appear, with Retry / Discard changes / Cancel.
-- **Errors:** a persistent `role="alert"` banner above the editor with the reason and actions; autosave stays paused until it is resolved. The editor text is never cleared by an error.
+- **Errors:** a persistent `role="alert"` banner above the editor, as wide as the text column and pinned to the top of the editor while the note scrolls, with the reason and actions; autosave stays paused until it is resolved. The editor text is never cleared by an error.
 - **Accessibility:** the note list is a labelled `listbox` (`aria-selected`, arrow-key navigation); dialogs trap focus (Radix); the banner is announced to screen readers.
-- Prototype: none.
+- **Prototype:** `prototypes/workspace-basic/` (see the top of this spec).
+
+## 📝 Acceptance criteria from the prototype
+
+AC-01.1 to AC-01.3 are in issue #8 (see "Acceptance criteria traceability"). The criteria below come from the screen map and the owner's review of the prototype (2026-11-01). The screen id after each criterion refers to `prototypes/e01-screen-map.md`. Issue #8 should be updated with them.
+
+| Id | Criterion | Screen |
+| --- | --- | --- |
+| AC-01.4 | With no workspace, Welcome has one action "Open folder as workspace". Cancelling the picker changes nothing and shows no error. | s01 |
+| AC-01.5 | A last workspace that is missing at launch, or lost while open with no unsaved text, returns to Welcome with an explanatory notice. `lastWorkspace` is kept. | s01 |
+| AC-01.6 | A picked folder that cannot be opened keeps the app on Welcome with an `errors.*` message. A failed listing shows an error state with Retry in the sidebar. (Default, GAP-10; override if wrong.) | s01, s02 |
+| AC-01.7 | The sidebar header shows the workspace folder name (for example "Basalt notes"). It has no "Change workspace" button; Ctrl/Cmd+O opens the picker. | s02 |
+| AC-01.8 | An empty workspace shows "Create your first note". A file added or removed outside the app appears in or leaves the list within the watcher debounce. In focus-fallback mode the refresh notice is shown. | s02 |
+| AC-01.9 | Collapsing and expanding the sidebar is animated (a computed transition duration above 0 ms). With `prefers-reduced-motion` there is no animation. | s02 |
+| AC-01.10 | New note (button or Ctrl/Cmd+N) creates `Untitled`, or `Untitled N` if taken, in the workspace root at once and opens it with the cursor in the editor, so the owner can type immediately. No dialog appears. In a read-only workspace the message "The workspace folder is read-only. Nothing was changed." is shown and no list entry is added. | s02, s04 |
+| AC-01.11 | The status bar shows only the save state (Saved / Saving… / Not saved). There is no sync word. | s03 |
+| AC-01.12 | Conflict, deleted-file and workspace-unavailable banners are as wide as the text column and stay at the top of the editor while the note scrolls. | s03 |
+| AC-01.13 | When leaving a note, a failed save opens the Save-failed dialog with Retry, Discard changes and Cancel. Escape means Cancel, never Discard. | s05 |
+| AC-01.14 | "Load version from disk" and "Close note" on a dirty note ask for confirmation. Initial focus and Escape are on Cancel, and Cancel keeps the text. Texts: see below. | s06 |
+| AC-01.15 | A note that is too large, not UTF-8, a symlink, or fails with an unknown error shows a message in the editor area and nothing is written. | s03 |
+| AC-01.16 | Several notes can be open as tabs. Clicking an already open note focuses its tab. A tab with unsaved text shows a dot. Closing a tab (close button or middle mouse button click on it) flushes the save first and opens the Save-failed dialog only if the save fails. | s03, s05 |
+| AC-01.17 | Launch restores all open tabs and the active one, per workspace, from `basalt.json` (`openNotes`, `activeNote`). Entries that no longer exist are dropped. | s01, s03 |
+| AC-01.18 | Live preview: a Markdown line is rendered once the cursor leaves it (for example after Enter); the line with the cursor shows its source. No separate input or source panel appears. The saved file text equals the typed source. | s03, s07 |
+| AC-01.19 | Pending and paused autosave both show "Not saved". No other save-state wording exists. | s03 |
+| AC-01.20 | Ctrl/Cmd+O opens the workspace picker from a workspace window. | s02 |
+
+Confirmation texts (AC-01.14), both with Cancel as initial focus:
+
+| Action | Title | Message | Buttons |
+| --- | --- | --- | --- |
+| Load version from disk | Load the version from disk? | Your unsaved changes in "{name}" will be lost. | Load version from disk / Cancel |
+| Close note (file deleted or moved) | Close this note? | "{name}" was deleted or moved. Your unsaved changes will be lost. | Close note / Cancel |
+
+Tests: each criterion needs a Vitest test for its logic and a Playwright test (memory platform) for the visible behavior; AC-01.9 and AC-01.12 are checked through computed styles and bounding boxes after scrolling.
 
 ## 📝 Edge Cases & Failure Scenarios
 
 | Scenario                                                          | Behavior                                                                                                                                                    |
 | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Directory not writable (AC3)                                      | Save returns `permission-denied`; banner with Retry; autosave paused; editor text and dirty state kept; the original file is unmodified (failure before rename). |
-| Create note in a read-only workspace                              | `createExclusive` fails; inline error; no ghost entry in the list.                                                                                          |
+| Create note in a read-only workspace                              | `createExclusive` fails; the message "The workspace folder is read-only. Nothing was changed." is shown; no ghost entry in the list.                                                                                          |
 | `basalt.json` not writable                                        | Workspace still works; remembering the last workspace/note silently fails (logged without paths or content).                                               |
 | Crash/failure between temp write and rename                       | Original intact; the stray `.basalt-tmp` is ignored by listing and removed on the next successful save of that note.                                       |
 | File changed on disk by another program, open note is clean       | Watcher event → re-read → editor reloads the disk text; no banner.                                                                                         |
@@ -321,7 +360,7 @@ Each step is testable and leaves the app working. Vitest next to code, Playwrigh
 4. Note use cases and `isMarkdownPath`. Tests: listing filters (non-Markdown, dot-entries, temp files), `suggestNoteName` with a given base name, `createNote` collisions and root-only names, `too-large` without reading, `not-utf8`, symlink rejection, EOL/BOM round trip byte for byte, mixed-EOL rule, EOL-only disk change is not a conflict, save always re-reads (a same-size, same-mtime external change is still a conflict), `conflict`/`overwrite`, `not-found`/`recreate`, and the AC3 scenario (write fails → error returned, original untouched).
 5. Autosave state machine with an injected scheduler. Tests: no write when clean, debounce, flush, single in-flight save with one follow-up, pause on error and resume after resolution.
 6. Workspace watcher with an injected scheduler. Tests: debounce and deduplication, Markdown/non-Markdown filtering for list refresh, own write ignored by content, clean session reloads, dirty session yields conflict, deletion yields `not-found`, `root-lost` propagated, start failure reports fallback.
-7. Settings schema and parser for `basalt.json` (including `workspaces[root].lastOpenedNote`). Tests: valid, missing, malformed, invalid entries dropped and future-version input.
+7. Settings schema and parser for `basalt.json` (including `workspaces[root].openNotes` and `activeNote`). Tests: valid, missing, malformed, invalid entries dropped and future-version input.
 
 ### Phase 2a — Platform and building blocks (PR 2)
 
@@ -335,12 +374,14 @@ Each step is testable and leaves the app working. Vitest next to code, Playwrigh
 
 ### Phase 2b — E01-S01 on desktop (PR 3)
 
-1. Workspace and note stores/actions; `restoreWorkspace` (last workspace, its last note) on launch. Tests with fake ports: open, cancel, restore failure, error mapping, dirty derivation, failure keeps text, `lastOpenedNote` saved per workspace.
+1. Workspace and note stores/actions; `restoreWorkspace` (last workspace, its open tabs) on launch. Tests with fake ports: open, cancel, restore failure, error mapping, dirty derivation, failure keeps text, `openNotes` and `activeNote` saved per workspace.
 2. Presentational components and containers; single welcome action; keymap; autosave wiring with `SaveStatus`; watcher wiring (live list, clean reload, dirty conflict, fallback notice); flush on leave and Save-failed dialog; Tauri window close guard; conflict and deleted-file banners.
 3. Playwright specs (memory platform): open a workspace and see Markdown files listed; create a note, type, wait for "Saved", reload and see the content, and assert the bytes through `__basaltTestFs`; read-only workspace shows the error and keeps the text (AC3); external edit of a clean open note reloads it; external edit of a dirty note shows the conflict banner; external add shows the new note in the list; deleted-file banner; save-failed dialog; last workspace and note restored; update `welcome.spec.ts`.
 4. Docs: README workspace section (local-first, nothing but notes written into the workspace), `.ai/lessons`, run log, manual smoke test results. Extract Phase 3 into its own spec and move this one to `implemented/` (Q1).
 
 ### Phase 3 — Live-preview editor (to be extracted)
+
+The owner wants live preview in epic E01 (decision D-5 of the screen map, 2026-10-31; review of 2026-11-01: "seamless, like Obsidian"). AC-01.18 is its acceptance criterion. Whether Phase 3 stays in this spec or moves to its own spec and issue (Q1) is still open (GAP-30). Step 4 below must also assert AC-01.18: no separate input element, rendered line after the cursor leaves it, source on the cursor line.
 
 1. Theme tokens for preview styles. Test: default config unchanged.
 2. Marker-hiding decorations for headings, emphasis, strong, inline code; source shown on the active line/selection. Tests on decoration sets for given states.

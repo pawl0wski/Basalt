@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-label="Roadmap diagram">
+  <rect width="1200" height="800" fill="#2b2b2b"/>
+  <g fill="none" stroke="#9a9a9a" stroke-width="3">
+    <rect x="80" y="300" width="240" height="120" rx="8"/>
+    <rect x="480" y="300" width="240" height="120" rx="8"/>
+    <rect x="880" y="300" width="240" height="120" rx="8"/>
+    <path d="M320 360H480M720 360H880"/>
+  </g>
+  <g fill="#d0d0d0" font-family="sans-serif" font-size="32" text-anchor="middle">
+    <text x="200" y="372">Notes</text>
+    <text x="600" y="372">Images</text>
+    <text x="1000" y="372">Folders</text>
+    <text x="600" y="120" font-size="40">Roadmap diagram (demo image)</text>
+  </g>
+</svg>
