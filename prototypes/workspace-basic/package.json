@@ -1,0 +1,14 @@
+{
+    "name": "basalt-workspace-basic-prototype",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "link-deps": "node scripts/link-deps.mjs",
+        "dev": "npm run link-deps && vite",
+        "build": "npm run link-deps && vite build",
+        "preview": "npm run link-deps && vite preview",
+        "test": "npm run link-deps && vitest run",
+        "typecheck": "npm run link-deps && tsc --noEmit"
+    }
+}

@@ -1,0 +1,106 @@
+{
+  "format": "discovery-prototype-v1",
+  "skill": "om-mockup-prototype",
+  "slug": "workspace-basic",
+  "revision": 1,
+  "revisionPath": ".ai/prototypes/discovery/workspace-basic/revision-001",
+  "previousRevision": null,
+  "brief": ".ai/specs/product-brief.md",
+  "flow": "Otwarcie workspace i tworzenie, otwieranie kilku notatek, zamykanie",
+  "panelReport": null,
+  "verification": "passed",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "67deebafef22894e1f2f4fbcda2db50831a9073aaee3db8b599631908e0104a8"
+    },
+    {
+      "path": "evidence/01-welcome.png",
+      "sha256": "90d721de2dfbcaa7a73cd2255ba74aa5c90463f16c6bc9d45b29342d8550db25"
+    },
+    {
+      "path": "evidence/02-picker.png",
+      "sha256": "bf819ba00798600a660d581ad5b3dfc7d9cee32d4f4e35c9d13327b7202defdb"
+    },
+    {
+      "path": "evidence/03-picker-cancelled.png",
+      "sha256": "7bb22df64c0574854f3d5d5aec27133522e6161153cac7d70a2ad90096ada2c7"
+    },
+    {
+      "path": "evidence/04-empty-workspace.png",
+      "sha256": "6bdaa688f614d5346dfc33187eaa552abbd0494fb2a9e6bfe5e4d0cc23d098c7"
+    },
+    {
+      "path": "evidence/05a-new-note-invalid.png",
+      "sha256": "fab031c1184e261d0fad109474adb73fb319c6153491eda3be28035c257c8468"
+    },
+    {
+      "path": "evidence/05b-note-created.png",
+      "sha256": "2d776652ba99302cc97b4eea795e74aed2e748bba63f23ad51ca0e6708623d59"
+    },
+    {
+      "path": "evidence/06-workspace-closed.png",
+      "sha256": "69f2b45c2da1c7e90e7a002943fb1174a7165cb8b7d7fdb476951c6d82f0ece3"
+    },
+    {
+      "path": "evidence/07-two-tabs.png",
+      "sha256": "c8ef30ab53ca5b3b11e56f61b99b0eaf40e5e95135931fd1cebab003d48c60d9"
+    },
+    {
+      "path": "evidence/09a-name-taken.png",
+      "sha256": "26488fb5f51c92d124b00bb33f4cfb53ed8eaaad60a97768156ae19cd7cd1579"
+    },
+    {
+      "path": "evidence/11a-not-saved.png",
+      "sha256": "7f62eef3cf652bfc0edd9f8f7279b033ad8c24178e7f26a5424cd201a7e37e4d"
+    },
+    {
+      "path": "evidence/11b-saved.png",
+      "sha256": "e15716f16fc3a4feedbc03e032c89b4205a8eacca72dc348f16ee984bbe79291"
+    },
+    {
+      "path": "evidence/14-save-failed-banner.png",
+      "sha256": "593a504aa478f717cb24dd43090e8fb19ecb8d999b83d5c61fe150d8cd39932b"
+    },
+    {
+      "path": "evidence/15a-save-failed-dialog.png",
+      "sha256": "66dd36c3bf98ac46e12a1bd2686784a333a741851cf5033bd8d2e22eb744d8ac"
+    },
+    {
+      "path": "evidence/15b-retry-failed.png",
+      "sha256": "1385ccb41c6707d230d1f681d5f90156b7dc656118986d03e4e85d7508ff73a3"
+    },
+    {
+      "path": "evidence/19a-close-workspace-blocked.png",
+      "sha256": "6ed614c707772dbcc7ba6f723e27583ddb4893ac33c1b2aa2d1df9a4ce8b2130"
+    },
+    {
+      "path": "evidence/19b-workspace-closed-after-discard.png",
+      "sha256": "d86656e46474b4fa65eb92255ab57fb5a06723aeef8a0fb72cf80f6e1ecff496"
+    },
+    {
+      "path": "evidence/22-unknown-fragment.png",
+      "sha256": "9909b5feda4111725c844d52e688269ee29c248e52a8e5f1ef3af5fcb8ae63c0"
+    },
+    {
+      "path": "evidence/K01-keyboard.png",
+      "sha256": "c3d65a3b30ba5fafdec0c059088ce2b7d45bab15a7873d5791aa0e04603171dd"
+    },
+    {
+      "path": "evidence/V01-narrow-workspace.png",
+      "sha256": "a3f7c2b06d42ae28921cb71cc139d3b193d003b8a6fd6462109f46d67f82bb4c"
+    },
+    {
+      "path": "evidence/V01b-narrow-dialog.png",
+      "sha256": "b981da7285c2f8bb88ab352e5339ab25e7f022a082befc31c29af84827e708ef"
+    },
+    {
+      "path": "evidence/browser-results.json",
+      "sha256": "1fff66b67c8f3dd6e35d24dbb28aec0e86792957126e82bc07bf11e71d2dd223"
+    },
+    {
+      "path": "index.html",
+      "sha256": "39d7815ad447debfaa7a6e196a8f70f6be565044fb484dc2f45778faca193a30"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+:root,
+[data-theme="dark"] {
+    --background: var(--bs-surface-editor);
+    --foreground: var(--bs-text-ui);
+    --card: var(--bs-surface-card);
+    --muted: var(--bs-surface-raised);
+    --muted-foreground: var(--bs-text-muted);
+    --border: var(--bs-border-divider);
+    --input: var(--bs-border-control);
+    --primary: var(--bs-action-primary);
+    --primary-foreground: var(--bs-text-on-accent);
+    --ring: var(--bs-focus-ring);
+    --radius: var(--bs-radius-container);
+    --font-geist-sans: var(--bs-font-text);
+    --font-geist-mono: var(--bs-font-code);
+    --font-size-overline: var(--bs-text-size-ui-small);
+    --radius-sm: var(--bs-radius-control);
+    --radius-md: var(--bs-radius-control);
+    --radius-lg: var(--bs-radius-container);
+    --radius-xl: var(--bs-radius-container);
+    --primary-hover: var(--bs-action-primary-hover);
+    --accent-indigo: var(--bs-action-primary);
+    --accent-indigo-foreground: var(--bs-text-on-accent);
+    --shadow-xs: none;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-xl: none;
+    --shadow-focus: none;
+    --status-success-icon: var(--bs-icon-default);
+    --status-warning-icon: var(--bs-status-warning);
+    --status-warning-border: var(--bs-status-warning);
+    --status-warning-bg: var(--bs-surface-raised);
+    --status-warning-text: var(--bs-text-ui);
+    --z-index-sticky: 100;
+    --z-index-dropdown: 200;
+    --z-index-overlay: 300;
+    --z-index-modal: 400;
+    --z-index-toast: 500;
+    --z-index-top: 600;
+    --z-index-product-overlay: calc(var(--z-index-top) + 100);
+    --z-index-product-modal: calc(var(--z-index-product-overlay) + 1);
+}

@@ -10,6 +10,8 @@ tags: [notes, images, attachments, editor, workspace, file-kinds, e01]
 
 Source issue: #10 (E01-S03, epic #5, depends on #8). Builds on `.ai/specs/2026-10-24-markdown-notes-and-app-foundations.md` (the "S01 spec": ports, `WorkspacePath`, `AppError`/`Result`, watcher, autosave, `@basalt/editor`, memory platform, i18n). Design authority: `.ai/specs/product-brief.md` (D05). Engineering law: `AGENTS.md` and `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` (the "standards spec").
 
+Prototype: `prototypes/workspace-basic/` (screen map: `prototypes/e01-screen-map.md`; review notes: `prototypes/feedback/prototype-feedback-consolidated.md`). Screens of this story: s07 (display) and s08 (paste and drop).
+
 ## 📝 TLDR
 
 The owner wants pictures in notes (D05). After S01 the app edits plain Markdown only: an image link is shown as raw text and there is no way to put an image file into the workspace. This spec (future behavior) lets the owner **paste or drop** an image into the open note: the file is copied into the workspace's `attachments/` folder, a standard Markdown image link `![alt](relative/path.png)` is inserted, and the editor displays the image below the line, with a placeholder when the file is missing, unreadable, unsupported or remote. It also delivers the primitives later stories reuse: the file-kind registry deferred by S01 (Q7), binary file access, `readDir` and `mkdir` in the ports, note-relative link resolution and building (E01-S04 rewrites links when notes move), and an attachment-location policy shaped so an Obsidian-style "where new attachments go" setting can be added later without touching callers.
@@ -22,7 +24,7 @@ The owner wants pictures in notes (D05). After S01 the app edits plain Markdown 
 | Q2  | Where copied images go | One workspace-wide `attachments/` folder at the root for now. When a note is moved (S04), its links are rewritten. Keep in mind that the location will later be configurable, as in Obsidian. |
 | Q3  | File names             | Original name, ` 1`, ` 2`… on collision; pasted images without a name become `Pasted image YYYYMMDDHHmmss.<ext>`.                                                                             |
 | Q4  | Formats                | PNG, JPEG, GIF, WebP, AVIF, SVG (SVG only through `<img>`, scripts never run). No HEIC.                                                                                                       |
-| Q5  | Display                | Now, as an image widget below the line containing the link; the Markdown source stays visible. Live preview (S01 Phase 3) may later hide the source.                                          |
+| Q5  | Display                | Now, as an image widget below the line containing the link; the Markdown source stays visible. With live preview (AC-01.18 in the S01 spec, owner decision D-5, 2026-10-31) the `![](…)` source is hidden on lines the cursor is not on and shown on the line with the cursor, so the Markdown link stays viewable for AC2 (s07).                                          |
 | Q6  | Images in the sidebar  | Not listed in S03; the S04 spec decides whether its folder tree shows attachments.                                                                                                            |
 | Q7  | Remote images          | Not loaded; a placeholder says the image is remote.                                                                                                                                           |
 | Q8  | Spec split             | One spec, two PRs: display first, then adding.                                                                                                                                                |
@@ -288,7 +290,8 @@ All user-facing text comes from `locales/en.json`.
 - **Display:** every image link in the note gets a widget below its line, scaled to the editor width, keeping its aspect ratio. When the image header gives dimensions, the widget reserves the final height, so scrolling a note with many images does not make the text jump (G5); otherwise a box of estimated height limits layout jumps. An image evicted from the cache after scrolling far away (G6) briefly shows the loading box again when scrolled back. Placeholders are a bordered box with an icon and a short text: "Image not found: attachments/x.png", "Image could not be read", "Format not supported", "Image is too large (over 20 MiB or 100 megapixels)", "Remote images are not loaded", "Invalid image link". The note text is never changed by a placeholder (AC3).
 - **No open note:** paste and drop have no target; nothing happens.
 - **Accessibility:** `<img>` gets the link's alt text (for pasted images a timestamp name, an accepted compromise, see Defaults); placeholders are text, readable by screen readers; the notice uses `role="status"`; widgets are not focusable and do not trap the cursor (arrow keys move over them as over a line break).
-- Prototype: none.
+- **Prototype:** `prototypes/workspace-basic/` (s07, s08).
+- **Notice dismissal (s08):** the notice has a close button, which needs a close affordance on `Alert` (design-system gap DSG-06). It stays until closed, a second add replaces it, and switching notes removes it (default, GAP-18; override if wrong).
 
 ## 📝 Edge Cases & Failure Scenarios
 
@@ -401,6 +404,6 @@ Vitest next to code, Playwright in `basalt-app/e2e/` against the memory platform
 
 | Criterion                                                                           | Verified by                                                                                             |
 | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Open note + owner adds an image → note references it and the image is displayed     | Phase 2 steps 4–6 unit tests; step 7 e2e (paste and drop); manual smoke on built apps                   |
-| Opened in another editor → normal Markdown image link, file in the workspace        | Phase 2 step 3 CommonMark parse and round-trip tests; step 7 e2e byte assertions; manual Obsidian check |
-| (proposed, negative) Missing or unreadable image → placeholder, note text unchanged | Phase 1 steps 5–7 unit tests; step 8 e2e (`externalDelete`, note bytes unchanged)                       |
+| Open note + owner adds an image → note references it and the image is displayed (s07, s08) | Phase 2 steps 4–6 unit tests; step 7 e2e (paste and drop); manual smoke on built apps                   |
+| Opened in another editor → normal Markdown image link, file in the workspace (s07, s08) | Phase 2 step 3 CommonMark parse and round-trip tests; step 7 e2e byte assertions; manual Obsidian check |
+| (proposed, negative) Missing or unreadable image → placeholder, note text unchanged (s07) | Phase 1 steps 5–7 unit tests; step 8 e2e (`externalDelete`, note bytes unchanged)                       |

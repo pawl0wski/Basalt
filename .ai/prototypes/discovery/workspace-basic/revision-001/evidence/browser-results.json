@@ -1,0 +1,194 @@
+{
+  "tool": "playwright 1.64.1, chromium (global install)",
+  "results": [
+    {
+      "id": "C01",
+      "action": "Open index.html",
+      "expected": "Welcome heading is visible and focused; Open folder action is present",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C02",
+      "action": "Click Open folder as workspace",
+      "expected": "Picker screen with both folders; hash #picker; heading focused",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C03",
+      "action": "Cancel the picker",
+      "expected": "Back at Welcome, status says nothing changed",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C04",
+      "action": "Pick Empty notes",
+      "expected": "Workspace empty state with Create your first note",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C05",
+      "action": "Create first note: default name, invalid name, then correction",
+      "expected": "Dialog opens with \"Untitled\" selected; \"a/b\" shows an error and disables Create; \"Plan A\" creates and opens a tab",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C06",
+      "action": "Close workspace, reopen the same folder",
+      "expected": "Welcome shown; reopened folder lists Plan A; no tab restored",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C07",
+      "action": "Close workspace, open Basalt notes, open Weekly plan, Meeting notes, Weekly plan again",
+      "expected": "List shows 3 notes; two tabs; reopening focuses existing tab, no duplicate",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C08",
+      "action": "Switch tabs by clicking a tab",
+      "expected": "Clicked tab becomes current and editor shows its text",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C09",
+      "action": "New note: case-only collision \"weekly plan\", then default \"Untitled\"",
+      "expected": "Collision rejected inline with Create disabled; Untitled opens as third tab",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C10",
+      "action": "Second new note offers \"Untitled 1\"",
+      "expected": "Default name avoids the existing Untitled",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C11",
+      "action": "Type in Untitled and wait for autosave",
+      "expected": "Not saved + dot, then Saving…, then Saved",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C12",
+      "action": "Close a clean active tab",
+      "expected": "Tab closes, neighbour becomes active, status announces it",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C13",
+      "action": "Type then immediately close the tab (unsaved text, save works)",
+      "expected": "Tab closes without a dialog; reopening shows the typed text",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C14",
+      "action": "Select \"saves fail\", type, wait",
+      "expected": "Banner (alert) with Retry; state Not saved; text kept; autosave paused",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C15",
+      "action": "Close the tab while save fails; Retry; Cancel",
+      "expected": "Save-failed dialog names the note; Retry fails with a message; Cancel keeps the tab and text; focus returns",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C16",
+      "action": "Open the dialog again and press Escape",
+      "expected": "Escape means Cancel: dialog closes, nothing discarded",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C17",
+      "action": "Switch to \"fails once\", close tab, Retry in dialog",
+      "expected": "Retry succeeds, dialog closes, tab closes; reopening shows the saved text",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C18",
+      "action": "Saves fail, edit, close tab, Discard changes",
+      "expected": "Discard reverts to last saved text and closes the tab",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C19",
+      "action": "Close workspace while a note has unsaved text and saves fail",
+      "expected": "Dialog blocks closing; Cancel keeps workspace; Discard changes then closes it",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C20",
+      "action": "Browser Back from the open workspace",
+      "expected": "App stays on the workspace and says how to leave",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C21",
+      "action": "Close workspace, then Browser Back and Forward",
+      "expected": "Back lands on a valid screen (Welcome) with explanation; Forward does not reopen a workspace",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C22",
+      "action": "Go to an unknown fragment",
+      "expected": "Recovery screen with a Go to Welcome link",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C23",
+      "action": "Reset after creating notes and changing the Test state",
+      "expected": "Welcome; created note gone; Test state back to succeeds; no dialog; status announces",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "C24",
+      "action": "Reset while the Save-failed dialog is open",
+      "expected": "Dialog closes and the prototype returns to Welcome",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "K01",
+      "action": "Keyboard only: open folder, pick folder, open note, tab to its close button",
+      "expected": "Enter/Space activate controls; focus is always visible; dialog traps Tab and Escape returns focus",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "V01",
+      "action": "Narrow viewport 375x800 on the workspace",
+      "expected": "No horizontal page scroll; New note, Close workspace and editor reachable",
+      "observed": "as expected",
+      "pass": true
+    },
+    {
+      "id": "N01",
+      "action": "Inspect all requests made during the walk",
+      "expected": "Only the file:// page itself was requested",
+      "observed": "1 request(s), all the local index.html",
+      "pass": true
+    }
+  ]
+}
