@@ -24,7 +24,7 @@ Manual test checkpoint: no visible change; run `npm test` in `basalt-app` and co
 Manual test checkpoint: the app still shows the welcome screen; Storybook/unit tests show the new `@basalt/ui` primitives; `npm run tauri dev` starts with the new plugins registered.
 
 - [x] 2a.1 (Rust side UNVERIFIED, see notes) Tauri plugins (`fs` with `watch`, `dialog`, `persisted-scope`), capabilities, platform spike
-- [ ] 2a.2 Tauri adapters (`WorkspaceAccess`, `WorkspaceFileSystem`, `WorkspacePicker`, `AppSettingsStore`)
+- [x] 2a.2 (verified against mocks only) Tauri adapters (`WorkspaceAccess`, `WorkspaceFileSystem`, `WorkspacePicker`, `AppSettingsStore`)
 - [ ] 2a.3 Memory platform, `createPlatform()`, Playwright `webServer` env, production-bundle check
 - [ ] 2a.4 `@basalt/editor` package (source mode)
 - [ ] 2a.5 i18n (`i18next`, `locales/en.json`, typed keys, `errors.*`)
@@ -49,3 +49,4 @@ Manual test checkpoint: full manual test of the app (open a workspace, create a 
 - For 2a.2: `AppSettingsStore.save` should skip writing when the file on disk has a higher version, so a downgraded app does not overwrite newer settings.
 - 2a.1 caveats: sandbox has cargo 1.65 / rustc 1.63 and no webkit2gtk, so `cargo check`, `rust:fmt`, `rust:lint` and `tauri dev` were NOT run. `Cargo.lock` is not updated: run `cargo check` on a real machine and commit the lock. Capabilities JSON not validated against a generated schema. All runtime spike assumptions (dialog extends scope, persisted-scope, symlink refusal, lstat, atomic rename, recursive watch, root-deletion event, close guard) are UNVERIFIED; Windows untested.
 - 2a.1 open: build-time fs scope `$APPCONFIG/basalt.json` does not cover `$APPCONFIG` (mkdir) or temp files like `basalt.json.tmp` (atomic write, remove). Probably needs widening; decide in a real-device spike.
+- 2a.2 caveats: adapters are verified only against an in-memory fake of plugin-fs IPC (`platform/tauri/testing/fake-plugin-fs.ts`), not the real plugin. Unproven: real error wording (esp. Windows), scope enforcement, symlink flags, atomic rename, Windows paths, real watch event shapes and whether root deletion emits an event carrying the root path (root-lost detection depends on it), mtime units. `writeTextAtomic`/`createExclusive` call `mkdir({recursive:true})` on the parent, a wider use of `fs:allow-mkdir` than the spec states. Settings save will likely be refused by the real scope until it is widened (see 2a.1 open).
