@@ -26,14 +26,19 @@ export const OPEN_FOLDER = { name: "Open folder as workspace" };
 
 export const SIDEBAR = { name: "Workspace" };
 
+export async function gotoWelcome(page: Page): Promise<void> {
+    await page.goto("/");
+    await page.getByRole("button", OPEN_FOLDER).waitFor();
+    await page.waitForFunction(() => Boolean(window.__basaltTestFs));
+}
+
 export async function openWorkspaceWith(
     page: Page,
     root: string,
     files: Record<string, string | Uint8Array>,
     flags: { readOnly?: boolean; failWatch?: boolean } = {},
 ): Promise<void> {
-    await page.goto("/");
-    await page.getByRole("button", OPEN_FOLDER).waitFor();
+    await gotoWelcome(page);
     await page.evaluate(
         ({ root, files, flags }) => {
             const fs = window.__basaltTestFs;

@@ -205,6 +205,56 @@ test.describe("external changes to the open note", () => {
     });
 });
 
+test.describe("deleted-file banner layout", () => {
+    test("is pinned to the top of the editor and as wide as the text column", async ({
+        page,
+    }) => {
+        const long = Array.from({ length: 200 }, (_, i) => `line ${i}`).join(
+            "\n",
+        );
+        await openWorkspaceWith(page, "/work/W", { "a.md": long });
+        await option(page, "a").click();
+        await editor(page, "a").click();
+        await page.keyboard.type("!");
+        await externalDelete(page, "a.md");
+        const banner = page.getByRole("alert");
+        await expect(banner).toContainText("This note was deleted or moved");
+        const main = page.locator("main");
+
+        await main.evaluate((element) => {
+            element.scrollTop = 1500;
+        });
+
+        const bannerBox = await banner.boundingBox();
+        const mainBox = await main.boundingBox();
+        const editorBox = await page.locator(".cm-editor").boundingBox();
+        expect(bannerBox && mainBox && editorBox).toBeTruthy();
+        expect(
+            await main.evaluate((element) => element.scrollTop),
+        ).toBeGreaterThan(0);
+        expect(Math.abs((bannerBox?.y ?? 0) - (mainBox?.y ?? 0))).toBeLessThan(
+            4,
+        );
+        expect(
+            Math.abs((bannerBox?.width ?? 0) - (editorBox?.width ?? 0)),
+        ).toBeLessThan(2);
+    });
+
+    test("Escape on the Close note confirmation cancels and keeps the text", async ({
+        page,
+    }) => {
+        const banner = await deletedBanner(page);
+
+        await banner.getByRole("button", { name: "Close note" }).click();
+        await expect(page.getByRole("alertdialog")).toBeVisible();
+        await page.keyboard.press("Escape");
+
+        await expect(page.getByRole("alertdialog")).toHaveCount(0);
+        await expect(page.getByRole("tab")).toHaveCount(1);
+        await expect(editor(page, "a")).toContainText("base mine");
+    });
+});
+
 test.describe("workspace folder lost", () => {
     test("with no unsaved text it returns to Welcome with the notice", async ({
         page,

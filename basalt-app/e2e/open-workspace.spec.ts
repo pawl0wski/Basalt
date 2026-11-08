@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { OPEN_FOLDER, SIDEBAR } from "./support";
+import { OPEN_FOLDER, SIDEBAR, gotoWelcome } from "./support";
 
 async function seedStorage(
     page: Page,
@@ -28,7 +28,7 @@ test.describe("opening a workspace", () => {
     test("opens a workspace chosen through the test handle", async ({
         page,
     }) => {
-        await page.goto("/");
+        await gotoWelcome(page);
         await page.evaluate(() => {
             window.__basaltTestFs?.seedWorkspace("/work/My notes", {
                 "a.md": "# A",
@@ -44,7 +44,7 @@ test.describe("opening a workspace", () => {
     test("cancelling the picker keeps the welcome screen without an error", async ({
         page,
     }) => {
-        await page.goto("/");
+        await gotoWelcome(page);
         await page.evaluate(() => window.__basaltTestFs?.setPickerResult(null));
 
         await page.getByRole("button", OPEN_FOLDER).click();
@@ -57,7 +57,7 @@ test.describe("opening a workspace", () => {
     test("a folder that cannot be opened shows an error and stays on welcome", async ({
         page,
     }) => {
-        await page.goto("/");
+        await gotoWelcome(page);
         await page.evaluate(() =>
             window.__basaltTestFs?.setPickerResult("/not/seeded"),
         );
@@ -82,7 +82,7 @@ test.describe("opening a workspace", () => {
     test("opens another workspace with Ctrl+O from a workspace window", async ({
         page,
     }) => {
-        await page.goto("/");
+        await gotoWelcome(page);
         await page.getByRole("button", OPEN_FOLDER).click();
         await expect(page.getByText("demo", { exact: true })).toBeVisible();
         await page.evaluate(() => {
