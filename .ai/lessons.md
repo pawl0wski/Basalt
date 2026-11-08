@@ -5,6 +5,7 @@ Long-term memory index for AI agents. Each entry links to a full lesson file in 
 ## Index
 
 <!-- Append new lessons here as: `- YYYY-MM-DD — one-line summary — [detail](lessons/YYYY-MM-DD-slug.md)` -->
+
 - 2026-10-17 — Install and configure shadcn/ui as the actual component system, not just Tailwind and helper dependencies — [detail](lessons/2026-10-17-use-shadcn-ui-not-just-tailwind.md)
 - 2026-10-17 — Keep Rust minimal: thin Tauri host, logic in TypeScript, official plugins first — [detail](lessons/2026-10-17-minimize-rust.md)
 - 2026-10-17 — Resolve PR conflicts by rebasing onto origin/master (force-with-lease), not by merging master into the branch — [detail](lessons/2026-10-17-resolve-conflicts-with-rebase.md)
@@ -21,3 +22,4 @@ Long-term memory index for AI agents. Each entry links to a full lesson file in 
 - 2026-11-01 — Prototype review notes and map decisions become spec criteria with screen ids (or a recorded "not doing"); follow data-shape changes through the whole spec; ask which control a vague note means — [detail](lessons/2026-11-01-prototype-review-feeds-specs.md)
 - 2026-11-01 — After removing the New note dialog the new note was not focused and typing did nothing; test "action, then type" for every flow that opens a note — [detail](lessons/2026-11-01-focus-new-note.md)
 - 2026-11-08 — Registered Tauri fs/dialog/persisted-scope plugins; only `allow-destroy` confirmed by docs, Linux sandbox could not cargo-check and all runtime assumptions stay unverified — [detail](lessons/2026-11-08-tauri-fs-plugins-spike-setup.md)
+- 2026-11-08 — i18n keys are typed through `CustomTypeOptions` over `locales/en.json`; a bad key fails `npm run typecheck` (verified once with a temporary bad key); only containers call `useTranslation` — [detail](lessons/2026-11-08-typed-i18n-keys.md)

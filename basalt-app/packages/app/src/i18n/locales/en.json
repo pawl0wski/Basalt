@@ -1,0 +1,57 @@
+{
+    "welcome": {
+        "brand": "Basalt",
+        "headline": "Make room for what matters.",
+        "intro": "A space for notes, plans, and everything you want to remember. Simple files, kept where you choose.",
+        "openFolder": "Open folder as workspace",
+        "folderHint": "Markdown files and attachments stay in your folder.",
+        "principles": {
+            "markdown": {
+                "title": "Plain Markdown",
+                "description": "Your notes stay as simple files you can open anywhere."
+            },
+            "workspace": {
+                "title": "Your workspace",
+                "description": "Choose a folder you already use, or create a new one."
+            },
+            "private": {
+                "title": "Private by design",
+                "description": "Your notes live on your device and remain in your control."
+            }
+        }
+    },
+    "workspace": {
+        "emptyTitle": "Create your first note"
+    },
+    "notes": {
+        "untitled": "Untitled",
+        "confirmReload": {
+            "title": "Load the version from disk?",
+            "message": "Your unsaved changes in \"{name}\" will be lost.",
+            "confirm": "Load version from disk",
+            "cancel": "Cancel"
+        },
+        "confirmClose": {
+            "title": "Close this note?",
+            "message": "\"{name}\" was deleted or moved. Your unsaved changes will be lost.",
+            "confirm": "Close note",
+            "cancel": "Cancel"
+        }
+    },
+    "errors": {
+        "not-found": "The file or folder could not be found. It may have been moved or deleted.",
+        "permission-denied": "The workspace folder is read-only. Nothing was changed.",
+        "already-exists": "A file with this name already exists.",
+        "invalid-path": "This name or location is not valid.",
+        "conflict": "This note was changed on disk by another program.",
+        "too-large": "This note is too large to open.",
+        "not-utf8": "This file is not a UTF-8 text file and cannot be opened.",
+        "unavailable": "The workspace folder is not available. Check that it still exists.",
+        "unknown": "Something went wrong. Nothing was changed."
+    },
+    "saveStatus": {
+        "saved": "Saved",
+        "saving": "Saving…",
+        "notSaved": "Not saved"
+    }
+}

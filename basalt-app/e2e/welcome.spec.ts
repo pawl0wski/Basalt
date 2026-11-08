@@ -5,7 +5,7 @@ test.describe("welcome screen", () => {
         await page.goto("/");
     });
 
-    test("introduces the product and its workspace actions", async ({
+    test("introduces the product and its single workspace action", async ({
         page,
     }) => {
         await expect(page).toHaveTitle("Basalt");
@@ -13,11 +13,12 @@ test.describe("welcome screen", () => {
             page.getByRole("heading", { level: 1, name: /what matters/ }),
         ).toBeVisible();
         await expect(
-            page.getByRole("button", { name: "Choose a workspace" }),
+            page.getByRole("button", { name: "Open folder as workspace" }),
         ).toBeEnabled();
+        await expect(page.getByRole("button")).toHaveCount(1);
         await expect(
             page.getByRole("button", { name: "Create new workspace" }),
-        ).toBeEnabled();
+        ).toHaveCount(0);
     });
 
     test("lists every product principle as its own section", async ({
@@ -38,7 +39,9 @@ test.describe("welcome screen", () => {
     });
 
     test("applies the stylesheet", async ({ page }) => {
-        const button = page.getByRole("button", { name: "Choose a workspace" });
+        const button = page.getByRole("button", {
+            name: "Open folder as workspace",
+        });
 
         await expect(button).not.toHaveCSS(
             "background-color",
@@ -49,7 +52,9 @@ test.describe("welcome screen", () => {
     test("styles the main action with the design system accent", async ({
         page,
     }) => {
-        const button = page.getByRole("button", { name: "Choose a workspace" });
+        const button = page.getByRole("button", {
+            name: "Open folder as workspace",
+        });
         const accent = await page.evaluate(() => {
             const probe = document.createElement("div");
             probe.style.backgroundColor = "var(--bs-action-primary)";
@@ -69,7 +74,7 @@ test.describe("welcome screen", () => {
         await page.setViewportSize({ width: 360, height: 740 });
 
         await expect(
-            page.getByRole("button", { name: "Create new workspace" }),
+            page.getByRole("button", { name: "Open folder as workspace" }),
         ).toBeInViewport();
         const overflow = await page.evaluate(
             () =>
