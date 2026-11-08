@@ -1,0 +1,321 @@
+import {
+    createAutosave,
+    createNotes,
+    err,
+    ok,
+    type AppError,
+    type Autosave,
+    type AutosaveScheduler,
+    type Note,
+    type NoteService,
+    type Result,
+    type WorkspaceFileSystem,
+    type WorkspacePath,
+    type WorkspaceRoot,
+} from "@basalt/core";
+import type { SettingsWriter } from "../settings/settings-writer";
+import {
+    emptyNotesState,
+    isDirty,
+    type NoteSession,
+    type NotesStore,
+} from "./notes-store";
+
+export type NotesActionsOptions = {
+    readonly store: NotesStore;
+    readonly settings: SettingsWriter;
+    readonly schedule: AutosaveScheduler;
+    readonly autosaveDelayMs: number;
+    readonly untitledName: () => string;
+};
+
+export type NotesActions = {
+    enterWorkspace(
+        root: WorkspaceRoot,
+        fs: WorkspaceFileSystem,
+    ): Promise<Result<void>>;
+    leaveWorkspace(): void;
+    flushAll(): Promise<Result<void>>;
+    refreshNotes(): Promise<Result<void>>;
+    openNote(path: WorkspacePath): Promise<Result<void>>;
+    createNote(): Promise<Result<Note>>;
+    updateText(path: WorkspacePath, text: string): void;
+    saveNow(path: WorkspacePath): Promise<Result<void>>;
+    reloadNote(path: WorkspacePath): Promise<Result<void>>;
+    closeTab(
+        path: WorkspacePath,
+        options?: { readonly discard?: boolean },
+    ): Promise<Result<void>>;
+};
+
+type ActiveWorkspace = {
+    readonly root: WorkspaceRoot;
+    readonly notes: NoteService;
+};
+
+const NO_WORKSPACE: AppError = {
+    code: "unavailable",
+    message: "No workspace is open.",
+};
+
+function sortKey(note: Note): string {
+    return note.path.slice(0, -".md".length).toLowerCase();
+}
+
+function sortNotes(notes: readonly Note[]): Note[] {
+    return [...notes].sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+}
+
+export function createNotesActions(options: NotesActionsOptions): NotesActions {
+    const { store, settings, schedule, autosaveDelayMs, untitledName } =
+        options;
+    const autosaves = new Map<WorkspacePath, Autosave>();
+    let workspace: ActiveWorkspace | null = null;
+
+    function findSession(path: WorkspacePath): NoteSession | undefined {
+        return store.getState().openNotes.find((note) => note.path === path);
+    }
+
+    function patchSession(
+        path: WorkspacePath,
+        patch: Partial<NoteSession>,
+    ): void {
+        store.setState((state) => ({
+            openNotes: state.openNotes.map((note) =>
+                note.path === path ? { ...note, ...patch } : note,
+            ),
+        }));
+    }
+
+    async function persistTabs(): Promise<void> {
+        if (!workspace) return;
+        const { root } = workspace;
+        const { openNotes, activeNote } = store.getState();
+        const paths = openNotes.map((note) => note.path);
+        await settings.update((current) => ({
+            ...current,
+            workspaces: {
+                ...current.workspaces,
+                [root]: { openNotes: paths, activeNote },
+            },
+        }));
+    }
+
+    function createSessionAutosave(
+        active: ActiveWorkspace,
+        path: WorkspacePath,
+        text: string,
+    ): Autosave {
+        const autosave = createAutosave({
+            baseText: text,
+            schedule,
+            delayMs: autosaveDelayMs,
+            save: async (latest) => {
+                const session = findSession(path);
+                if (!session) return err(NO_WORKSPACE);
+                const saved = await active.notes.saveNote({
+                    path,
+                    text: latest,
+                    baseText: session.baseText,
+                    eol: session.eol,
+                    bom: session.bom,
+                });
+                if (!saved.ok) {
+                    patchSession(path, { error: saved.error });
+                    return saved;
+                }
+                patchSession(path, {
+                    baseText: saved.value.baseText,
+                    error: null,
+                });
+                return ok(undefined);
+            },
+        });
+        autosave.onStatus((saveStatus) => {
+            patchSession(path, { saveStatus });
+        });
+        return autosave;
+    }
+
+    async function addSession(
+        active: ActiveWorkspace,
+        path: WorkspacePath,
+    ): Promise<Result<void>> {
+        const opened = await active.notes.openNote(path);
+        if (workspace !== active) return err(NO_WORKSPACE);
+        if (findSession(path)) return ok(undefined);
+        if (!opened.ok) {
+            if (opened.error.code === "not-found") return opened;
+            const failed: NoteSession = {
+                path,
+                text: "",
+                baseText: "",
+                eol: "lf",
+                bom: false,
+                error: opened.error,
+                saveStatus: "saved",
+            };
+            store.setState((state) => ({
+                openNotes: [...state.openNotes, failed],
+            }));
+            return opened;
+        }
+        const { text, eol, bom } = opened.value;
+        autosaves.set(path, createSessionAutosave(active, path, text));
+        const session: NoteSession = {
+            path,
+            text,
+            baseText: text,
+            eol,
+            bom,
+            error: null,
+            saveStatus: "saved",
+        };
+        store.setState((state) => ({
+            openNotes: [...state.openNotes, session],
+        }));
+        return ok(undefined);
+    }
+
+    async function restoreTabs(active: ActiveWorkspace): Promise<void> {
+        const saved = (await settings.read())?.workspaces[active.root];
+        if (!saved) return;
+        for (const path of saved.openNotes) await addSession(active, path);
+        if (workspace !== active) return;
+        const { openNotes } = store.getState();
+        const wanted = openNotes.find((note) => note.path === saved.activeNote);
+        store.setState({
+            activeNote: (wanted ?? openNotes[0])?.path ?? null,
+        });
+        await persistTabs();
+    }
+
+    async function refreshNotes(): Promise<Result<void>> {
+        const active = workspace;
+        if (!active) return err(NO_WORKSPACE);
+        const listed = await active.notes.listNotes();
+        if (workspace !== active) return err(NO_WORKSPACE);
+        if (!listed.ok) {
+            store.setState({ listError: listed.error });
+            return listed;
+        }
+        store.setState({ notes: sortNotes(listed.value), listError: null });
+        return ok(undefined);
+    }
+
+    async function openNote(path: WorkspacePath): Promise<Result<void>> {
+        const active = workspace;
+        if (!active) return err(NO_WORKSPACE);
+        let result: Result<void> = ok(undefined);
+        if (!findSession(path)) {
+            result = await addSession(active, path);
+            if (!findSession(path)) return result;
+        }
+        store.setState({ activeNote: path });
+        await persistTabs();
+        return result;
+    }
+
+    async function createNote(): Promise<Result<Note>> {
+        const active = workspace;
+        if (!active) return err(NO_WORKSPACE);
+        const name = active.notes.suggestNoteName(
+            store.getState().notes,
+            untitledName(),
+        );
+        const created = await active.notes.createNote(name);
+        if (!created.ok) return created;
+        store.setState((state) => ({
+            notes: sortNotes([...state.notes, created.value]),
+        }));
+        await openNote(created.value.path);
+        return created;
+    }
+
+    return {
+        async enterWorkspace(root, fs) {
+            const active = { root, notes: createNotes({ fs }) };
+            workspace = active;
+            store.setState(emptyNotesState());
+            const listed = await refreshNotes();
+            await restoreTabs(active);
+            return listed;
+        },
+        leaveWorkspace() {
+            for (const autosave of autosaves.values()) autosave.dispose();
+            autosaves.clear();
+            workspace = null;
+            store.setState(emptyNotesState());
+        },
+        async flushAll() {
+            const dirty = store.getState().openNotes.filter(isDirty);
+            const results = await Promise.all(
+                dirty.map((note) => autosaves.get(note.path)?.flush()),
+            );
+            for (const result of results) {
+                if (result && !result.ok) return result;
+            }
+            return ok(undefined);
+        },
+        refreshNotes,
+        openNote,
+        createNote,
+        updateText(path, text) {
+            const session = findSession(path);
+            const autosave = autosaves.get(path);
+            if (!session || !autosave || session.text === text) return;
+            patchSession(path, { text });
+            autosave.change(text);
+        },
+        async saveNow(path) {
+            const autosave = autosaves.get(path);
+            if (!autosave) return err(NO_WORKSPACE);
+            return autosave.getError() ? autosave.resume() : autosave.flush();
+        },
+        async reloadNote(path) {
+            const active = workspace;
+            const autosave = autosaves.get(path);
+            if (!active || !autosave) return err(NO_WORKSPACE);
+            const opened = await active.notes.openNote(path);
+            if (workspace !== active) return err(NO_WORKSPACE);
+            if (!opened.ok) {
+                patchSession(path, { error: opened.error });
+                return opened;
+            }
+            const { text, eol, bom } = opened.value;
+            patchSession(path, {
+                text,
+                baseText: text,
+                eol,
+                bom,
+                error: null,
+            });
+            autosave.rebase(text);
+            return ok(undefined);
+        },
+        async closeTab(path, closeOptions) {
+            const session = findSession(path);
+            if (!session) return ok(undefined);
+            const autosave = autosaves.get(path);
+            if (autosave && isDirty(session) && !closeOptions?.discard) {
+                const flushed = await autosave.flush();
+                if (!flushed.ok) return flushed;
+            }
+            autosave?.dispose();
+            autosaves.delete(path);
+            const { openNotes, activeNote } = store.getState();
+            const index = openNotes.findIndex((note) => note.path === path);
+            const remaining = openNotes.filter((note) => note.path !== path);
+            store.setState({
+                openNotes: remaining,
+                activeNote:
+                    activeNote === path
+                        ? ((remaining[index] ?? remaining[index - 1])?.path ??
+                          null)
+                        : activeNote,
+            });
+            await persistTabs();
+            return ok(undefined);
+        },
+    };
+}

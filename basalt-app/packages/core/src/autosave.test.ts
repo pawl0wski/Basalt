@@ -252,4 +252,52 @@ describe("createAutosave", () => {
         scheduler.advance(10 * DELAY);
         expect(saver.calls).toEqual([]);
     });
+
+    it("rebase adopts the disk text as the clean baseline and cancels the pending save", async () => {
+        const { scheduler, saver, autosave } = setup();
+        autosave.change("local edit");
+        autosave.rebase("from disk");
+        expect(autosave.getStatus()).toBe("saved");
+        expect(scheduler.pending()).toBe(0);
+        scheduler.advance(10 * DELAY);
+        expect((await autosave.flush()).ok).toBe(true);
+        expect(saver.calls).toEqual([]);
+        autosave.change("from disk");
+        expect(autosave.getStatus()).toBe("saved");
+        autosave.change("next");
+        expect(autosave.getStatus()).toBe("pending");
+    });
+
+    it("rebase clears a paused error so saving works again", async () => {
+        const { scheduler, saver, autosave } = setup();
+        autosave.change("a");
+        scheduler.advance(DELAY);
+        await tick();
+        saver.settle(err(conflict));
+        await tick();
+        expect(autosave.getStatus()).toBe("paused");
+        autosave.rebase("disk");
+        expect(autosave.getStatus()).toBe("saved");
+        expect(autosave.getError()).toBeNull();
+        autosave.change("b");
+        scheduler.advance(DELAY);
+        await tick();
+        expect(saver.calls).toEqual(["a", "b"]);
+    });
+
+    it("rebase during a save ignores the stale save result", async () => {
+        const { scheduler, saver, autosave } = setup();
+        autosave.change("a");
+        scheduler.advance(DELAY);
+        await tick();
+        autosave.rebase("disk");
+        saver.settle(err(conflict));
+        await tick();
+        expect(autosave.getStatus()).toBe("saved");
+        expect(autosave.getError()).toBeNull();
+        autosave.change("disk");
+        expect(autosave.getStatus()).toBe("saved");
+        expect((await autosave.flush()).ok).toBe(true);
+        expect(saver.calls).toEqual(["a"]);
+    });
 });

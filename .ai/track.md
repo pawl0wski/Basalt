@@ -35,7 +35,7 @@ Manual test checkpoint: the app still shows the welcome screen; Storybook/unit t
 
 Manual test checkpoint: full manual test of the app (open a workspace, create a note, type, autosave, external edits, errors) in the browser on the memory platform and, where possible, in the Tauri desktop app.
 
-- [ ] 2b.1 Workspace and note stores/actions, `restoreWorkspace`
+- [x] 2b.1 Workspace and note stores/actions, `restoreWorkspace`
 - [ ] 2b.2a Custom window chrome: native Tauri title bar disabled (`decorations: false`, window permissions for minimize/maximize/close/drag), HTML title bar built from the `@basalt/ui` window shell components as in `prototypes/workspace-basic`; works on the memory platform without Tauri
 - [ ] 2b.2b Welcome screen wiring: workspace store connected to the picker, open workspace, restore last workspace, notices (AC-01.4 to AC-01.6, AC-01.20, keymap module)
 - [ ] 2b.2c Workspace layout: sidebar with flat note list, empty state, live refresh via watcher and focus fallback, collapse animation, Ctrl/Cmd+N instant new note (AC-01.7 to AC-01.10)
@@ -61,3 +61,4 @@ Manual test checkpoint: full manual test of the app (open a workspace, create a 
 - 2a.5: welcome screen now has a single inert "Open folder as workspace" button (wired in 2b). `errors.permission-denied` carries the read-only message. `packages/app` tests using `toBeInTheDocument` must import `@testing-library/jest-dom/vitest`.
 - 2a.6: Dialog, Input and Alert already existed in `@basalt/ui`; added `ScrollArea` (Radix) and an `Alert` `role` override (banners need `role="alert"` on the warning variant), plus tests. Do not run `prettier --write` over `packages/ui` (reformats MDX that `format:check` ignores).
 - 2a.7: root README still says `core` has "encryption primitives" and `ui` "depends only on @basalt/core for types"; both were already inaccurate before this work and are left untouched. The `app -> editor` direction is documented but not lint-enforced (app has no import restrictions).
+- 2b.1: stores use `zustand/vanilla`; services built by `createServices(platform, ...)` and provided via `ServicesProvider`. Added `rebase(text)` to core autosave (ignores a stale in-flight save). Left for later tasks: watcher wiring and `watchMode` updates (2b.2c), conflict actions "Keep my version"/"Save again here" and root-lost flow (2b.2f), window-close flush (2b.2e). If the stored `activeNote` is dropped on restore the first remaining tab becomes active (spec silent). `settings-writer` has no dedicated unit test.

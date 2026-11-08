@@ -18,6 +18,7 @@ export type Autosave = {
     change(text: string): void;
     flush(): Promise<Result<void>>;
     resume(): Promise<Result<void>>;
+    rebase(text: string): void;
     dispose(): void;
     getStatus(): AutosaveStatus;
     getError(): AppError | null;
@@ -34,6 +35,7 @@ export function createAutosave(options: AutosaveOptions): Autosave {
     let cancelTimer: (() => void) | null = null;
     let inflight: Promise<void> | null = null;
     let disposed = false;
+    let epoch = 0;
 
     function setStatus(next: AutosaveStatus): void {
         if (next === status) return;
@@ -57,8 +59,10 @@ export function createAutosave(options: AutosaveOptions): Autosave {
     async function saveLatest(): Promise<void> {
         const text = latestText;
         setStatus("saving");
+        const startedAt = epoch;
         const result = await save(text);
         inflight = null;
+        if (startedAt !== epoch) return;
         if (!result.ok) {
             error = result.error;
             setStatus("paused");
@@ -99,6 +103,15 @@ export function createAutosave(options: AutosaveOptions): Autosave {
                 setStatus(latestText === baseText ? "saved" : "pending");
             }
             return flush();
+        },
+        rebase(text) {
+            if (disposed) return;
+            epoch += 1;
+            clearTimer();
+            baseText = text;
+            latestText = text;
+            error = null;
+            setStatus("saved");
         },
         dispose() {
             disposed = true;
