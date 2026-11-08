@@ -1,0 +1,255 @@
+import { describe, expect, it } from "vitest";
+import { createAutosave, type AutosaveStatus } from "./autosave";
+import { err, ok, type AppError, type Result } from "./result";
+
+const DELAY = 1000;
+
+function createFakeScheduler() {
+    let now = 0;
+    let nextId = 0;
+    const timers = new Map<number, { at: number; run: () => void }>();
+    return {
+        schedule(run: () => void, delayMs: number) {
+            const id = nextId++;
+            timers.set(id, { at: now + delayMs, run });
+            return () => {
+                timers.delete(id);
+            };
+        },
+        pending: () => timers.size,
+        advance(ms: number) {
+            now += ms;
+            for (const [id, timer] of [...timers]) {
+                if (timer.at <= now && timers.delete(id)) timer.run();
+            }
+        },
+    };
+}
+
+function createFakeSave() {
+    const calls: string[] = [];
+    const waiting: Array<(result: Result<void>) => void> = [];
+    return {
+        calls,
+        save(text: string) {
+            calls.push(text);
+            return new Promise<Result<void>>((resolve) => {
+                waiting.push(resolve);
+            });
+        },
+        settle(result: Result<void> = ok(undefined)) {
+            const resolve = waiting.shift();
+            if (!resolve) throw new Error("no save in flight");
+            resolve(result);
+        },
+        inFlight: () => waiting.length,
+    };
+}
+
+const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+const conflict: AppError = { code: "conflict", message: "changed on disk" };
+
+function setup(baseText = "base") {
+    const scheduler = createFakeScheduler();
+    const saver = createFakeSave();
+    const autosave = createAutosave({
+        baseText,
+        save: saver.save,
+        schedule: scheduler.schedule,
+        delayMs: DELAY,
+    });
+    const statuses: AutosaveStatus[] = [];
+    autosave.onStatus((status) => statuses.push(status));
+    return { scheduler, saver, autosave, statuses };
+}
+
+describe("createAutosave", () => {
+    it("never writes while clean", async () => {
+        const { scheduler, saver, autosave, statuses } = setup();
+        scheduler.advance(10 * DELAY);
+        expect((await autosave.flush()).ok).toBe(true);
+        autosave.change("base");
+        scheduler.advance(10 * DELAY);
+        expect(saver.calls).toEqual([]);
+        expect(autosave.getStatus()).toBe("saved");
+        expect(statuses).toEqual([]);
+    });
+
+    it("returns to saved without writing when text is reverted to the baseline", () => {
+        const { scheduler, saver, autosave } = setup();
+        autosave.change("edited");
+        autosave.change("base");
+        expect(autosave.getStatus()).toBe("saved");
+        expect(scheduler.pending()).toBe(0);
+        scheduler.advance(DELAY);
+        expect(saver.calls).toEqual([]);
+    });
+
+    it("debounces and restarts the delay on every change", () => {
+        const { scheduler, saver, autosave } = setup();
+        autosave.change("a");
+        scheduler.advance(DELAY - 1);
+        autosave.change("ab");
+        scheduler.advance(DELAY - 1);
+        expect(saver.calls).toEqual([]);
+        scheduler.advance(1);
+        expect(saver.calls).toEqual(["ab"]);
+    });
+
+    it("flush writes immediately and cancels the timer", async () => {
+        const { scheduler, saver, autosave } = setup();
+        autosave.change("edited");
+        const flushed = autosave.flush();
+        expect(saver.calls).toEqual(["edited"]);
+        expect(scheduler.pending()).toBe(0);
+        saver.settle();
+        expect((await flushed).ok).toBe(true);
+        scheduler.advance(10 * DELAY);
+        expect(saver.calls).toEqual(["edited"]);
+        expect(autosave.getStatus()).toBe("saved");
+    });
+
+    it("flush after a save does nothing when clean", async () => {
+        const { saver, autosave } = setup();
+        autosave.change("edited");
+        const first = autosave.flush();
+        saver.settle();
+        await first;
+        expect((await autosave.flush()).ok).toBe(true);
+        expect(saver.calls).toEqual(["edited"]);
+    });
+
+    it("keeps one save in flight and runs one follow-up with the latest text", async () => {
+        const { scheduler, saver, autosave } = setup();
+        autosave.change("a");
+        scheduler.advance(DELAY);
+        expect(saver.calls).toEqual(["a"]);
+
+        autosave.change("ab");
+        autosave.change("abc");
+        scheduler.advance(10 * DELAY);
+        expect(saver.calls).toEqual(["a"]);
+        expect(saver.inFlight()).toBe(1);
+
+        saver.settle();
+        await tick();
+        expect(saver.calls).toEqual(["a", "abc"]);
+        expect(saver.inFlight()).toBe(1);
+        saver.settle();
+        await tick();
+        scheduler.advance(10 * DELAY);
+        expect(saver.calls).toEqual(["a", "abc"]);
+        expect(autosave.getStatus()).toBe("saved");
+    });
+
+    it("flush during a save waits for it and then writes the latest text once", async () => {
+        const { saver, autosave } = setup();
+        autosave.change("a");
+        const first = autosave.flush();
+        autosave.change("ab");
+        const second = autosave.flush();
+        expect(saver.calls).toEqual(["a"]);
+        saver.settle();
+        await tick();
+        expect(saver.calls).toEqual(["a", "ab"]);
+        saver.settle();
+        expect((await first).ok).toBe(true);
+        expect((await second).ok).toBe(true);
+        expect(saver.calls).toEqual(["a", "ab"]);
+    });
+
+    it("pauses on error, keeps the text and stops automatic saves", async () => {
+        const { scheduler, saver, autosave } = setup();
+        autosave.change("edited");
+        scheduler.advance(DELAY);
+        saver.settle(err(conflict));
+        await tick();
+        expect(autosave.getStatus()).toBe("paused");
+        expect(autosave.getError()).toEqual(conflict);
+
+        autosave.change("edited more");
+        scheduler.advance(10 * DELAY);
+        expect(saver.calls).toEqual(["edited"]);
+        expect(autosave.getStatus()).toBe("paused");
+
+        const flushed = await autosave.flush();
+        expect(flushed).toEqual(err(conflict));
+        expect(saver.calls).toEqual(["edited"]);
+    });
+
+    it("pauses when a flush fails and reports the error", async () => {
+        const { saver, autosave } = setup();
+        autosave.change("edited");
+        const flushed = autosave.flush();
+        saver.settle(err({ code: "not-found", message: "gone" }));
+        expect(await flushed).toEqual(
+            err({ code: "not-found", message: "gone" }),
+        );
+        expect(autosave.getStatus()).toBe("paused");
+    });
+
+    it("resume saves the pending text after the owner resolves the error", async () => {
+        const { saver, autosave } = setup();
+        autosave.change("edited");
+        const failed = autosave.flush();
+        saver.settle(err(conflict));
+        await failed;
+        autosave.change("edited again");
+
+        const resumed = autosave.resume();
+        expect(autosave.getError()).toBeNull();
+        expect(saver.calls).toEqual(["edited", "edited again"]);
+        saver.settle();
+        expect((await resumed).ok).toBe(true);
+        expect(autosave.getStatus()).toBe("saved");
+    });
+
+    it("stays paused when the retry after resume fails again", async () => {
+        const { saver, autosave } = setup();
+        autosave.change("edited");
+        const failed = autosave.flush();
+        saver.settle(err(conflict));
+        await failed;
+
+        const resumed = autosave.resume();
+        saver.settle(err(conflict));
+        expect(await resumed).toEqual(err(conflict));
+        expect(autosave.getStatus()).toBe("paused");
+    });
+
+    it("reports saved, pending, saving, paused in order", async () => {
+        const { saver, scheduler, autosave, statuses } = setup();
+        expect(autosave.getStatus()).toBe("saved");
+        autosave.change("a");
+        scheduler.advance(DELAY);
+        saver.settle();
+        await tick();
+        autosave.change("b");
+        scheduler.advance(DELAY);
+        saver.settle(err(conflict));
+        await tick();
+        expect(statuses).toEqual([
+            "pending",
+            "saving",
+            "saved",
+            "pending",
+            "saving",
+            "paused",
+        ]);
+    });
+
+    it("stops notifying unsubscribed listeners and ignores changes after dispose", () => {
+        const { scheduler, saver, autosave } = setup();
+        const seen: AutosaveStatus[] = [];
+        const unsubscribe = autosave.onStatus((status) => seen.push(status));
+        unsubscribe();
+        autosave.change("a");
+        expect(seen).toEqual([]);
+        autosave.dispose();
+        expect(scheduler.pending()).toBe(0);
+        autosave.change("b");
+        scheduler.advance(10 * DELAY);
+        expect(saver.calls).toEqual([]);
+    });
+});

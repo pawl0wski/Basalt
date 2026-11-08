@@ -15,7 +15,7 @@ Manual test checkpoint: no visible change; run `npm test` in `basalt-app` and co
 - [x] 1.2 `toWorkspacePath`, `pathKey`, `validateNoteName`
 - [x] 1.3 Port interfaces, `@basalt/core/testing` in-memory file system and `describeWorkspaceFileSystemContract`
 - [x] 1.4 Note use cases and `isMarkdownPath`
-- [ ] 1.5 Autosave state machine
+- [x] 1.5 Autosave state machine
 - [ ] 1.6 Workspace watcher handling
 - [ ] 1.7 Settings schema and parser for `basalt.json`
 
@@ -45,3 +45,4 @@ Manual test checkpoint: full manual test of the app (open a workspace, create a 
 - Acceptance criteria AC-01.1 to AC-01.20 come from the spec; each needs a Vitest test and a Playwright test.
 - Open issues and deviations are recorded here as they appear.
 - For 2a.2: the Tauri `readText` must keep a leading BOM (decode with `ignoreBOM: true`); note use cases detect BOM from the returned text. `listNotes` lists nested Markdown files; `createNote` is root-only and rejects dot-leading names.
+- For 2b.1/1.6: autosave has no `rebase(text)`; a watcher reload that changes baseText needs one (or recreate the autosave). The follow-up save after an in-flight save runs immediately, without a second debounce.

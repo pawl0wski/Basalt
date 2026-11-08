@@ -34,3 +34,10 @@ export type {
     SaveMode,
     SaveNoteInput,
 } from "./notes";
+export { createAutosave } from "./autosave";
+export type {
+    Autosave,
+    AutosaveOptions,
+    AutosaveScheduler,
+    AutosaveStatus,
+} from "./autosave";
