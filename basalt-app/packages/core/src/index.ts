@@ -11,3 +11,17 @@ export type {
     NoteNameValidation,
     WorkspacePath,
 } from "./workspace-path";
+export type {
+    AppSettings,
+    AppSettingsStore,
+    FileEntry,
+    FileKind,
+    FileStat,
+    Unwatch,
+    WatchEvent,
+    WorkspaceAccess,
+    WorkspaceFileSystem,
+    WorkspacePicker,
+    WorkspaceRoot,
+    WorkspaceSettings,
+} from "./ports";

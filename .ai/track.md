@@ -13,7 +13,7 @@ Manual test checkpoint: no visible change; run `npm test` in `basalt-app` and co
 
 - [x] 1.1 `AppError`, `Result`, helpers (`ok`, `err`, `mapError`)
 - [x] 1.2 `toWorkspacePath`, `pathKey`, `validateNoteName`
-- [ ] 1.3 Port interfaces, `@basalt/core/testing` in-memory file system and `describeWorkspaceFileSystemContract`
+- [x] 1.3 Port interfaces, `@basalt/core/testing` in-memory file system and `describeWorkspaceFileSystemContract`
 - [ ] 1.4 Note use cases and `isMarkdownPath`
 - [ ] 1.5 Autosave state machine
 - [ ] 1.6 Workspace watcher handling
