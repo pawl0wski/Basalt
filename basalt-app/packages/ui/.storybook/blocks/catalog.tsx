@@ -198,6 +198,16 @@ export const catalog: CatalogEntry[] = [
         preview: <Skeleton className="w-sidebar" />,
     },
     {
+        name: "ScrollArea",
+        group: "Primitives",
+        importName: "ScrollArea",
+        summary:
+            "A named, keyboard-reachable region that scrolls with token-styled bars.",
+        use: "A list or panel whose content can be taller than its box.",
+        avoid: "Page scroll, content that always fits.",
+        docs: "primitives-scrollarea",
+    },
+    {
         name: "Tooltip",
         group: "Primitives",
         importName: "Tooltip",

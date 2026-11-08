@@ -28,7 +28,7 @@ Manual test checkpoint: the app still shows the welcome screen; Storybook/unit t
 - [x] 2a.3 Memory platform, `createPlatform()`, Playwright `webServer` env, production-bundle check
 - [x] 2a.4 `@basalt/editor` package (source mode)
 - [x] 2a.5 i18n (`i18next`, `locales/en.json`, typed keys, `errors.*`)
-- [ ] 2a.6 `@basalt/ui` primitives: `Dialog`, `Input`, `Alert`, `ScrollArea`
+- [x] 2a.6 `@basalt/ui` primitives: `Dialog`, `Input`, `Alert`, `ScrollArea`
 - [ ] 2a.7 Docs: standards spec and README package list
 
 ## Phase 2b: E01-S01 on desktop (PR 3)
@@ -53,3 +53,4 @@ Manual test checkpoint: full manual test of the app (open a workspace, create a 
 - 2a.3: `main.tsx` awaits `createPlatform()` but does not use the result yet (wired in 2b). Core has an extra subpath export `@basalt/core/testing/in-memory` because `@basalt/core/testing` imports vitest and cannot run in the browser. CI runs `npm run check:bundle` after build.
 - 2a.4: `setText` resets undo history (so Ctrl+Z cannot restore stale text after a silent disk reload) and keeps the clamped selection. README package list and standards spec are updated in 2a.7.
 - 2a.5: welcome screen now has a single inert "Open folder as workspace" button (wired in 2b). `errors.permission-denied` carries the read-only message. `packages/app` tests using `toBeInTheDocument` must import `@testing-library/jest-dom/vitest`.
+- 2a.6: Dialog, Input and Alert already existed in `@basalt/ui`; added `ScrollArea` (Radix) and an `Alert` `role` override (banners need `role="alert"` on the warning variant), plus tests. Do not run `prettier --write` over `packages/ui` (reformats MDX that `format:check` ignores).

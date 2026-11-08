@@ -14,6 +14,7 @@ const variants = {
 
 type AlertProps = {
     variant?: keyof typeof variants;
+    role?: "alert" | "status";
     title?: ReactNode;
     children: ReactNode;
     action?: ReactNode;
@@ -22,16 +23,17 @@ type AlertProps = {
 
 function Alert({
     variant = "info",
+    role,
     title,
     children,
     action,
     className,
 }: AlertProps) {
-    const { Icon, icon, role } = variants[variant];
+    const { Icon, icon, role: defaultRole } = variants[variant];
 
     return (
         <div
-            role={role}
+            role={role ?? defaultRole}
             data-variant={variant}
             className={cn(
                 "bs-alert flex gap-between-groups rounded-container border border-border-divider bg-surface-raised p-panel text-size-ui text-text-ui",
