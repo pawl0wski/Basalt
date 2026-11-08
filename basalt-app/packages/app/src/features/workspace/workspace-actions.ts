@@ -24,6 +24,7 @@ export type WorkspaceActionsOptions = {
     readonly watchSchedule: AutosaveScheduler;
     readonly watchDebounceMs: number;
     readonly onFlushBlocked?: (error: AppError) => void;
+    readonly onWorkspaceLost?: (error: AppError) => void;
 };
 
 export type WorkspaceActions = {
@@ -34,6 +35,8 @@ export type WorkspaceActions = {
     leaveWorkspace(): Promise<void>;
     refreshOnFocus(): Promise<void>;
     handleWorkspaceLost(): Promise<void>;
+    retryLost(): Promise<Result<void>>;
+    abandonLost(): Promise<void>;
 };
 
 export function createWorkspaceActions(
@@ -42,6 +45,8 @@ export function createWorkspaceActions(
     const { store, notes, access, picker, settings } = options;
     let watcher: WorkspaceWatcher | null = null;
     let held: WorkspaceRoot | null = null;
+    let currentFs: WorkspaceFileSystem | null = null;
+    let opening = false;
 
     async function stopWatching(): Promise<void> {
         const current = watcher;
@@ -58,6 +63,7 @@ export function createWorkspaceActions(
         watcher = current;
         const watchMode = await current.start({
             onBatch(paths) {
+                void notes.handleExternalChanges(paths);
                 void batchAffectsNoteList(fs, paths).then((affects) => {
                     if (affects && watcher === current) {
                         void notes.refreshNotes();
@@ -74,18 +80,58 @@ export function createWorkspaceActions(
     async function leaveWorkspace(): Promise<void> {
         await stopWatching();
         notes.leaveWorkspace();
+        currentFs = null;
         store.setState({
             root: null,
             status: "welcome",
             error: null,
             watchMode: "live",
+            unavailable: false,
         });
     }
 
-    async function handleWorkspaceLost(): Promise<void> {
-        if (notes.hasUnsavedText()) return;
+    async function abandonLost(): Promise<void> {
         await leaveWorkspace();
         store.setState({ notice: "workspace-unavailable" });
+    }
+
+    async function handleWorkspaceLost(): Promise<void> {
+        const { status, unavailable } = store.getState();
+        if (status !== "open" || unavailable) return;
+        if (!notes.hasUnsavedText()) {
+            await abandonLost();
+            return;
+        }
+        store.setState({ unavailable: true });
+        const flushed = await notes.flushAll();
+        if (flushed.ok) {
+            if (store.getState().unavailable) await abandonLost();
+            return;
+        }
+        options.onWorkspaceLost?.(flushed.error);
+    }
+
+    async function retryLost(): Promise<Result<void>> {
+        const fs = currentFs;
+        if (!store.getState().unavailable || !fs) return ok(undefined);
+        const probed = await notes.refreshNotes();
+        if (!probed.ok) {
+            if (!notes.hasUnsavedText()) {
+                await abandonLost();
+                return probed;
+            }
+            options.onWorkspaceLost?.(probed.error);
+            return probed;
+        }
+        const flushed = await notes.retryAll();
+        if (!flushed.ok) {
+            options.onWorkspaceLost?.(flushed.error);
+            return flushed;
+        }
+        await stopWatching();
+        store.setState({ unavailable: false });
+        await startWatching(fs);
+        return ok(undefined);
     }
 
     async function enter(
@@ -94,6 +140,7 @@ export function createWorkspaceActions(
     ): Promise<Result<void>> {
         await stopWatching();
         notes.leaveWorkspace();
+        currentFs = fs;
         await notes.enterWorkspace(root, fs);
         store.setState({
             root,
@@ -101,6 +148,7 @@ export function createWorkspaceActions(
             error: null,
             notice: null,
             watchMode: "live",
+            unavailable: false,
         });
         await startWatching(fs);
         await settings.update((current) => ({
@@ -124,19 +172,27 @@ export function createWorkspaceActions(
             }
         }
         held = null;
-        store.setState({ status: "opening", error: null });
+        opening = true;
+        store.setState(
+            previous === "open"
+                ? { error: null }
+                : { status: "opening", error: null },
+        );
         const opened = await access.open(target);
         if (!opened.ok) {
+            opening = false;
             store.setState({ status: previous, error: opened.error });
             return opened;
         }
-        return enter(target, opened.value);
+        const entered = await enter(target, opened.value);
+        opening = false;
+        return entered;
     }
 
     return {
         async openWorkspace() {
             const previous = store.getState().status;
-            if (previous === "opening") return ok(undefined);
+            if (previous === "opening" || opening) return ok(undefined);
             const picked = await picker.pickDirectory();
             if (!picked.ok) {
                 store.setState({ error: picked.error });
@@ -155,6 +211,8 @@ export function createWorkspaceActions(
         },
         leaveWorkspace,
         handleWorkspaceLost,
+        retryLost,
+        abandonLost,
         async refreshOnFocus() {
             const { status, watchMode } = store.getState();
             if (status !== "open" || watchMode !== "focus-fallback") return;

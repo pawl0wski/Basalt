@@ -300,4 +300,56 @@ describe("createAutosave", () => {
         expect((await autosave.flush()).ok).toBe(true);
         expect(saver.calls).toEqual(["a"]);
     });
+    it("pause stops automatic saves, keeps the text and reports the error from flush", async () => {
+        const { scheduler, saver, autosave } = setup();
+        autosave.change("edited");
+        autosave.pause(conflict);
+
+        expect(autosave.getStatus()).toBe("paused");
+        expect(autosave.getError()).toEqual(conflict);
+        expect(scheduler.pending()).toBe(0);
+        autosave.change("edited more");
+        scheduler.advance(10 * DELAY);
+        expect(saver.calls).toEqual([]);
+        expect(await autosave.flush()).toEqual(err(conflict));
+    });
+
+    it("pause keeps the paused status when an in-flight save finishes afterwards", async () => {
+        const { scheduler, saver, autosave } = setup();
+        autosave.change("a");
+        scheduler.advance(DELAY);
+        await tick();
+        autosave.pause(conflict);
+        saver.settle();
+        await tick();
+
+        expect(autosave.getStatus()).toBe("paused");
+        expect(autosave.getError()).toEqual(conflict);
+    });
+
+    it("forceSave writes the text even when it equals the baseline and clears the pause", async () => {
+        const { saver, autosave } = setup();
+        autosave.pause({ code: "not-found", message: "gone" });
+
+        const forced = autosave.forceSave();
+        expect(saver.calls).toEqual(["base"]);
+        saver.settle();
+
+        expect((await forced).ok).toBe(true);
+        expect(autosave.getStatus()).toBe("saved");
+        expect(autosave.getError()).toBeNull();
+    });
+
+    it("forceSave stays paused and reports the error when the write fails", async () => {
+        const { saver, autosave } = setup();
+        autosave.pause(conflict);
+
+        const forced = autosave.forceSave();
+        saver.settle(err({ code: "permission-denied", message: "ro" }));
+
+        expect(await forced).toEqual(
+            err({ code: "permission-denied", message: "ro" }),
+        );
+        expect(autosave.getStatus()).toBe("paused");
+    });
 });

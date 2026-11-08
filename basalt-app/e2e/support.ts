@@ -13,6 +13,7 @@ export type TestFs = {
     readBytes(path: string): Uint8Array | null;
     externalWrite(path: string, bytes: Uint8Array): void;
     externalDelete(path: string): void;
+    removeRoot(): void;
 };
 
 declare global {
@@ -118,4 +119,10 @@ export async function setReadOnly(
     await page.evaluate((value) => {
         window.__basaltTestFs?.setReadOnly(value);
     }, readOnly);
+}
+
+export async function removeRoot(page: Page): Promise<void> {
+    await page.evaluate(() => {
+        window.__basaltTestFs?.removeRoot();
+    });
 }

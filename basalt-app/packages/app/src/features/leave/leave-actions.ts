@@ -54,6 +54,7 @@ export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
                 }
                 await notes.closeTab(pending.path);
                 clear();
+                await workspace.retryLost();
                 return;
             }
             const flushed = await notes.retryAll();
@@ -62,10 +63,17 @@ export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
                 return;
             }
             clear();
-            if (pending.kind === "change-workspace") {
-                await workspace.continueOpen({ discard: false });
-            } else {
-                windowChrome.destroy();
+            switch (pending.kind) {
+                case "change-workspace":
+                    await workspace.retryLost();
+                    await workspace.continueOpen({ discard: false });
+                    return;
+                case "workspace-lost":
+                    await workspace.retryLost();
+                    return;
+                case "close-window":
+                    windowChrome.destroy();
+                    return;
             }
         },
         async discard() {
@@ -78,6 +86,9 @@ export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
                     return;
                 case "change-workspace":
                     await workspace.continueOpen({ discard: true });
+                    return;
+                case "workspace-lost":
+                    await workspace.abandonLost();
                     return;
                 case "close-window":
                     windowChrome.destroy();

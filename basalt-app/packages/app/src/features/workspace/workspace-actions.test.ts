@@ -130,6 +130,45 @@ describe("workspace actions", () => {
     });
 });
 
+describe("switching workspaces", () => {
+    it("keeps the current workspace open while the next one is opening", async () => {
+        const h = createHarness({
+            workspaces: { [A]: seedFs({ "a.md": "1" }), [B]: seedFs({}) },
+            picked: A,
+        });
+        await h.workspaceActions.openWorkspace();
+        const statuses: string[] = [];
+        h.workspaceStore.subscribe((state) => statuses.push(state.status));
+
+        h.pick(B);
+        await h.workspaceActions.openWorkspace();
+
+        expect(statuses.every((status) => status === "open")).toBe(true);
+        expect(h.workspaceStore.getState().root).toBe(B);
+    });
+
+    it("keeps the old workspace and its unsaved text when Discard is chosen but the new folder cannot be opened", async () => {
+        const fs = seedFs({ "a.md": "base" });
+        const h = createHarness({ workspaces: { [A]: fs }, picked: A });
+        await h.workspaceActions.openWorkspace();
+        await h.notesActions.openNote(wsPath("a.md"));
+        h.notesActions.updateText(wsPath("a.md"), "mine");
+        fs.failNextWrite();
+        h.pick(B);
+        await h.workspaceActions.openWorkspace();
+
+        await h.workspaceActions.continueOpen({ discard: true });
+
+        expect(h.workspaceStore.getState()).toMatchObject({
+            status: "open",
+            root: A,
+            error: { code: "not-found" },
+        });
+        expect(h.notesStore.getState().openNotes[0]?.text).toBe("mine");
+        expect(h.persisted().lastWorkspace).toBe(A);
+    });
+});
+
 describe("restoreWorkspace", () => {
     it("reopens the last workspace with its tabs and active note", async () => {
         const h = createHarness({

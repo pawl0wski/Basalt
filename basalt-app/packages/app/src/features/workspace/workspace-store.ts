@@ -11,6 +11,7 @@ export type WorkspaceState = {
     readonly error: AppError | null;
     readonly notice: WorkspaceNotice | null;
     readonly watchMode: WatchMode;
+    readonly unavailable: boolean;
 };
 
 export type WorkspaceStore = StoreApi<WorkspaceState>;
@@ -22,5 +23,6 @@ export function createWorkspaceStore(): WorkspaceStore {
         error: null,
         notice: null,
         watchMode: "live",
+        unavailable: false,
     }));
 }

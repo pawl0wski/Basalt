@@ -18,6 +18,8 @@ export type Autosave = {
     change(text: string): void;
     flush(): Promise<Result<void>>;
     resume(): Promise<Result<void>>;
+    pause(error: AppError): void;
+    forceSave(): Promise<Result<void>>;
     rebase(text: string): void;
     dispose(): void;
     getStatus(): AutosaveStatus;
@@ -69,6 +71,10 @@ export function createAutosave(options: AutosaveOptions): Autosave {
             return;
         }
         baseText = text;
+        if (error) {
+            setStatus("paused");
+            return;
+        }
         setStatus(latestText === baseText ? "saved" : "pending");
     }
 
@@ -102,6 +108,22 @@ export function createAutosave(options: AutosaveOptions): Autosave {
             if (status === "paused") {
                 setStatus(latestText === baseText ? "saved" : "pending");
             }
+            return flush();
+        },
+        pause(reason) {
+            if (disposed) return;
+            clearTimer();
+            error = reason;
+            setStatus("paused");
+        },
+        async forceSave() {
+            if (disposed) return ok(undefined);
+            error = null;
+            clearTimer();
+            while (inflight) await inflight;
+            inflight = saveLatest();
+            await inflight;
+            if (error) return err(error);
             return flush();
         },
         rebase(text) {

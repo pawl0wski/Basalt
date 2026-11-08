@@ -3,12 +3,14 @@ import {
     createNotes,
     err,
     ok,
+    resolveOpenNoteChange,
     type AppError,
     type Autosave,
     type AutosaveScheduler,
     type Note,
     type NoteService,
     type Result,
+    type SaveMode,
     type WorkspaceFileSystem,
     type WorkspacePath,
     type WorkspaceRoot,
@@ -47,6 +49,9 @@ export type NotesActions = {
     updateText(path: WorkspacePath, text: string): void;
     saveNow(path: WorkspacePath): Promise<Result<void>>;
     reloadNote(path: WorkspacePath): Promise<Result<void>>;
+    handleExternalChanges(paths: readonly WorkspacePath[]): Promise<void>;
+    keepMine(path: WorkspacePath): Promise<Result<void>>;
+    saveAgain(path: WorkspacePath): Promise<Result<void>>;
     closeTab(
         path: WorkspacePath,
         options?: { readonly discard?: boolean },
@@ -56,6 +61,16 @@ export type NotesActions = {
 type ActiveWorkspace = {
     readonly root: WorkspaceRoot;
     readonly notes: NoteService;
+};
+
+const CONFLICT: AppError = {
+    code: "conflict",
+    message: "The note changed on disk.",
+};
+
+const NOT_FOUND: AppError = {
+    code: "not-found",
+    message: "The note is no longer on disk.",
 };
 
 const NO_WORKSPACE: AppError = {
@@ -75,6 +90,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
     const { store, settings, schedule, autosaveDelayMs, untitledName } =
         options;
     const autosaves = new Map<WorkspacePath, Autosave>();
+    const nextSaveModes = new Map<WorkspacePath, SaveMode>();
     let workspace: ActiveWorkspace | null = null;
 
     function findSession(path: WorkspacePath): NoteSession | undefined {
@@ -118,12 +134,15 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             save: async (latest) => {
                 const session = findSession(path);
                 if (!session) return err(NO_WORKSPACE);
+                const mode = nextSaveModes.get(path) ?? "normal";
+                nextSaveModes.delete(path);
                 const saved = await active.notes.saveNote({
                     path,
                     text: latest,
                     baseText: session.baseText,
                     eol: session.eol,
                     bom: session.bom,
+                    mode,
                 });
                 if (!saved.ok) {
                     patchSession(path, { error: saved.error });
@@ -266,6 +285,74 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         return created;
     }
 
+    async function saveWithMode(
+        path: WorkspacePath,
+        mode: SaveMode,
+    ): Promise<Result<void>> {
+        const autosave = autosaves.get(path);
+        if (!autosave) return err(NO_WORKSPACE);
+        nextSaveModes.set(path, mode);
+        const result = await autosave.forceSave();
+        nextSaveModes.delete(path);
+        return result;
+    }
+
+    function pauseWithError(path: WorkspacePath, error: AppError): void {
+        if (findSession(path)?.error?.code === error.code) return;
+        patchSession(path, { error });
+        autosaves.get(path)?.pause(error);
+    }
+
+    async function checkExternalChange(
+        active: ActiveWorkspace,
+        path: WorkspacePath,
+        changed: readonly WorkspacePath[],
+    ): Promise<void> {
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+            const session = findSession(path);
+            if (!session || session.openFailed || !autosaves.has(path)) return;
+            const change = await resolveOpenNoteChange({
+                notes: active.notes,
+                changed,
+                path,
+                text: session.text,
+                baseText: session.baseText,
+            });
+            if (workspace !== active) return;
+            const fresh = findSession(path);
+            if (!fresh) return;
+            if (
+                fresh.text !== session.text ||
+                fresh.baseText !== session.baseText
+            ) {
+                continue;
+            }
+            switch (change.kind) {
+                case "ignore":
+                    return;
+                case "reload":
+                    patchSession(path, {
+                        text: change.text,
+                        baseText: change.baseText,
+                        eol: change.eol,
+                        bom: change.bom,
+                        error: null,
+                    });
+                    autosaves.get(path)?.rebase(change.text);
+                    return;
+                case "conflict":
+                    pauseWithError(path, CONFLICT);
+                    return;
+                case "not-found":
+                    pauseWithError(path, NOT_FOUND);
+                    return;
+                case "error":
+                    pauseWithError(path, change.error);
+                    return;
+            }
+        }
+    }
+
     let lastCreate: Promise<unknown> = Promise.resolve();
 
     function createNote(): Promise<Result<Note>> {
@@ -354,6 +441,19 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             autosave.rebase(text);
             return ok(undefined);
         },
+        async handleExternalChanges(paths) {
+            const active = workspace;
+            if (!active) return;
+            await Promise.all(
+                store
+                    .getState()
+                    .openNotes.map((session) =>
+                        checkExternalChange(active, session.path, paths),
+                    ),
+            );
+        },
+        keepMine: (path) => saveWithMode(path, "overwrite"),
+        saveAgain: (path) => saveWithMode(path, "recreate"),
         async closeTab(path, closeOptions) {
             const session = findSession(path);
             if (!session) return ok(undefined);

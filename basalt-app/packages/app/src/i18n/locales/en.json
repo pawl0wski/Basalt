@@ -60,6 +60,12 @@
         "noNote": {
             "title": "No note open",
             "description": "Select a note from the list to start writing."
+        },
+        "unavailable": {
+            "title": "The workspace folder is not available",
+            "message": "The folder was deleted or renamed. Your text is kept here and saving is paused.",
+            "retry": "Retry",
+            "changeWorkspace": "Change workspace"
         }
     },
     "notes": {
@@ -87,6 +93,18 @@
             "title": "Could not save the note",
             "message": "{reason} Your text is kept here and saving is paused.",
             "retry": "Retry"
+        },
+        "conflict": {
+            "title": "This note changed on disk",
+            "message": "Another program changed this file while you had unsaved edits. Saving is paused until you choose.",
+            "keepMine": "Keep my version",
+            "loadFromDisk": "Load version from disk"
+        },
+        "deleted": {
+            "title": "This note was deleted or moved",
+            "message": "The file is no longer in the workspace. Saving is paused so it is not recreated by accident.",
+            "saveAgain": "Save again here",
+            "closeNote": "Close note"
         }
     },
     "errors": {

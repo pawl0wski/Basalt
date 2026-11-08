@@ -77,6 +77,10 @@ export function createServices(
                 error,
             });
         },
+        onWorkspaceLost: (error) => {
+            if (leaveStore.getState().pending) return;
+            leaveStore.setState({ pending: { kind: "workspace-lost" }, error });
+        },
     });
     const leaveActions = createLeaveActions({
         store: leaveStore,
