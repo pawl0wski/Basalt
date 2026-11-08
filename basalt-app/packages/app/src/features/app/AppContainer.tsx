@@ -3,6 +3,7 @@ import { useStore } from "zustand";
 import { StatusBar } from "@basalt/ui";
 import { useTranslation } from "react-i18next";
 import { useServices } from "../../useServices";
+import { useNoteTabs } from "../editor/useNoteTabs";
 import { useKeymap } from "../keymap/useKeymap";
 import { WelcomeScreenContainer } from "../welcome/WelcomeScreenContainer";
 import { AppWindowContainer } from "../window/AppWindowContainer";
@@ -17,6 +18,7 @@ export function AppContainer() {
     const status = useStore(workspaceStore, (state) => state.status);
     const [restored, setRestored] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const tabs = useNoteTabs();
     const restoring = useRef<Promise<void> | null>(null);
 
     useEffect(() => {
@@ -64,6 +66,7 @@ export function AppContainer() {
         return (
             <AppWindowContainer
                 workspace={{
+                    tabs,
                     sidebarOpen,
                     onToggleSidebar: () => {
                         setSidebarOpen((open) => !open);

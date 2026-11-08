@@ -51,10 +51,14 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
 
     function persist(): void {
         if (current) workspaces.set(current.root, current.fs.getState());
-        storage.setItem(
-            WORKSPACES_KEY,
-            JSON.stringify(Object.fromEntries(workspaces)),
-        );
+        try {
+            storage.setItem(
+                WORKSPACES_KEY,
+                JSON.stringify(Object.fromEntries(workspaces)),
+            );
+        } catch {
+            return;
+        }
     }
 
     function seed(

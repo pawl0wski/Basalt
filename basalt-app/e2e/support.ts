@@ -1,11 +1,15 @@
 import type { Page } from "@playwright/test";
 
 export type TestFs = {
-    seedWorkspace(root: string, files: Record<string, string>): void;
+    seedWorkspace(
+        root: string,
+        files: Record<string, string | Uint8Array>,
+    ): void;
     setPickerResult(root: string | null | undefined): void;
     setReadOnly(readOnly: boolean): void;
     setFailWatch(failWatch: boolean): void;
     listFiles(): string[];
+    readBytes(path: string): Uint8Array | null;
     externalWrite(path: string, bytes: Uint8Array): void;
     externalDelete(path: string): void;
 };
@@ -23,7 +27,7 @@ export const SIDEBAR = { name: "Workspace" };
 export async function openWorkspaceWith(
     page: Page,
     root: string,
-    files: Record<string, string>,
+    files: Record<string, string | Uint8Array>,
     flags: { readOnly?: boolean; failWatch?: boolean } = {},
 ): Promise<void> {
     await page.goto("/");
@@ -32,12 +36,29 @@ export async function openWorkspaceWith(
         ({ root, files, flags }) => {
             const fs = window.__basaltTestFs;
             if (!fs) throw new Error("The test handle is missing.");
-            fs.seedWorkspace(root, files);
+            const decoded = Object.fromEntries(
+                Object.entries(files).map(([name, content]) => [
+                    name,
+                    typeof content === "string"
+                        ? content
+                        : Uint8Array.from(content),
+                ]),
+            );
+            fs.seedWorkspace(root, decoded);
             fs.setPickerResult(root);
             fs.setReadOnly(flags.readOnly ?? false);
             fs.setFailWatch(flags.failWatch ?? false);
         },
-        { root, files, flags },
+        {
+            root,
+            files: Object.fromEntries(
+                Object.entries(files).map(([name, content]) => [
+                    name,
+                    typeof content === "string" ? content : Array.from(content),
+                ]),
+            ),
+            flags,
+        },
     );
     await page.getByRole("button", OPEN_FOLDER).click();
     await page.getByRole("navigation", SIDEBAR).waitFor();
@@ -63,4 +84,22 @@ export async function externalDelete(page: Page, path: string): Promise<void> {
     await page.evaluate((target) => {
         window.__basaltTestFs?.externalDelete(target);
     }, path);
+}
+
+export async function readSavedBytes(
+    page: Page,
+    path: string,
+): Promise<number[] | null> {
+    return page.evaluate((target) => {
+        const bytes = window.__basaltTestFs?.readBytes(target);
+        return bytes ? Array.from(bytes) : null;
+    }, path);
+}
+
+export async function readSavedText(
+    page: Page,
+    path: string,
+): Promise<string | null> {
+    const bytes = await readSavedBytes(page, path);
+    return bytes ? new TextDecoder().decode(Uint8Array.from(bytes)) : null;
 }

@@ -35,7 +35,8 @@ export function WorkspaceSidebarContainer() {
             }
             onSelect={(path) => {
                 const note = notes.find((candidate) => candidate.path === path);
-                if (note) void notesActions.openNote(note.path);
+                if (note)
+                    void notesActions.openNote(note.path, { focus: true });
             }}
             onNewNote={() => {
                 void notesActions.createNote();

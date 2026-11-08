@@ -64,6 +64,13 @@
     },
     "notes": {
         "untitled": "Untitled",
+        "openError": {
+            "title": "This note could not be opened",
+            "too-large": "Notes over 5 MiB are not opened in the editor. The file is never changed.",
+            "not-utf8": "This file is not UTF-8 text, so Basalt does not open it. The file is never changed.",
+            "symlink": "This note is a symbolic link. Basalt does not follow symbolic links, so it is not opened and never changed.",
+            "unknown": "An unknown error stopped Basalt from opening this note. The file is never changed."
+        },
         "confirmReload": {
             "title": "Load the version from disk?",
             "message": "Your unsaved changes in \"{name}\" will be lost.",

@@ -14,7 +14,13 @@ export type NoteSession = {
     readonly eol: Eol;
     readonly bom: boolean;
     readonly error: AppError | null;
+    readonly openFailed: boolean;
     readonly saveStatus: AutosaveStatus;
+};
+
+export type FocusRequest = {
+    readonly path: WorkspacePath;
+    readonly id: number;
 };
 
 export type NotesState = {
@@ -23,6 +29,7 @@ export type NotesState = {
     readonly createError: AppError | null;
     readonly openNotes: readonly NoteSession[];
     readonly activeNote: WorkspacePath | null;
+    readonly focusRequest: FocusRequest | null;
 };
 
 export type NotesStore = StoreApi<NotesState>;
@@ -38,6 +45,7 @@ export function emptyNotesState(): NotesState {
         createError: null,
         openNotes: [],
         activeNote: null,
+        focusRequest: null,
     };
 }
 

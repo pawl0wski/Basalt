@@ -9,7 +9,7 @@ import {
     Square,
     X,
 } from "lucide-react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import { IconButton } from "../components/IconButton";
 import { Menu } from "../components/Menu";
 import { cn } from "../lib/utils";
@@ -89,6 +89,38 @@ function TitleBar({
         return () => observer.disconnect();
     }, [tabs]);
 
+    const focusableId = tabs.some((tab) => tab.id === activeTabId)
+        ? activeTabId
+        : tabs[0]?.id;
+
+    const moveFocus = (event: KeyboardEvent<HTMLUListElement>) => {
+        const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
+        if (!keys.includes(event.key) || tabs.length === 0) return;
+        const buttons = Array.from(
+            listRef.current?.querySelectorAll<HTMLElement>("[role=tab]") ?? [],
+        );
+        const current = buttons.indexOf(event.target as HTMLElement);
+        if (current === -1) return;
+        event.preventDefault();
+        const last = tabs.length - 1;
+        const next =
+            event.key === "Home"
+                ? 0
+                : event.key === "End"
+                  ? last
+                  : event.key === "ArrowRight"
+                    ? current === last
+                        ? 0
+                        : current + 1
+                    : current === 0
+                      ? last
+                      : current - 1;
+        const target = tabs[next];
+        if (!target) return;
+        onSelectTab?.(target.id);
+        buttons[next]?.focus();
+    };
+
     const labels = windowControls?.labels ?? defaultWindowControlLabels;
 
     return (
@@ -125,7 +157,10 @@ function TitleBar({
                 {tabs.length > 0 ? (
                     <ul
                         ref={listRef}
+                        role="tablist"
                         aria-label="Open notes"
+                        aria-orientation="horizontal"
+                        onKeyDown={moveFocus}
                         className="m-none flex min-w-none list-none items-center gap-in-group self-stretch overflow-hidden px-in-group py-none"
                     >
                         {tabs.map((tab) => (
@@ -134,6 +169,7 @@ function TitleBar({
                                 name={tab.name}
                                 active={tab.id === activeTabId}
                                 unsaved={tab.unsaved}
+                                tabbable={tab.id === focusableId}
                                 onSelect={() => onSelectTab?.(tab.id)}
                                 onClose={() => onCloseTab?.(tab.id)}
                             />

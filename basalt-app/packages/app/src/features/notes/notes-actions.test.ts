@@ -380,3 +380,68 @@ describe("tabs", () => {
         expect(h.notesStore.getState().activeNote).toBe("m.md");
     });
 });
+
+describe("editor focus and open failures", () => {
+    it("requests focus only when asked and counts requests per open", async () => {
+        const { h } = await openWorkspace({ "n.md": "1", "m.md": "2" });
+
+        await h.notesActions.openNote(n);
+        expect(h.notesStore.getState().focusRequest).toBeNull();
+
+        await h.notesActions.openNote(n, { focus: true });
+        await h.notesActions.openNote(wsPath("m.md"), { focus: true });
+
+        expect(h.notesStore.getState().focusRequest).toEqual({
+            path: "m.md",
+            id: 2,
+        });
+    });
+
+    it("does not request focus for restored tabs", async () => {
+        const { h } = await openWorkspace(
+            { "n.md": "1" },
+            {},
+            {
+                ...defaultAppSettings(),
+                workspaces: { [A]: { openNotes: [n], activeNote: n } },
+            },
+        );
+
+        expect(h.notesStore.getState().focusRequest).toBeNull();
+    });
+
+    it("requests focus for a note created with createNote", async () => {
+        const { h } = await openWorkspace({});
+
+        await h.notesActions.createNote();
+
+        expect(h.notesStore.getState().focusRequest).toEqual({
+            path: "Untitled.md",
+            id: 1,
+        });
+    });
+
+    it("marks an unreadable note as openFailed and never asks to focus it", async () => {
+        const { h, fs } = await openWorkspace({});
+        fs.externalWrite(wsPath("bin.md"), new Uint8Array([0xff, 0xfe]));
+
+        await h.notesActions.openNote(wsPath("bin.md"), { focus: true });
+
+        const failed = h.notesStore.getState().openNotes[0];
+        expect(failed?.openFailed).toBe(true);
+        expect(failed?.error?.code).toBe("not-utf8");
+        expect(h.notesStore.getState().focusRequest).toBeNull();
+    });
+
+    it("does not mark a save failure as an open failure", async () => {
+        const { h, fs } = await openWorkspace({ "n.md": "1" });
+        await h.notesActions.openNote(n);
+        h.notesActions.updateText(n, "2");
+        fs.failNextWrite();
+
+        await h.notesActions.saveNow(n);
+
+        expect(session(h).error).not.toBeNull();
+        expect(session(h).openFailed).toBe(false);
+    });
+});

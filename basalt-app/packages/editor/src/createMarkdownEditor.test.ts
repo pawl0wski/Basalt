@@ -103,4 +103,31 @@ describe("createMarkdownEditor", () => {
         view.dispatch({ changes: { from: 0, insert: "z" } });
         expect(onChange).not.toHaveBeenCalled();
     });
+
+    it("names the editable area with ariaLabel", () => {
+        createMarkdownEditor(parent, {
+            doc: "",
+            onChange: vi.fn(),
+            ariaLabel: "Note text",
+        });
+        expect(viewOf().contentDOM.getAttribute("aria-label")).toBe(
+            "Note text",
+        );
+    });
+
+    it("readOnly refuses user input and keeps the text after setText", () => {
+        const editor = createMarkdownEditor(parent, {
+            doc: "abc",
+            onChange: vi.fn(),
+            readOnly: true,
+        });
+        expect(viewOf().contentDOM.getAttribute("contenteditable")).toBe(
+            "false",
+        );
+        editor.setText("xyz");
+        expect(viewOf().contentDOM.getAttribute("contenteditable")).toBe(
+            "false",
+        );
+        expect(viewOf().state.readOnly).toBe(true);
+    });
 });

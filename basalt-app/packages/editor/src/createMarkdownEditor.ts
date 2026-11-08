@@ -8,6 +8,8 @@ export type MarkdownEditorOptions = {
     doc: string;
     onChange: (text: string) => void;
     extensions?: Extension[];
+    readOnly?: boolean;
+    ariaLabel?: string;
 };
 
 export type MarkdownEditor = {
@@ -19,7 +21,13 @@ export type MarkdownEditor = {
 
 export function createMarkdownEditor(
     parent: HTMLElement,
-    { doc, onChange, extensions = [] }: MarkdownEditorOptions,
+    {
+        doc,
+        onChange,
+        extensions = [],
+        readOnly = false,
+        ariaLabel,
+    }: MarkdownEditorOptions,
 ): MarkdownEditor {
     const baseExtensions: Extension[] = [
         markdown(),
@@ -30,6 +38,12 @@ export function createMarkdownEditor(
         EditorView.updateListener.of((update) => {
             if (update.docChanged) onChange(update.state.doc.toString());
         }),
+        ...(ariaLabel
+            ? [EditorView.contentAttributes.of({ "aria-label": ariaLabel })]
+            : []),
+        ...(readOnly
+            ? [EditorState.readOnly.of(true), EditorView.editable.of(false)]
+            : []),
         ...extensions,
     ];
 

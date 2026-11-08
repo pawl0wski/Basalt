@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
     defaultAppSettings,
     type WatchEvent,
@@ -218,5 +218,24 @@ describe("memory platform", () => {
         const target = {} as Window;
         installMemoryPlatform(target, localStorage);
         expect(target.__basaltTestFs?.listFiles).toBeTypeOf("function");
+    });
+
+    it("keeps working in memory when the browser storage quota is exceeded", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        testFs.seedWorkspace(ROOT, { "a.md": "# A" });
+        const fs = await openRoot(platform);
+        const setItem = vi
+            .spyOn(Storage.prototype, "setItem")
+            .mockImplementation(() => {
+                throw new DOMException("full", "QuotaExceededError");
+            });
+
+        expect(() => {
+            testFs.externalWrite("big.md", bytes("x"));
+        }).not.toThrow();
+
+        setItem.mockRestore();
+        expect(Array.from(testFs.readBytes("big.md") ?? [])).toEqual([120]);
+        expect((await fs.stat("big.md" as never)).ok).toBe(true);
     });
 });

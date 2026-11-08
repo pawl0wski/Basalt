@@ -37,7 +37,10 @@ export type NotesActions = {
     leaveWorkspace(): void;
     flushAll(): Promise<Result<void>>;
     refreshNotes(): Promise<Result<void>>;
-    openNote(path: WorkspacePath): Promise<Result<void>>;
+    openNote(
+        path: WorkspacePath,
+        options?: { readonly focus?: boolean },
+    ): Promise<Result<void>>;
     createNote(): Promise<Result<Note>>;
     hasUnsavedText(): boolean;
     updateText(path: WorkspacePath, text: string): void;
@@ -154,6 +157,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
                 eol: "lf",
                 bom: false,
                 error: opened.error,
+                openFailed: true,
                 saveStatus: "saved",
             };
             store.setState((state) => ({
@@ -170,6 +174,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             eol,
             bom,
             error: null,
+            openFailed: false,
             saveStatus: "saved",
         };
         store.setState((state) => ({
@@ -204,7 +209,10 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         return ok(undefined);
     }
 
-    async function openNote(path: WorkspacePath): Promise<Result<void>> {
+    async function openNote(
+        path: WorkspacePath,
+        openOptions?: { readonly focus?: boolean },
+    ): Promise<Result<void>> {
         const active = workspace;
         if (!active) return err(NO_WORKSPACE);
         let result: Result<void> = ok(undefined);
@@ -212,7 +220,16 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             result = await addSession(active, path);
             if (!findSession(path)) return result;
         }
-        store.setState({ activeNote: path });
+        store.setState((state) => ({
+            activeNote: path,
+            focusRequest:
+                openOptions?.focus && !findSession(path)?.openFailed
+                    ? {
+                          path,
+                          id: (state.focusRequest?.id ?? 0) + 1,
+                      }
+                    : state.focusRequest,
+        }));
         await persistTabs();
         return result;
     }
@@ -239,7 +256,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             ]),
             createError: null,
         }));
-        await openNote(created.value.path);
+        await openNote(created.value.path, { focus: true });
         return created;
     }
 

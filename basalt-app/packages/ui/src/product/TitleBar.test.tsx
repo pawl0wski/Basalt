@@ -24,14 +24,59 @@ describe("TitleBar", () => {
     it("lists the open notes and marks the open one", () => {
         render(<TitleBar {...baseProps()} />);
 
-        const list = screen.getByRole("list", { name: "Open notes" });
-        expect(within(list).getAllByRole("listitem")).toHaveLength(3);
-        expect(
-            screen.getByRole("button", { name: "Weekly plan" }).ariaCurrent,
-        ).toBe("true");
-        expect(
-            screen.getByRole("button", { name: "Roadmap" }).ariaCurrent,
-        ).toBeNull();
+        const list = screen.getByRole("tablist", { name: "Open notes" });
+        expect(within(list).getAllByRole("tab")).toHaveLength(3);
+        expect(screen.getByRole("tab", { name: "Weekly plan" })).toHaveProperty(
+            "ariaSelected",
+            "true",
+        );
+        expect(screen.getByRole("tab", { name: "Roadmap" })).toHaveProperty(
+            "ariaSelected",
+            "false",
+        );
+    });
+
+    it("keeps only the open tab in the tab order", () => {
+        render(<TitleBar {...baseProps()} />);
+
+        expect(screen.getAllByRole("tab").map((tab) => tab.tabIndex)).toEqual([
+            0, -1, -1,
+        ]);
+    });
+
+    it("moves between tabs with the arrow keys, Home and End", async () => {
+        const user = userEvent.setup();
+        const props = baseProps();
+
+        render(<TitleBar {...props} />);
+        screen.getByRole("tab", { name: "Weekly plan" }).focus();
+        await user.keyboard("{ArrowRight}");
+        expect(props.onSelectTab).toHaveBeenLastCalledWith("b");
+        expect(document.activeElement).toBe(
+            screen.getByRole("tab", { name: /Sync server spec/ }),
+        );
+        await user.keyboard("{End}");
+        expect(props.onSelectTab).toHaveBeenLastCalledWith("c");
+        await user.keyboard("{ArrowRight}");
+        expect(props.onSelectTab).toHaveBeenLastCalledWith("a");
+        await user.keyboard("{ArrowLeft}");
+        expect(props.onSelectTab).toHaveBeenLastCalledWith("c");
+        await user.keyboard("{Home}");
+        expect(props.onSelectTab).toHaveBeenLastCalledWith("a");
+    });
+
+    it("closes a tab with the middle mouse button without selecting it", async () => {
+        const user = userEvent.setup();
+        const props = baseProps();
+
+        render(<TitleBar {...props} />);
+        await user.pointer({
+            keys: "[MouseMiddle]",
+            target: screen.getByRole("tab", { name: "Roadmap" }),
+        });
+
+        expect(props.onCloseTab).toHaveBeenCalledExactlyOnceWith("c");
+        expect(props.onSelectTab).not.toHaveBeenCalled();
     });
 
     it("selects a note from its tab and closes it from its own button", async () => {
@@ -39,7 +84,7 @@ describe("TitleBar", () => {
         const props = baseProps();
 
         render(<TitleBar {...props} />);
-        await user.click(screen.getByRole("button", { name: "Roadmap" }));
+        await user.click(screen.getByRole("tab", { name: "Roadmap" }));
         await user.click(
             screen.getByRole("button", { name: "Close Weekly plan" }),
         );
@@ -56,10 +101,10 @@ describe("TitleBar", () => {
         render(<TitleBar {...props} />);
 
         expect(
-            screen.getByRole("button", { name: "Sync server spec not saved" }),
+            screen.getByRole("tab", { name: "Sync server spec not saved" }),
         ).toBeTruthy();
         expect(
-            screen.queryByRole("button", { name: "Weekly plan not saved" }),
+            screen.queryByRole("tab", { name: "Weekly plan not saved" }),
         ).toBeNull();
         await user.click(
             screen.getByRole("button", { name: "Close Sync server spec" }),
@@ -70,7 +115,7 @@ describe("TitleBar", () => {
     it("shows no tab list when no note is open but keeps the toggles", () => {
         render(<TitleBar {...baseProps()} tabs={[]} activeTabId={undefined} />);
 
-        expect(screen.queryByRole("list")).toBeNull();
+        expect(screen.queryByRole("tablist")).toBeNull();
         expect(
             screen.getByRole("button", { name: "Toggle sidebar" }),
         ).toBeTruthy();

@@ -1,8 +1,21 @@
 import type { ReactNode } from "react";
-import { AppShell, TitleBar, type WindowControlLabels } from "@basalt/ui";
+import {
+    AppShell,
+    TitleBar,
+    type TitleBarTab,
+    type WindowControlLabels,
+} from "@basalt/ui";
 import { SidebarCollapse } from "../workspace/SidebarCollapse";
 
+export type AppWindowTabs = {
+    tabs: TitleBarTab[];
+    activeTabId?: string;
+    onSelectTab: (id: string) => void;
+    onCloseTab: (id: string) => void;
+};
+
 export type AppWindowWorkspace = {
+    tabs?: AppWindowTabs;
     sidebarOpen: boolean;
     onToggleSidebar: () => void;
     activityBar: ReactNode;
@@ -36,6 +49,10 @@ export function AppWindow({
             titleBar={
                 <TitleBar
                     title={title}
+                    tabs={workspace?.tabs?.tabs}
+                    activeTabId={workspace?.tabs?.activeTabId}
+                    onSelectTab={workspace?.tabs?.onSelectTab}
+                    onCloseTab={workspace?.tabs?.onCloseTab}
                     sidebarOpen={workspace?.sidebarOpen}
                     onToggleSidebar={workspace?.onToggleSidebar}
                     windowControls={{
