@@ -60,7 +60,11 @@ export function createTauriAppSettingsStore(): AppSettingsStore {
             const existing = await attempt(() => readFile(file));
             if (existing.ok) {
                 if (diskVersion(existing.value) > APP_SETTINGS_VERSION) {
-                    return ok(undefined);
+                    return err({
+                        code: "unavailable",
+                        message:
+                            "The settings file was written by a newer version of the app.",
+                    });
                 }
             } else if (existing.error.code !== "not-found") {
                 return err(existing.error);

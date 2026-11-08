@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
     defaultAppSettings,
@@ -76,6 +78,73 @@ describe("TauriAppSettingsStore.load", () => {
 });
 
 describe("TauriAppSettingsStore.save", () => {
+    it("only touches paths covered by the capability fs scope", async () => {
+        const { plugin, store } = setup();
+        const capability = JSON.parse(
+            readFileSync(
+                resolve(process.cwd(), "src-tauri/capabilities/default.json"),
+                "utf8",
+            ),
+        ) as { permissions: unknown[] };
+        const scope = capability.permissions.find(
+            (
+                entry,
+            ): entry is { identifier: string; allow: { path: string }[] } =>
+                typeof entry === "object" &&
+                entry !== null &&
+                (entry as { identifier?: unknown }).identifier === "fs:scope",
+        );
+        const allowed = (scope?.allow ?? []).map((entry) =>
+            entry.path.replace("$APPCONFIG", plugin.configDir),
+        );
+        const covers = (path: string) =>
+            allowed.some(
+                (pattern) =>
+                    pattern === path ||
+                    (pattern.endsWith("/*") &&
+                        path.startsWith(pattern.slice(0, -1))),
+            );
+        const touched = new Set<string>();
+        const internals = (
+            window as unknown as {
+                __TAURI_INTERNALS__: {
+                    invoke: (
+                        cmd: string,
+                        args?: unknown,
+                        options?: { headers?: Record<string, string> },
+                    ) => Promise<unknown>;
+                };
+            }
+        ).__TAURI_INTERNALS__;
+        const original = internals.invoke;
+        internals.invoke = async (cmd, args, options) => {
+            const a = (args ?? {}) as {
+                path?: string;
+                oldPath?: string;
+                newPath?: string;
+            };
+            const header = options?.headers?.path;
+            for (const value of [
+                a.path,
+                a.oldPath,
+                a.newPath,
+                header === undefined ? undefined : decodeURIComponent(header),
+            ]) {
+                if (value !== undefined && cmd.startsWith("plugin:fs|")) {
+                    touched.add(value);
+                }
+            }
+            return original(cmd, args, options);
+        };
+
+        await store.save(settings);
+
+        expect(touched.size).toBeGreaterThan(0);
+        expect([...touched].filter((path) => !covers(path))).toEqual([]);
+        expect(touched).toContain(plugin.configDir);
+        expect(touched).toContain(`${plugin.configDir}/basalt.json.tmp`);
+    });
+
     it("creates the config directory and writes the settings", async () => {
         const { plugin, file, store } = setup();
 
@@ -108,7 +177,8 @@ describe("TauriAppSettingsStore.save", () => {
 
         const result = await store.save(settings);
 
-        expect(result.ok).toBe(true);
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.error.code).toBe("unavailable");
         expect(text(plugin.readBytes(file))).toBe(newer);
         expect(plugin.calls).not.toContain("write_file");
         expect(plugin.calls).not.toContain("rename");

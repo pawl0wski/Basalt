@@ -25,7 +25,11 @@
         "fs:allow-mkdir",
         {
             "identifier": "fs:scope",
-            "allow": [{ "path": "$APPCONFIG/basalt.json" }]
+            "allow": [
+                { "path": "$APPCONFIG" },
+                { "path": "$APPCONFIG/basalt.json" },
+                { "path": "$APPCONFIG/basalt.json.tmp" }
+            ]
         }
     ]
 }

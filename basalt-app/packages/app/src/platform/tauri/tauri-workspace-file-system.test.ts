@@ -209,6 +209,30 @@ describe("TauriWorkspaceFileSystem", () => {
             );
             expect(plugin.calls).not.toContain("remove");
         });
+
+        it("does not remove a file it did not create when the write fails with an unknown error", async () => {
+            const { plugin, fs } = setup();
+            plugin.seedText(`${ROOT}/a.md`, "created by someone else");
+            plugin.failNext("write_file", "something unexpected");
+
+            const result = await fs.createExclusive(path("a.md"), "other");
+
+            expect(result.ok).toBe(false);
+            expect(plugin.readBytes(`${ROOT}/a.md`)).toEqual(
+                encode("created by someone else"),
+            );
+            expect(plugin.calls).not.toContain("remove");
+        });
+
+        it("removes the file it created when the write fails with an unknown error", async () => {
+            const { plugin, fs } = setup();
+            plugin.failNext("write_file", "something unexpected");
+
+            const result = await fs.createExclusive(path("a.md"), "text");
+
+            expect(result.ok).toBe(false);
+            expect(plugin.calls).toContain("remove");
+        });
     });
 
     describe("watch", () => {

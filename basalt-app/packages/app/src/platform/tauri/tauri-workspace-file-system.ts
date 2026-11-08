@@ -129,10 +129,11 @@ export function createTauriWorkspaceFileSystem(
             const parent = await ensureParent(path);
             if (!parent.ok) return parent;
             const native = paths.toNative(path);
+            const existed = (await attempt(() => lstat(native))).ok;
             const written = await attempt(() =>
                 writeFile(native, encoder.encode(text), { createNew: true }),
             );
-            if (!written.ok && written.error.code === "unknown") {
+            if (!written.ok && written.error.code === "unknown" && !existed) {
                 await attempt(() => remove(native));
             }
             return written;

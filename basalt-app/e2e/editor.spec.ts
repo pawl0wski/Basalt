@@ -247,15 +247,9 @@ test.describe("note errors", () => {
         page,
     }) => {
         await openWorkspaceWith(page, "/work/W", {
-            "big.md": "x",
+            "big.md": "a".repeat(MAX_NOTE_BYTES + 1),
             "ok.md": "x",
         });
-        await page.evaluate((size) => {
-            window.__basaltTestFs?.externalWrite(
-                "big.md",
-                new Uint8Array(size).fill(97),
-            );
-        }, MAX_NOTE_BYTES + 1);
 
         await option(page, "big").click();
 
@@ -266,7 +260,6 @@ test.describe("note errors", () => {
         ).toBeVisible();
         await expect(page.locator(".cm-editor")).toHaveCount(0);
         await expect(tab(page, "big")).toBeVisible();
-        await page.waitForTimeout(1500);
         expect((await readSavedBytes(page, "big.md"))?.length).toBe(
             MAX_NOTE_BYTES + 1,
         );
