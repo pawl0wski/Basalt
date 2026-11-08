@@ -1,6 +1,10 @@
 import {
+    batchAffectsNoteList,
+    createWorkspaceWatcher,
     ok,
+    type AutosaveScheduler,
     type Result,
+    type WorkspaceWatcher,
     type WorkspaceAccess,
     type WorkspaceFileSystem,
     type WorkspacePicker,
@@ -16,17 +20,68 @@ export type WorkspaceActionsOptions = {
     readonly access: WorkspaceAccess;
     readonly picker: WorkspacePicker;
     readonly settings: SettingsWriter;
+    readonly watchSchedule: AutosaveScheduler;
+    readonly watchDebounceMs: number;
 };
 
 export type WorkspaceActions = {
     openWorkspace(): Promise<Result<void>>;
     restoreWorkspace(): Promise<void>;
+    leaveWorkspace(): Promise<void>;
+    refreshOnFocus(): Promise<void>;
+    handleWorkspaceLost(): Promise<void>;
 };
 
 export function createWorkspaceActions(
     options: WorkspaceActionsOptions,
 ): WorkspaceActions {
     const { store, notes, access, picker, settings } = options;
+    let watcher: WorkspaceWatcher | null = null;
+
+    async function stopWatching(): Promise<void> {
+        const current = watcher;
+        watcher = null;
+        await current?.stop();
+    }
+
+    async function startWatching(fs: WorkspaceFileSystem): Promise<void> {
+        const current = createWorkspaceWatcher({
+            fs,
+            schedule: options.watchSchedule,
+            debounceMs: options.watchDebounceMs,
+        });
+        watcher = current;
+        const watchMode = await current.start({
+            onBatch(paths) {
+                void batchAffectsNoteList(fs, paths).then((affects) => {
+                    if (affects && watcher === current) {
+                        void notes.refreshNotes();
+                    }
+                });
+            },
+            onRootLost() {
+                if (watcher === current) void handleWorkspaceLost();
+            },
+        });
+        if (watcher === current) store.setState({ watchMode });
+    }
+
+    async function leaveWorkspace(): Promise<void> {
+        await stopWatching();
+        notes.leaveWorkspace();
+        store.setState({
+            root: null,
+            status: "welcome",
+            error: null,
+            watchMode: "live",
+        });
+    }
+
+    async function handleWorkspaceLost(): Promise<void> {
+        if (notes.hasUnsavedText()) return;
+        await leaveWorkspace();
+        store.setState({ notice: "workspace-unavailable" });
+    }
 
     async function enter(
         root: WorkspaceRoot,
@@ -34,6 +89,7 @@ export function createWorkspaceActions(
     ): Promise<Result<void>> {
         const flushed = await notes.flushAll();
         if (!flushed.ok) return flushed;
+        await stopWatching();
         notes.leaveWorkspace();
         await notes.enterWorkspace(root, fs);
         store.setState({
@@ -43,6 +99,7 @@ export function createWorkspaceActions(
             notice: null,
             watchMode: "live",
         });
+        await startWatching(fs);
         await settings.update((current) => ({
             ...current,
             lastWorkspace: root,
@@ -69,6 +126,13 @@ export function createWorkspaceActions(
             const entered = await enter(picked.value, opened.value);
             if (!entered.ok) store.setState({ status: previous });
             return entered;
+        },
+        leaveWorkspace,
+        handleWorkspaceLost,
+        async refreshOnFocus() {
+            const { status, watchMode } = store.getState();
+            if (status !== "open" || watchMode !== "focus-fallback") return;
+            await notes.refreshNotes();
         },
         async restoreWorkspace() {
             if (store.getState().status !== "welcome") return;

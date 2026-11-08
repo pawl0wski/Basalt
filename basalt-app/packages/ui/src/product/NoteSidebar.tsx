@@ -1,14 +1,14 @@
 import { FilePlus } from "lucide-react";
 import type { ReactNode } from "react";
 import { Alert } from "../components/Alert";
-import { Button } from "../components/Button";
 import { IconButton } from "../components/IconButton";
 import { cn } from "../lib/utils";
 
 type NoteSidebarProps = {
     workspaceName: string;
-    onChangeWorkspace: () => void;
     onNewNote: () => void;
+    label?: string;
+    newNoteLabel?: string;
     notice?: ReactNode;
     children: ReactNode;
     className?: string;
@@ -16,32 +16,26 @@ type NoteSidebarProps = {
 
 function NoteSidebar({
     workspaceName,
-    onChangeWorkspace,
     onNewNote,
+    label = "Workspace",
+    newNoteLabel = "New note",
     notice,
     children,
     className,
 }: NoteSidebarProps) {
     return (
         <nav
-            aria-label="Workspace"
+            aria-label={label}
             className={cn(
                 "bs-note-sidebar flex h-full w-full flex-col bg-surface-card text-size-ui text-text-ui tablet:w-sidebar",
                 className,
             )}
         >
-            <div className="flex flex-col gap-in-group border-b border-border-divider p-panel">
-                <div className="flex items-center justify-between gap-between-groups">
-                    <p className="truncate font-ui-strong">{workspaceName}</p>
-                    <IconButton aria-label="New note" onClick={onNewNote}>
-                        <FilePlus aria-hidden="true" />
-                    </IconButton>
-                </div>
-                <div>
-                    <Button variant="ghost" onClick={onChangeWorkspace}>
-                        Change workspace
-                    </Button>
-                </div>
+            <div className="flex items-center justify-between gap-between-groups border-b border-border-divider p-panel">
+                <p className="truncate font-ui-strong">{workspaceName}</p>
+                <IconButton aria-label={newNoteLabel} onClick={onNewNote}>
+                    <FilePlus aria-hidden="true" />
+                </IconButton>
             </div>
             {notice ? (
                 <div className="p-panel">

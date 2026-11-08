@@ -325,7 +325,7 @@ export const catalog: CatalogEntry[] = [
         group: "Product",
         importName: "NoteSidebar",
         summary: "The left column of an open workspace.",
-        use: "Workspace name, New note, Change workspace, the list.",
+        use: "Workspace name, New note, the list.",
         avoid: "The welcome screen.",
         docs: "product-notesidebar",
     },

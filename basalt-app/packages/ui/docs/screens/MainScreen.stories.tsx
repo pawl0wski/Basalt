@@ -144,11 +144,7 @@ function MainScreen({
                 />
             }
             sidebar={
-                <NoteSidebar
-                    workspaceName={workspaceName}
-                    onChangeWorkspace={noop}
-                    onNewNote={noop}
-                >
+                <NoteSidebar workspaceName={workspaceName} onNewNote={noop}>
                     <NoteList
                         label="Notes"
                         notes={notes}

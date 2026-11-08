@@ -56,4 +56,43 @@ describe("AppWindow", () => {
             screen.queryByRole("button", { name: labels.maximize }),
         ).not.toBeInTheDocument();
     });
+
+    it("shows no sidebar toggle outside a workspace", () => {
+        render(<AppWindow {...props()} />);
+
+        expect(
+            screen.queryByRole("button", { name: /toggle sidebar/i }),
+        ).not.toBeInTheDocument();
+    });
+
+    it("renders the workspace regions and reports the sidebar toggle with its state", async () => {
+        const user = userEvent.setup();
+        const onToggleSidebar = vi.fn();
+        const workspace = {
+            sidebarOpen: true,
+            onToggleSidebar,
+            activityBar: <p>activity</p>,
+            sidebar: <p>sidebar</p>,
+            statusBar: <p>status</p>,
+        };
+        const { rerender } = render(<AppWindow {...props({ workspace })} />);
+
+        for (const text of ["activity", "sidebar", "status"]) {
+            expect(screen.getByText(text)).toBeInTheDocument();
+        }
+        const toggle = screen.getByRole("button", { name: /toggle sidebar/i });
+        expect(toggle).toHaveAttribute("aria-expanded", "true");
+        await user.click(toggle);
+        expect(onToggleSidebar).toHaveBeenCalledOnce();
+
+        rerender(
+            <AppWindow
+                {...props({ workspace: { ...workspace, sidebarOpen: false } })}
+            />,
+        );
+        expect(
+            screen.getByRole("button", { name: /toggle sidebar/i }),
+        ).toHaveAttribute("aria-expanded", "false");
+        expect(screen.getByText("sidebar").closest("[inert]")).not.toBeNull();
+    });
 });

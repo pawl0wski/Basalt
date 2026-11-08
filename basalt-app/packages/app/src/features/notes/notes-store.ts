@@ -20,6 +20,7 @@ export type NoteSession = {
 export type NotesState = {
     readonly notes: readonly Note[];
     readonly listError: AppError | null;
+    readonly createError: AppError | null;
     readonly openNotes: readonly NoteSession[];
     readonly activeNote: WorkspacePath | null;
 };
@@ -31,7 +32,13 @@ export function createNotesStore(): NotesStore {
 }
 
 export function emptyNotesState(): NotesState {
-    return { notes: [], listError: null, openNotes: [], activeNote: null };
+    return {
+        notes: [],
+        listError: null,
+        createError: null,
+        openNotes: [],
+        activeNote: null,
+    };
 }
 
 export function isDirty(session: NoteSession): boolean {

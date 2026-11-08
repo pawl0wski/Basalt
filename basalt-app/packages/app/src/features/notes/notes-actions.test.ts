@@ -229,6 +229,42 @@ describe("creating notes", () => {
         expect(!created.ok && created.error.code).toBe("permission-denied");
         expect(h.notesStore.getState().notes).toEqual([]);
         expect(h.notesStore.getState().openNotes).toEqual([]);
+        expect(h.notesStore.getState().createError?.code).toBe(
+            "permission-denied",
+        );
+    });
+
+    it("clears the create error after a later successful create", async () => {
+        const { h } = await openWorkspace({});
+        h.notesStore.setState({
+            createError: { code: "permission-denied", message: "ro" },
+        });
+        const created = await h.notesActions.createNote();
+        expect(created.ok).toBe(true);
+        expect(h.notesStore.getState().createError).toBeNull();
+    });
+
+    it("creates distinct notes when called twice at once", async () => {
+        const { h } = await openWorkspace({});
+        const results = await Promise.all([
+            h.notesActions.createNote(),
+            h.notesActions.createNote(),
+        ]);
+        expect(results.map((r) => r.ok && r.value.name)).toEqual([
+            "Untitled",
+            "Untitled 1",
+        ]);
+        expect(h.notesStore.getState().createError).toBeNull();
+    });
+
+    it("does not list a note twice when a refresh already saw it", async () => {
+        const { h } = await openWorkspace({});
+        const created = h.notesActions.createNote();
+        await h.notesActions.refreshNotes();
+        await created;
+        expect(h.notesStore.getState().notes.map((note) => note.path)).toEqual([
+            "Untitled.md",
+        ]);
     });
 });
 

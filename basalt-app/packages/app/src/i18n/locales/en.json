@@ -41,8 +41,26 @@
         }
     },
     "workspace": {
-        "emptyTitle": "Create your first note",
-        "openTitle": "Workspace open"
+        "sidebarLabel": "Workspace",
+        "notesLabel": "Notes",
+        "newNote": "New note",
+        "sections": {
+            "notes": "Notes"
+        },
+        "empty": {
+            "title": "No notes yet",
+            "description": "Notes you create are saved as Markdown files in this folder.",
+            "action": "Create your first note"
+        },
+        "listError": {
+            "title": "Notes could not be read",
+            "retry": "Retry"
+        },
+        "watchFallback": "The list refreshes when the window is focused.",
+        "noNote": {
+            "title": "No note open",
+            "description": "Select a note from the list to start writing."
+        }
     },
     "notes": {
         "untitled": "Untitled",

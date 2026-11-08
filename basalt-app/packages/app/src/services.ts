@@ -15,6 +15,7 @@ import type { WorkspaceActions } from "./features/workspace/workspace-actions";
 import type { Platform, WindowChrome } from "./platform/platform";
 
 export const AUTOSAVE_DELAY_MS = 1000;
+export const WATCH_DEBOUNCE_MS = 300;
 
 export type Services = {
     readonly workspaceStore: WorkspaceStore;
@@ -27,6 +28,7 @@ export type Services = {
 export type ServicesOptions = {
     readonly untitledName: () => string;
     readonly schedule?: AutosaveScheduler;
+    readonly watchSchedule?: AutosaveScheduler;
 };
 
 const timeoutScheduler: AutosaveScheduler = (run, delayMs) => {
@@ -56,6 +58,8 @@ export function createServices(
         access: platform.access,
         picker: platform.picker,
         settings,
+        watchSchedule: options.watchSchedule ?? timeoutScheduler,
+        watchDebounceMs: WATCH_DEBOUNCE_MS,
     });
     return {
         workspaceStore,

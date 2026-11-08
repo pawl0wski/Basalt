@@ -39,6 +39,7 @@ export type NotesActions = {
     refreshNotes(): Promise<Result<void>>;
     openNote(path: WorkspacePath): Promise<Result<void>>;
     createNote(): Promise<Result<Note>>;
+    hasUnsavedText(): boolean;
     updateText(path: WorkspacePath, text: string): void;
     saveNow(path: WorkspacePath): Promise<Result<void>>;
     reloadNote(path: WorkspacePath): Promise<Result<void>>;
@@ -216,7 +217,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         return result;
     }
 
-    async function createNote(): Promise<Result<Note>> {
+    async function createNoteNow(): Promise<Result<Note>> {
         const active = workspace;
         if (!active) return err(NO_WORKSPACE);
         const name = active.notes.suggestNoteName(
@@ -224,12 +225,30 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             untitledName(),
         );
         const created = await active.notes.createNote(name);
-        if (!created.ok) return created;
+        if (workspace !== active) return err(NO_WORKSPACE);
+        if (!created.ok) {
+            store.setState({ createError: created.error });
+            return created;
+        }
         store.setState((state) => ({
-            notes: sortNotes([...state.notes, created.value]),
+            notes: sortNotes([
+                ...state.notes.filter(
+                    (note) => note.path !== created.value.path,
+                ),
+                created.value,
+            ]),
+            createError: null,
         }));
         await openNote(created.value.path);
         return created;
+    }
+
+    let lastCreate: Promise<unknown> = Promise.resolve();
+
+    function createNote(): Promise<Result<Note>> {
+        const run = lastCreate.then(createNoteNow);
+        lastCreate = run;
+        return run;
     }
 
     return {
@@ -260,6 +279,9 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         refreshNotes,
         openNote,
         createNote,
+        hasUnsavedText() {
+            return store.getState().openNotes.some(isDirty);
+        },
         updateText(path, text) {
             const session = findSession(path);
             const autosave = autosaves.get(path);

@@ -1,15 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-
-declare global {
-    interface Window {
-        __basaltTestFs?: {
-            seedWorkspace(root: string, files: Record<string, string>): void;
-            setPickerResult(root: string | null | undefined): void;
-        };
-    }
-}
-
-const OPEN_FOLDER = { name: "Open folder as workspace" };
+import { OPEN_FOLDER, SIDEBAR } from "./support";
 
 async function seedStorage(
     page: Page,
@@ -30,9 +20,7 @@ test.describe("opening a workspace", () => {
 
         await page.getByRole("button", OPEN_FOLDER).click();
 
-        await expect(
-            page.getByRole("heading", { name: "Workspace open" }),
-        ).toBeVisible();
+        await expect(page.getByRole("navigation", SIDEBAR)).toBeVisible();
         await expect(page.getByText("demo", { exact: true })).toBeVisible();
         await expect(page.getByRole("button", OPEN_FOLDER)).toHaveCount(0);
     });
@@ -63,9 +51,7 @@ test.describe("opening a workspace", () => {
 
         await expect(page.getByRole("button", OPEN_FOLDER)).toBeEnabled();
         await expect(page.getByRole("alert")).toHaveCount(0);
-        await expect(
-            page.getByRole("heading", { name: "Workspace open" }),
-        ).toHaveCount(0);
+        await expect(page.getByRole("navigation", SIDEBAR)).toHaveCount(0);
     });
 
     test("a folder that cannot be opened shows an error and stays on welcome", async ({
@@ -90,9 +76,7 @@ test.describe("opening a workspace", () => {
 
         await page.keyboard.press("Control+O");
 
-        await expect(
-            page.getByRole("heading", { name: "Workspace open" }),
-        ).toBeVisible();
+        await expect(page.getByRole("navigation", SIDEBAR)).toBeVisible();
     });
 
     test("opens another workspace with Ctrl+O from a workspace window", async ({
@@ -147,9 +131,7 @@ test.describe("opening a workspace", () => {
         );
         await expect(page.getByRole("alert")).toHaveCount(0);
         await page.getByRole("button", OPEN_FOLDER).click();
-        await expect(
-            page.getByRole("heading", { name: "Workspace open" }),
-        ).toBeVisible();
+        await expect(page.getByRole("navigation", SIDEBAR)).toBeVisible();
     });
 
     test("explains an unavailable last workspace", async ({ page }) => {

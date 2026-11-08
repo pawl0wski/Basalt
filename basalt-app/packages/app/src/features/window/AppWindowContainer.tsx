@@ -1,9 +1,15 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useServices } from "../../useServices";
-import { AppWindow } from "./AppWindow";
+import { AppWindow, type AppWindowWorkspace } from "./AppWindow";
 
-export function AppWindowContainer({ children }: { children: ReactNode }) {
+export function AppWindowContainer({
+    workspace,
+    children,
+}: {
+    workspace?: AppWindowWorkspace;
+    children: ReactNode;
+}) {
     const { t } = useTranslation();
     const { windowChrome } = useServices();
     const [maximized, setMaximized] = useState(false);
@@ -23,6 +29,7 @@ export function AppWindowContainer({ children }: { children: ReactNode }) {
                 close: t("window.close"),
             }}
             maximized={maximized}
+            workspace={workspace}
             onMinimize={() => windowChrome.minimize()}
             onToggleMaximize={() => windowChrome.toggleMaximize()}
             onClose={() => windowChrome.close()}

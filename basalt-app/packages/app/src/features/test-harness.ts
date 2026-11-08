@@ -45,8 +45,11 @@ export function seedFs(
 export function createFakeScheduler() {
     let nextId = 0;
     const timers = new Map<number, () => void>();
+    const delays: number[] = [];
     return {
-        schedule(run: () => void) {
+        delays,
+        schedule(run: () => void, delayMs: number) {
+            delays.push(delayMs);
             const id = nextId++;
             timers.set(id, run);
             return () => {
@@ -126,13 +129,16 @@ export function createHarness(
         },
     };
     const scheduler = createFakeScheduler();
+    const watchScheduler = createFakeScheduler();
     const services: Services = createServices(platform, {
         untitledName: () => "Untitled",
         schedule: scheduler.schedule,
+        watchSchedule: watchScheduler.schedule,
     });
     return {
         ...services,
         scheduler,
+        watchScheduler,
         saves,
         persisted: () => persisted,
         pick(value: WorkspaceRoot | null) {
