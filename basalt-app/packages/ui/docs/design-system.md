@@ -37,6 +37,7 @@ Focused, graphite, own, tool-like, orderly. Not generic, loud, childish, functio
 | StatusIndicator             | `StatusIndicator`               | Sync state in words (`synced`, `syncing`, `conflict`, `error`)              | One-off results                        |
 | Alert                       | `Alert`                         | Message that stays until fixed (`info`, `warning`, `danger`)                | Field errors, passing results          |
 | Skeleton                    | `Skeleton`                      | Placeholder while loading                                                   | Failed loads, empty places             |
+| ScrollArea                  | `ScrollArea`                    | A named region whose content can be taller than its box                     | Page scroll, content that always fits  |
 | Tooltip                     | `Tooltip`                       | Name or shortcut of an icon                                                 | Information needed to finish a task    |
 | Dialog                      | `Dialog`                        | Short focused task                                                          | Yes/no questions, long forms           |
 | ConfirmDialog               | `ConfirmDialog`                 | Confirming something hard to undo; focus on Cancel                          | Things that can be undone with a Toast |

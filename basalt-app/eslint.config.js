@@ -60,6 +60,7 @@ export default tseslint.config(
                         "@basalt/app",
                         "@basalt/ui",
                         "@basalt/api",
+                        "@basalt/editor",
                     ],
                 },
             ],
@@ -78,6 +79,8 @@ export default tseslint.config(
                         "@basalt/core/*",
                         "@basalt/api",
                         "@basalt/api/*",
+                        "@basalt/editor",
+                        "@basalt/editor/*",
                         "@tauri-apps/*",
                     ],
                 },
@@ -97,7 +100,25 @@ export default tseslint.config(
                         "@basalt/app/*",
                         "@basalt/ui",
                         "@basalt/ui/*",
+                        "@basalt/editor",
+                        "@basalt/editor/*",
                         "@tauri-apps/*",
+                    ],
+                },
+            ],
+        },
+    },
+    {
+        files: ["packages/editor/src/**/*.{ts,tsx}"],
+        rules: {
+            "no-restricted-imports": [
+                "error",
+                {
+                    patterns: [
+                        "react",
+                        "react/*",
+                        "@tauri-apps/*",
+                        "@basalt/*",
                     ],
                 },
             ],

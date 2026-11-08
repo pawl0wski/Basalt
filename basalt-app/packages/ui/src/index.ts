@@ -15,6 +15,8 @@ export { Alert } from "./components/Alert";
 export type { AlertProps } from "./components/Alert";
 export { Card, CardRow } from "./components/Card";
 export type { CardProps, CardRowProps } from "./components/Card";
+export { ScrollArea } from "./components/ScrollArea";
+export type { ScrollAreaProps } from "./components/ScrollArea";
 export { Select } from "./components/Select";
 export type { SelectProps } from "./components/Select";
 export { Skeleton } from "./components/Skeleton";
@@ -77,6 +79,7 @@ export { TitleBar } from "./product/TitleBar";
 export type {
     TitleBarProps,
     TitleBarTab,
+    WindowControlLabels,
     WindowControls,
 } from "./product/TitleBar";
 export { WelcomeScreen } from "./product/WelcomeScreen";

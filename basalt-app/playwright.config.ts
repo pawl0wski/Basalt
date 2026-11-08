@@ -16,6 +16,7 @@ export default defineConfig({
     projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
     webServer: {
         command: "npm run dev",
+        env: { VITE_BASALT_PLATFORM: "memory" },
         url: "http://localhost:1420",
         reuseExistingServer: !isCi,
     },

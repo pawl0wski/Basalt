@@ -26,7 +26,7 @@ The specification is concerned with code organization and development practice. 
 
 - Basalt is a Tauri 2 application using React and TypeScript. Rust is minimized: it is limited to the thin Tauri host, and all application logic is written in TypeScript.
 - The JavaScript workspace is managed with npm workspaces under `basalt-app/packages/`.
-- The current package layout is `app`, `core`, `ui`, and `api`.
+- The current package layout is `app`, `core`, `ui`, `editor`, and `api`.
 - Markdown files in a user-selected workspace are the intended source of truth for note content. They must remain ordinary user-readable files rather than becoming dependent on a proprietary database format.
 - Desktop and Android are current targets. Platform-specific behavior must be isolated rather than leaking into shared domain logic.
 - E2EE, synchronization protocol, server implementation, and collaboration behavior are explicitly out of scope for this specification.
@@ -37,9 +37,10 @@ The specification is concerned with code organization and development practice. 
 basalt-app/
 ├── src-tauri/                  # Minimal Tauri host: bootstrap, plugin registration, capabilities
 ├── packages/
-│   ├── app/                    # Composition root: routes, screens, app state, platform adapters
+│   ├── app/                    # Composition root: routes, screens, app state, platform adapters, i18n
 │   ├── core/                   # Framework-independent domain types and use cases
 │   ├── ui/                     # Reusable presentation components and design tokens
+│   ├── editor/                 # Framework-agnostic Markdown editor on CodeMirror 6
 │   └── api/                    # Typed HTTP transport/client for remote services
 ├── package.json                # npm workspace root and repo-level scripts
 └── package-lock.json
@@ -54,7 +55,9 @@ Keep this layout small until a real need justifies another package. A new packag
 - Owns application composition: routing, screens, layout, application-level state, and user workflows.
 - Connects UI interactions to `@basalt/core` use cases and platform adapters.
 - Owns Tauri frontend integration and maps IPC/platform details to application-facing interfaces.
-- May depend on `@basalt/core`, `@basalt/ui`, `@basalt/api`, and Tauri frontend APIs.
+- Owns the platform layer in `src/platform/`: `platform/tauri` holds the Tauri adapters for the `@basalt/core` ports (workspace access, file system, picker, settings), and `platform/memory` holds an in-memory platform for browser integration tests. `createPlatform()` is the single place that selects the platform; the memory platform is loaded only when `VITE_BASALT_PLATFORM=memory` and must not be part of production bundles (`npm run check:bundle` builds both variants and fails if test-only code leaks into the default one).
+- Owns internationalization in `src/i18n/` (see "Internationalization" below).
+- May depend on `@basalt/core`, `@basalt/ui`, `@basalt/editor`, `@basalt/api`, and Tauri frontend APIs.
 - Must not become the home for reusable domain rules or generic UI primitives.
 
 #### `@basalt/core`
@@ -64,6 +67,8 @@ Keep this layout small until a real need justifies another package. A new packag
 - Defines ports/interfaces where domain operations need filesystem, clock, ID generation, or other external capabilities.
 - Treats Markdown content as portable data; it must not require application-only metadata to read or preserve ordinary Markdown files.
 - Prefer pure functions and explicit input/output types. Side effects belong behind injected ports/adapters.
+- Ships test support under `@basalt/core/testing`: an in-memory `WorkspaceFileSystem` and `describeWorkspaceFileSystemContract`, a contract suite that every adapter of the port must pass. `@basalt/core/testing` imports Vitest; browser code uses the Vitest-free `@basalt/core/testing/in-memory` entry point.
+- Never returns user-facing text; it returns stable error codes (`AppError.code`) that the app translates.
 
 #### `@basalt/ui`
 
@@ -71,6 +76,12 @@ Keep this layout small until a real need justifies another package. A new packag
 - May depend on React and presentation libraries, but not on `@basalt/app`, `@basalt/api`, Tauri APIs, or domain workflows.
 - Receives data and callbacks through typed props; it must not perform filesystem, network, or domain side effects.
 - Should expose components through a deliberate package entry point instead of having consumers import internal file paths.
+
+#### `@basalt/editor`
+
+- Owns the framework-agnostic Markdown editor built on CodeMirror 6 (`createMarkdownEditor`). The document is always the exact Markdown source; no editor-only metadata is written to notes.
+- Is a leaf package: may depend on CodeMirror and its parser packages only. It must not import React, Tauri APIs, or any `@basalt/*` package.
+- Consumers (`@basalt/app`) wrap it in a React component and pass texts and callbacks from outside.
 
 #### `@basalt/api`
 
@@ -94,10 +105,12 @@ Allowed dependency graph:
 ```text
 app ───────► core
  │  ├──────► ui
+ │  ├──────► editor
  │  └──────► api ───────► core (shared transport-independent contracts only)
  └─────────► Tauri frontend APIs / app-owned adapters
 
 ui ────────► React and presentation dependencies only
+editor ────► CodeMirror dependencies only
 core ──────► platform-independent dependencies only
 Rust host ─► Rust/Tauri implementation; frontend communicates through explicit IPC
 ```
@@ -110,6 +123,7 @@ Rules:
 4. Do not duplicate domain types across packages. Place shared domain contracts in `core`; keep UI view models and API wire models local unless there is a demonstrated need to share them.
 5. Keep platform checks in app-owned adapters or Rust platform modules, not in portable domain rules.
 6. Do not introduce a global service locator. Dependencies for side-effecting operations should be explicit at construction/call boundaries.
+7. `editor` is a leaf: only `app` depends on it and it depends on no workspace. These boundaries are enforced by `no-restricted-imports` rules in `basalt-app/eslint.config.js` (for example, `core`, `ui`, and `api` cannot import `@basalt/editor`; `editor` cannot import React, `@tauri-apps/*`, or `@basalt/*`).
 
 ## Engineering standards
 
@@ -314,6 +328,13 @@ The example illustrates the boundary, not a requirement to use a store as the ac
 - Keep tests adjacent to the component/feature and name them `*.test.tsx`.
 - Prefer user-observable queries and interactions; avoid assertions about hook call counts or private component state.
 
+### Internationalization
+
+- `@basalt/app` uses `i18next` with `react-i18next`, initialized in `src/i18n/` with resources bundled statically. English (`en`) is the only language for now; there is no language detection or switcher.
+- Translation keys are typed from `locales/en.json` through the `i18next` `CustomTypeOptions` declaration, so a missing or misspelled key fails `typecheck`.
+- Presentational components do not access i18n; they receive texts through typed props, and containers translate.
+- `@basalt/core` never returns user-facing text (it returns error codes that the app maps to translation keys), and `@basalt/ui` has no i18n dependency.
+
 ### Errors and logging
 
 - Distinguish expected operational errors (missing file, permission denied, network unavailable) from programming errors.
@@ -336,6 +357,7 @@ Tests should follow the same dependency boundaries as production code:
 - **Core unit tests:** domain rules, validation, transformations, parsing/serialization behavior, and error cases; no filesystem/network/Tauri runtime required.
 - **UI tests:** observable rendering and interactions, including accessibility-relevant behavior; avoid tests coupled to implementation details.
 - **App integration tests:** critical workflows wired through adapters, with external effects mocked or provided by controlled test fixtures.
+- **Port contract tests:** every implementation of a `@basalt/core` port runs the shared contract suite from `@basalt/core/testing` (for example `describeWorkspaceFileSystemContract`), so the in-memory test double and the real adapters stay behaviorally equivalent.
 - **Rust tests:** required only for custom Rust code (path validation, command input validation, error mapping). A host without custom logic needs no Rust tests.
 - **Cross-platform smoke checks:** Tauri build/startup and workspace access on supported release platforms, especially where filesystem permissions differ.
 - **Regression tests:** every bug fix should add a test at the lowest practical layer that reproduces the failure.

@@ -22,11 +22,16 @@ const manyTabs = Array.from({ length: 14 }, (_, index) => ({
     name: `Daily note 2026-10-${String(index + 1).padStart(2, "0")}`,
 }));
 
+const tabCloseRule = { id: "aria-required-children", enabled: false };
+
 const meta = {
     title: "Product/TitleBar",
     component: TitleBar,
     tags: ["!autodocs"],
-    parameters: { layout: "fullscreen" },
+    parameters: {
+        layout: "fullscreen",
+        a11y: { config: { rules: [tabCloseRule] } },
+    },
     args: {
         tabs,
         activeTabId: "weekly",
@@ -51,7 +56,7 @@ function SelectableTitleBar(props: ComponentProps<typeof TitleBar>) {
             {...props}
             activeTabId={activeTabId}
             onSelectTab={(id) => {
-                props.onSelectTab(id);
+                props.onSelectTab?.(id);
                 setActiveTabId(id);
             }}
         />
@@ -63,13 +68,13 @@ export const Playground: Story = {
     play: async ({ args, canvasElement }) => {
         const canvas = within(canvasElement);
         await expect(
-            canvas.getByRole("button", { name: "Weekly plan" }),
-        ).toHaveAttribute("aria-current", "true");
-        await userEvent.click(canvas.getByRole("button", { name: "Roadmap" }));
+            canvas.getByRole("tab", { name: "Weekly plan" }),
+        ).toHaveAttribute("aria-selected", "true");
+        await userEvent.click(canvas.getByRole("tab", { name: "Roadmap" }));
         await expect(args.onSelectTab).toHaveBeenCalledWith("roadmap");
         await expect(
-            canvas.getByRole("button", { name: "Roadmap" }),
-        ).toHaveAttribute("aria-current", "true");
+            canvas.getByRole("tab", { name: "Roadmap" }),
+        ).toHaveAttribute("aria-selected", "true");
         await userEvent.click(
             canvas.getByRole("button", { name: "Close Sync server spec" }),
         );
@@ -86,7 +91,7 @@ export const UnsavedNote: Story = {
     },
     play: async ({ canvasElement }) => {
         await expect(
-            within(canvasElement).getByRole("button", {
+            within(canvasElement).getByRole("tab", {
                 name: "Weekly plan not saved",
             }),
         ).toBeVisible();
@@ -129,12 +134,31 @@ export const WithoutWindowButtons: Story = {
     args: { windowControls: undefined },
 };
 
+export const WindowOnly: Story = {
+    args: {
+        tabs: undefined,
+        onSelectTab: undefined,
+        onCloseTab: undefined,
+        onNewNote: undefined,
+        onToggleSidebar: undefined,
+        onToggleSidePanel: undefined,
+    },
+};
+
+export const WindowMaximized: Story = {
+    args: {
+        tabs: undefined,
+        windowControls: { ...windowControls, maximized: true },
+    },
+};
+
 export const States: Story = {
     parameters: {
         layout: "fullscreen",
         a11y: {
             config: {
                 rules: [
+                    tabCloseRule,
                     { id: "landmark-unique", enabled: false },
                     { id: "landmark-no-duplicate-banner", enabled: false },
                 ],

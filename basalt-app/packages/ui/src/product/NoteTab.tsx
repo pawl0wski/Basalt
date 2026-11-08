@@ -7,11 +7,19 @@ type NoteTabProps = {
     name: string;
     active: boolean;
     unsaved?: boolean;
+    tabbable?: boolean;
     onSelect: () => void;
     onClose: () => void;
 };
 
-function NoteTab({ name, active, unsaved, onSelect, onClose }: NoteTabProps) {
+function NoteTab({
+    name,
+    active,
+    unsaved,
+    tabbable = active,
+    onSelect,
+    onClose,
+}: NoteTabProps) {
     const tabRef = useRef<HTMLLIElement>(null);
 
     useEffect(() => {
@@ -26,6 +34,15 @@ function NoteTab({ name, active, unsaved, onSelect, onClose }: NoteTabProps) {
     return (
         <li
             ref={tabRef}
+            role="presentation"
+            onMouseDown={(event) => {
+                if (event.button === 1) event.preventDefault();
+            }}
+            onAuxClick={(event) => {
+                if (event.button !== 1) return;
+                event.preventDefault();
+                onClose();
+            }}
             data-active={active ? "" : undefined}
             className={cn(
                 "bs-note-tab group relative flex h-icon-button min-w-note-tab-min max-w-note-tab-max items-center rounded-control",
@@ -34,7 +51,9 @@ function NoteTab({ name, active, unsaved, onSelect, onClose }: NoteTabProps) {
         >
             <button
                 type="button"
-                aria-current={active ? "true" : undefined}
+                role="tab"
+                aria-selected={active}
+                tabIndex={tabbable ? 0 : -1}
                 onClick={onSelect}
                 className={cn(
                     "flex h-full min-w-none flex-1 items-center gap-in-group rounded-control pl-between-groups pr-in-group text-left motion-feedback focus-visible:focus-ring",

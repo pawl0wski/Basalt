@@ -5,6 +5,7 @@ Long-term memory index for AI agents. Each entry links to a full lesson file in 
 ## Index
 
 <!-- Append new lessons here as: `- YYYY-MM-DD — one-line summary — [detail](lessons/YYYY-MM-DD-slug.md)` -->
+
 - 2026-10-17 — Install and configure shadcn/ui as the actual component system, not just Tailwind and helper dependencies — [detail](lessons/2026-10-17-use-shadcn-ui-not-just-tailwind.md)
 - 2026-10-17 — Keep Rust minimal: thin Tauri host, logic in TypeScript, official plugins first — [detail](lessons/2026-10-17-minimize-rust.md)
 - 2026-10-17 — Resolve PR conflicts by rebasing onto origin/master (force-with-lease), not by merging master into the branch — [detail](lessons/2026-10-17-resolve-conflicts-with-rebase.md)
@@ -20,3 +21,12 @@ Long-term memory index for AI agents. Each entry links to a full lesson file in 
 - 2026-10-31 — Embedding a React prototype in the review engine: one stable app host moved between screen frames, listener in `useLayoutEffect`, capture the engine's heading focus, guard key handlers against portal bubbling, activate on `click`, key every timer — [detail](lessons/2026-10-31-prototype-embedding-radix-and-review-engine.md)
 - 2026-11-01 — Prototype review notes and map decisions become spec criteria with screen ids (or a recorded "not doing"); follow data-shape changes through the whole spec; ask which control a vague note means — [detail](lessons/2026-11-01-prototype-review-feeds-specs.md)
 - 2026-11-01 — After removing the New note dialog the new note was not focused and typing did nothing; test "action, then type" for every flow that opens a note — [detail](lessons/2026-11-01-focus-new-note.md)
+- 2026-11-08 — Registered Tauri fs/dialog/persisted-scope plugins; only `allow-destroy` confirmed by docs, Linux sandbox could not cargo-check and all runtime assumptions stay unverified — [detail](lessons/2026-11-08-tauri-fs-plugins-spike-setup.md)
+- 2026-11-08 — i18n keys are typed through `CustomTypeOptions` over `locales/en.json`; a bad key fails `npm run typecheck` (verified once with a temporary bad key); only containers call `useTranslation` — [detail](lessons/2026-11-08-typed-i18n-keys.md)
+- 2026-11-08 — Custom HTML title bar: `decorations: false`, window permissions, `WindowChrome` port with Tauri/memory adapters; real window behaviour is UNVERIFIED — [detail](lessons/2026-11-08-custom-window-chrome.md)
+- 2026-11-08 — Delegating a large spec by tasks with a tracker worked; recurring subagent gaps: hardcoded English in `@basalt/ui`, vitest imports in browser entries, unwired platform in `main.tsx` — [detail](lessons/2026-11-08-delegating-by-tasks-with-a-tracker.md)
+- 2026-11-08 — E2E tests raced the memory-platform `__basaltTestFs` handle after `goto`; use `gotoWelcome()` / `openWorkspaceWith()` from `e2e/support.ts` — [detail](lessons/2026-11-08-e2e-test-handle-race.md)
+- 2026-11-08 — Fakes and the memory platform do not prove real Tauri/OS behavior; keep UNVERIFIED lists and a manual desktop smoke test before calling a spec implemented — [detail](lessons/2026-11-08-what-fakes-do-not-prove.md)
+- 2026-11-08 — Autosave needs `rebase`, `pause`/`forceSave`, an immediate follow-up save without a second debounce, and a re-read before every write — [detail](lessons/2026-11-08-autosave-design-choices.md)
+- 2026-11-08 — Editor: `setText` resets undo; `markdown()` continues list markers on Enter so saved text differs from literal keystrokes — [detail](lessons/2026-11-08-editor-findings.md)
+- 2026-11-08 — Title bar must match the prototype: no title text, + button right after the last tab; compare screenshots in every state — [detail](lessons/2026-11-08-match-prototype-title-bar.md)

@@ -11,7 +11,6 @@ const meta = {
     parameters: { layout: "fullscreen" },
     args: {
         workspaceName,
-        onChangeWorkspace: fn(),
         onNewNote: fn(),
         children: (
             <NoteList
@@ -38,11 +37,10 @@ export const Playground: Story = {
     play: async ({ args, canvasElement }) => {
         const canvas = within(canvasElement);
         await userEvent.click(canvas.getByRole("button", { name: "New note" }));
-        await userEvent.click(
-            canvas.getByRole("button", { name: "Change workspace" }),
-        );
         await expect(args.onNewNote).toHaveBeenCalledTimes(1);
-        await expect(args.onChangeWorkspace).toHaveBeenCalledTimes(1);
+        await expect(
+            canvas.queryByRole("button", { name: "Change workspace" }),
+        ).toBeNull();
     },
 };
 

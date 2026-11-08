@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -79,5 +80,62 @@ describe("Dialog", () => {
         );
 
         expect(screen.getByRole("button", { name: "Save note" })).toBeTruthy();
+    });
+
+    it("moves initial focus to the element the consumer chooses", () => {
+        function Example() {
+            const cancelRef = useRef<HTMLButtonElement>(null);
+
+            return (
+                <Dialog
+                    open
+                    title="Delete note"
+                    onOpenAutoFocus={(event) => {
+                        event.preventDefault();
+                        cancelRef.current?.focus();
+                    }}
+                    footer={
+                        <>
+                            <Button ref={cancelRef} variant="ghost">
+                                Cancel
+                            </Button>
+                            <Button>Delete note</Button>
+                        </>
+                    }
+                />
+            );
+        }
+
+        render(<Example />);
+
+        expect(document.activeElement).toBe(
+            screen.getByRole("button", { name: "Cancel" }),
+        );
+    });
+
+    it("closes with Escape while focus is on a footer button", async () => {
+        const user = userEvent.setup();
+        const onOpenChange = vi.fn();
+
+        render(
+            <Dialog
+                open
+                title="Delete note"
+                onOpenChange={onOpenChange}
+                footer={<Button>Cancel</Button>}
+            />,
+        );
+        screen.getByRole("button", { name: "Cancel" }).focus();
+        await user.keyboard("{Escape}");
+
+        expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it("is an alertdialog when asked", () => {
+        render(<Dialog open role="alertdialog" title="Delete note" />);
+
+        expect(
+            screen.getByRole("alertdialog", { name: "Delete note" }),
+        ).toBeTruthy();
     });
 });

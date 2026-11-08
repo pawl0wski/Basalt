@@ -38,3 +38,20 @@ describe("Alert", () => {
         expect(screen.getByRole("button", { name: "Review" })).toBeTruthy();
     });
 });
+
+describe("Alert role override", () => {
+    it("announces a warning banner immediately when role is alert", () => {
+        render(
+            <Alert variant="warning" role="alert" title="Note changed on disk">
+                Saving is paused.
+            </Alert>,
+        );
+
+        expect(
+            screen
+                .getByRole("alert", { name: "" })
+                .getAttribute("data-variant"),
+        ).toBe("warning");
+        expect(screen.queryByRole("status")).toBeNull();
+    });
+});

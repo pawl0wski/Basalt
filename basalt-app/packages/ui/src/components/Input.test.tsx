@@ -45,4 +45,12 @@ describe("Input", () => {
             "true",
         );
     });
+
+    it("is not marked invalid by default", () => {
+        render(<Input aria-label="Note title" />);
+
+        expect(screen.getByRole("textbox").hasAttribute("aria-invalid")).toBe(
+            false,
+        );
+    });
 });

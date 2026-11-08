@@ -34,39 +34,29 @@ describe("WelcomeScreen", () => {
 });
 
 describe("NoteSidebar", () => {
-    it("shows the workspace name and reports its two actions", async () => {
+    it("shows the workspace name, reports New note and has no Change workspace button", async () => {
         const user = userEvent.setup();
-        const onChangeWorkspace = vi.fn();
         const onNewNote = vi.fn();
 
         render(
-            <NoteSidebar
-                workspaceName="Personal notes"
-                onChangeWorkspace={onChangeWorkspace}
-                onNewNote={onNewNote}
-            >
+            <NoteSidebar workspaceName="Personal notes" onNewNote={onNewNote}>
                 <p>list</p>
             </NoteSidebar>,
         );
         await user.click(screen.getByRole("button", { name: "New note" }));
-        await user.click(
-            screen.getByRole("button", { name: "Change workspace" }),
-        );
 
         expect(
             screen.getByRole("navigation", { name: "Workspace" }).textContent,
         ).toContain("Personal notes");
         expect(onNewNote).toHaveBeenCalledOnce();
-        expect(onChangeWorkspace).toHaveBeenCalledOnce();
+        expect(
+            screen.queryByRole("button", { name: "Change workspace" }),
+        ).toBeNull();
     });
 
     it("shows a notice above the list only when given", () => {
         const { rerender } = render(
-            <NoteSidebar
-                workspaceName="W"
-                onChangeWorkspace={() => {}}
-                onNewNote={() => {}}
-            >
+            <NoteSidebar workspaceName="W" onNewNote={() => {}}>
                 <p>list</p>
             </NoteSidebar>,
         );
@@ -75,7 +65,6 @@ describe("NoteSidebar", () => {
         rerender(
             <NoteSidebar
                 workspaceName="W"
-                onChangeWorkspace={() => {}}
                 onNewNote={() => {}}
                 notice="The list refreshes when the window is focused."
             >

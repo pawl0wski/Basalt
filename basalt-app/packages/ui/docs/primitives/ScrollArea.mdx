@@ -1,0 +1,88 @@
+import { Canvas, Controls, Meta } from "@storybook/addon-docs/blocks";
+import * as ScrollAreaStories from "../../src/components/ScrollArea.stories";
+
+<Meta of={ScrollAreaStories} />
+
+# ScrollArea
+
+## 1. What it is for
+
+A scroll area holds content that can be taller or wider than its box, such as the note list, and scrolls it with bars drawn from tokens.
+
+<Canvas of={ScrollAreaStories.Playground} />
+
+## 2. When to use
+
+- A list or panel with a fixed size and content of unknown length.
+- Anywhere the native bar would clash with the graphite surfaces.
+
+## 3. When not to use
+
+| Situation                | Use instead         |
+| ------------------------ | ------------------- |
+| The whole page scrolls.  | The browser scroll. |
+| The content always fits. | A plain container.  |
+| A long list of choices.  | Select or Menu.     |
+
+## 4. Anatomy
+
+1. Root: sets the size from the caller's token classes.
+2. Viewport: a focusable region with an accessible name.
+3. Bars: vertical and horizontal, `border-control` thumb, `rounded-control`, no track fill, no shadow.
+
+## 5. Variants
+
+One variant. The bars appear only when the content overflows.
+
+<Controls of={ScrollAreaStories.Playground} />
+
+## 6. States
+
+| State                    | Notes                                                |
+| ------------------------ | ---------------------------------------------------- |
+| Default                  | Bars are shown only while content overflows.         |
+| Focus                    | The viewport shows `focus-visible:focus-ring-inset`. |
+| Hover, pressed, disabled | The thumb has no state of its own.                   |
+
+## 7. Behavior and accessibility
+
+- The viewport is a `region` named by `label` and has `tabindex="0"`, so keyboard users can scroll it with arrow keys, Page Up and Page Down.
+- Give every scroll area a label that names its content ("Notes").
+- Keep the thumb visible against the surface: it uses `border-control`.
+
+## 8. Content
+
+The label is a short noun phrase. The area adds no text of its own.
+
+## 9. Responsiveness
+
+The root takes the size from its classes; use `max-w-full` so it shrinks in a narrow window.
+
+<Canvas of={ScrollAreaStories.NarrowScreen} />
+
+## 10. API
+
+| Prop        | Type        | Default  | Description                          |
+| ----------- | ----------- | -------- | ------------------------------------ |
+| `label`     | `string`    | required | Accessible name of the region.       |
+| `children`  | `ReactNode` | required | Scrolling content.                   |
+| `className` | `string`    |          | Size and surface with token classes. |
+
+## 11. Code
+
+```tsx
+import { ScrollArea } from "@basalt/ui";
+
+<ScrollArea label="Notes" className="h-sidebar w-sidebar">
+    <NoteList ... />
+</ScrollArea>
+```
+
+## 12. Do and don't
+
+- Do give it a fixed height or width; without one it does not scroll.
+- Do not nest scroll areas.
+
+## 13. Related
+
+[Skeleton](?path=/docs/primitives-skeleton--docs), [Spacing and layout](?path=/docs/foundations-spacing-and-layout--docs).
