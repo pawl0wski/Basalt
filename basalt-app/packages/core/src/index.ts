@@ -25,3 +25,12 @@ export type {
     WorkspaceRoot,
     WorkspaceSettings,
 } from "./ports";
+export { MAX_NOTE_BYTES, createNotes, isMarkdownPath } from "./notes";
+export type {
+    Eol,
+    Note,
+    NoteService,
+    OpenedNote,
+    SaveMode,
+    SaveNoteInput,
+} from "./notes";

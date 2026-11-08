@@ -198,9 +198,10 @@ export function createInMemoryWorkspaceFileSystem(
             }
             try {
                 return ok(
-                    new TextDecoder("utf-8", { fatal: true }).decode(
-                        entry.bytes,
-                    ),
+                    new TextDecoder("utf-8", {
+                        fatal: true,
+                        ignoreBOM: true,
+                    }).decode(entry.bytes),
                 );
             } catch {
                 return err({
