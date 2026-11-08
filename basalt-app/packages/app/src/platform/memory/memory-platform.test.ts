@@ -1,0 +1,181 @@
+import { beforeEach, describe, expect, it } from "vitest";
+import {
+    defaultAppSettings,
+    type WatchEvent,
+    type WorkspaceFileSystem,
+    type WorkspaceRoot,
+} from "@basalt/core";
+import { createMemoryPlatform, WORKSPACES_KEY } from "./memory-platform";
+import { installMemoryPlatform } from "./index";
+
+const ROOT = "/ws" as WorkspaceRoot;
+const bytes = (text: string) => new TextEncoder().encode(text);
+
+async function openRoot(
+    platform: ReturnType<typeof createMemoryPlatform>["platform"],
+): Promise<WorkspaceFileSystem> {
+    const opened = await platform.access.open(ROOT);
+    if (!opened.ok) throw new Error(opened.error.message);
+    return opened.value;
+}
+
+function collect(fs: WorkspaceFileSystem) {
+    const events: WatchEvent[] = [];
+    return fs
+        .watch((event) => events.push(event))
+        .then((result) => {
+            expect(result.ok).toBe(true);
+            return events;
+        });
+}
+
+describe("memory platform", () => {
+    beforeEach(() => localStorage.clear());
+
+    it("keeps saved notes and app settings across a reload", async () => {
+        const first = createMemoryPlatform(localStorage);
+        first.testFs.seedWorkspace(ROOT, { "a.md": "# A" });
+        const fs = await openRoot(first.platform);
+        await fs.writeTextAtomic("b.md" as never, "# B");
+        await first.platform.settings.save({
+            ...defaultAppSettings(),
+            lastWorkspace: ROOT,
+        });
+
+        const second = createMemoryPlatform(localStorage);
+        const reopened = await openRoot(second.platform);
+        const settings = await second.platform.settings.load();
+
+        expect(await reopened.readText("b.md" as never)).toEqual({
+            ok: true,
+            value: "# B",
+        });
+        expect(settings.ok && settings.value.lastWorkspace).toBe(ROOT);
+        expect(second.testFs.listFiles()).toEqual(["a.md", "b.md"]);
+    });
+
+    it("persists external changes and root removal", async () => {
+        const first = createMemoryPlatform(localStorage);
+        first.testFs.seedWorkspace(ROOT, { "a.md": "x" });
+        await openRoot(first.platform);
+        first.testFs.externalWrite("c.md", bytes("c"));
+        first.testFs.externalDelete("a.md");
+        const reloaded = createMemoryPlatform(localStorage);
+        await openRoot(reloaded.platform);
+        expect(reloaded.testFs.listFiles()).toEqual(["c.md"]);
+
+        first.testFs.removeRoot();
+        const gone =
+            await createMemoryPlatform(localStorage).platform.access.open(ROOT);
+        expect(gone.ok).toBe(false);
+        if (!gone.ok) expect(gone.error.code).toBe("not-found");
+    });
+
+    it("fires watch events for external changes and root loss", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        testFs.seedWorkspace(ROOT, { "a.md": "x" });
+        const events = await collect(await openRoot(platform));
+
+        testFs.externalWrite("a.md", bytes("y"));
+        testFs.externalDelete("a.md");
+        testFs.removeRoot();
+
+        expect(events).toEqual([
+            { kind: "changed", paths: ["a.md"] },
+            { kind: "changed", paths: ["a.md"] },
+            { kind: "root-lost" },
+        ]);
+    });
+
+    it("exposes the exact saved bytes", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        testFs.seedWorkspace(ROOT, {});
+        const fs = await openRoot(platform);
+        await fs.writeTextAtomic("n.md" as never, "café\r\n");
+
+        expect(Array.from(testFs.readBytes("n.md") ?? [])).toEqual(
+            Array.from(bytes("café\r\n")),
+        );
+        expect(testFs.readBytes("missing.md")).toBeNull();
+    });
+
+    it("seeds raw bytes, including invalid UTF-8", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        testFs.seedWorkspace(ROOT, { "bad.md": new Uint8Array([0xff, 0xfe]) });
+        const fs = await openRoot(platform);
+        const result = await fs.readText("bad.md" as never);
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.error.code).toBe("not-utf8");
+    });
+
+    it("returns the chosen picker result and cancels by default", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        expect(await platform.picker.pickDirectory()).toEqual({
+            ok: true,
+            value: null,
+        });
+        testFs.setPickerResult(ROOT);
+        expect(await platform.picker.pickDirectory()).toEqual({
+            ok: true,
+            value: ROOT,
+        });
+    });
+
+    it("rejects opening an unknown workspace", async () => {
+        const { platform } = createMemoryPlatform(localStorage);
+        const result = await platform.access.open(ROOT);
+        expect(result.ok).toBe(false);
+    });
+
+    it("injects a single write failure", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        testFs.seedWorkspace(ROOT, {});
+        const fs = await openRoot(platform);
+        testFs.failNextWrite();
+
+        expect((await fs.writeTextAtomic("a.md" as never, "1")).ok).toBe(false);
+        expect((await fs.writeTextAtomic("a.md" as never, "2")).ok).toBe(true);
+        expect(testFs.listFiles()).toEqual(["a.md"]);
+    });
+
+    it("applies the read-only and failWatch toggles to open workspaces", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        testFs.seedWorkspace(ROOT, {});
+        const fs = await openRoot(platform);
+
+        testFs.setReadOnly(true);
+        const write = await fs.writeTextAtomic("a.md" as never, "1");
+        expect(!write.ok && write.error.code).toBe("permission-denied");
+        testFs.setReadOnly(false);
+        expect((await fs.writeTextAtomic("a.md" as never, "1")).ok).toBe(true);
+
+        testFs.setFailWatch(true);
+        expect((await fs.watch(() => undefined)).ok).toBe(false);
+    });
+
+    it("tolerates corrupt storage", async () => {
+        localStorage.setItem(WORKSPACES_KEY, "not json");
+        localStorage.setItem("basalt.memory.settings", "{broken");
+        const { platform } = createMemoryPlatform(localStorage);
+
+        expect((await platform.access.open(ROOT)).ok).toBe(false);
+        expect(await platform.settings.load()).toEqual({
+            ok: true,
+            value: defaultAppSettings(),
+        });
+    });
+
+    it("fails clearly when a handle operation needs an open workspace", () => {
+        const { testFs } = createMemoryPlatform(localStorage);
+        expect(() => testFs.externalDelete("a.md")).toThrow(
+            "No workspace is open.",
+        );
+        expect(() => testFs.removeRoot()).toThrow("No workspace is open.");
+    });
+
+    it("installs the handle on the window", () => {
+        const target = {} as Window;
+        installMemoryPlatform(target, localStorage);
+        expect(target.__basaltTestFs?.listFiles).toBeTypeOf("function");
+    });
+});

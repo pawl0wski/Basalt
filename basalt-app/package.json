@@ -18,6 +18,7 @@
         "build-storybook": "npm run build-storybook -w packages/ui",
         "test:stories": "npm run test:stories -w packages/ui",
         "test:stories:themes": "npm run test:stories:themes -w packages/ui",
+        "check:bundle": "node scripts/check-production-bundle.mjs",
         "check:tokens": "npm run check:tokens -w packages/ui",
         "safety-net": "npm run check:tokens && npm run test:stories:themes",
         "rust:fmt": "cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check",
