@@ -7,6 +7,7 @@ export {
     WORKSPACES_KEY,
 } from "./memory-platform";
 export type { MemoryPlatform } from "./memory-platform";
+export { DEMO_WORKSPACE_FILES, DEMO_WORKSPACE_ROOT } from "./demo-workspace";
 export type { BasaltTestFs } from "./test-fs";
 
 export function installMemoryPlatform(

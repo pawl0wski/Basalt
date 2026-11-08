@@ -15,7 +15,7 @@ describe("createPlatform", () => {
         expect(window.__basaltTestFs).toBeDefined();
         expect(await platform.picker.pickDirectory()).toEqual({
             ok: true,
-            value: null,
+            value: "/demo",
         });
     });
 

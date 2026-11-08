@@ -14,6 +14,7 @@ import {
 } from "@basalt/core/testing/in-memory";
 import type { Platform } from "../platform";
 import { createMemoryWindowChrome } from "./memory-window-chrome";
+import { DEMO_WORKSPACE_FILES, DEMO_WORKSPACE_ROOT } from "./demo-workspace";
 import type { BasaltTestFs } from "./test-fs";
 
 export const WORKSPACES_KEY = "basalt.memory.workspaces";
@@ -44,7 +45,7 @@ function path(value: string): WorkspacePath {
 export function createMemoryPlatform(storage: Storage): MemoryPlatform {
     const workspaces = loadWorkspaces(storage);
     const flags = { readOnly: false, failWatch: false };
-    let pickerResult: string | null = null;
+    let pickerResult: string | null | undefined;
     let current: { root: string; fs: InMemoryWorkspaceFileSystem } | null =
         null;
 
@@ -54,6 +55,23 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
             WORKSPACES_KEY,
             JSON.stringify(Object.fromEntries(workspaces)),
         );
+    }
+
+    function seed(
+        root: string,
+        files: Readonly<Record<string, string | Uint8Array>>,
+    ): void {
+        const seeded = createInMemoryWorkspaceFileSystem();
+        for (const [name, content] of Object.entries(files)) {
+            seeded.externalWrite(
+                path(name),
+                typeof content === "string"
+                    ? new TextEncoder().encode(content)
+                    : content,
+            );
+        }
+        workspaces.set(root, seeded.getState());
+        persist();
     }
 
     function openFs(root: string, state: InMemoryState) {
@@ -110,6 +128,12 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
         },
         picker: {
             async pickDirectory() {
+                if (pickerResult === undefined) {
+                    if (!workspaces.has(DEMO_WORKSPACE_ROOT)) {
+                        seed(DEMO_WORKSPACE_ROOT, DEMO_WORKSPACE_FILES);
+                    }
+                    return ok(DEMO_WORKSPACE_ROOT as WorkspaceRoot);
+                }
                 return ok(pickerResult as WorkspaceRoot | null);
             },
         },
@@ -133,17 +157,7 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
 
     const testFs: BasaltTestFs = {
         seedWorkspace(root, files) {
-            const seeded = createInMemoryWorkspaceFileSystem();
-            for (const [name, content] of Object.entries(files)) {
-                seeded.externalWrite(
-                    path(name),
-                    typeof content === "string"
-                        ? new TextEncoder().encode(content)
-                        : content,
-                );
-            }
-            workspaces.set(root, seeded.getState());
-            persist();
+            seed(root, files);
         },
         setPickerResult(root) {
             pickerResult = root;

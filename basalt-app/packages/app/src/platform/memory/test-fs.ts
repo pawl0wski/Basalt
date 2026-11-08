@@ -3,7 +3,7 @@ export interface BasaltTestFs {
         root: string,
         files: Readonly<Record<string, string | Uint8Array>>,
     ): void;
-    setPickerResult(root: string | null): void;
+    setPickerResult(root: string | null | undefined): void;
     setReadOnly(readOnly: boolean): void;
     setFailWatch(failWatch: boolean): void;
     failNextWrite(): void;

@@ -6,6 +6,7 @@ import {
     type WorkspaceRoot,
 } from "@basalt/core";
 import { createMemoryPlatform, WORKSPACES_KEY } from "./memory-platform";
+import { DEMO_WORKSPACE_ROOT } from "./demo-workspace";
 import { installMemoryPlatform } from "./index";
 
 const ROOT = "/ws" as WorkspaceRoot;
@@ -108,17 +109,57 @@ describe("memory platform", () => {
         if (!result.ok) expect(result.error.code).toBe("not-utf8");
     });
 
-    it("returns the chosen picker result and cancels by default", async () => {
+    it("returns the chosen picker result and cancels on null", async () => {
         const { platform, testFs } = createMemoryPlatform(localStorage);
-        expect(await platform.picker.pickDirectory()).toEqual({
-            ok: true,
-            value: null,
-        });
         testFs.setPickerResult(ROOT);
         expect(await platform.picker.pickDirectory()).toEqual({
             ok: true,
             value: ROOT,
         });
+        testFs.setPickerResult(null);
+        expect(await platform.picker.pickDirectory()).toEqual({
+            ok: true,
+            value: null,
+        });
+    });
+
+    it("defaults the picker to a seeded demo workspace with nested and non-Markdown files", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        const picked = await platform.picker.pickDirectory();
+        expect(picked).toEqual({ ok: true, value: DEMO_WORKSPACE_ROOT });
+
+        const opened = await platform.access.open(DEMO_WORKSPACE_ROOT as never);
+        expect(opened.ok).toBe(true);
+        const files = testFs.listFiles();
+        expect(files).toContain("projects/Roadmap.md");
+        expect(files).toContain("attachments/readme.txt");
+        expect(files.filter((file) => file.endsWith(".md")).length).toBe(3);
+    });
+
+    it("restores the demo default when the picker result is reset to undefined", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        testFs.setPickerResult(null);
+        testFs.setPickerResult(undefined);
+        expect(await platform.picker.pickDirectory()).toEqual({
+            ok: true,
+            value: DEMO_WORKSPACE_ROOT,
+        });
+    });
+
+    it("does not overwrite an existing demo workspace when picking again", async () => {
+        const first = createMemoryPlatform(localStorage);
+        await first.platform.picker.pickDirectory();
+        const fs = await first.platform.access.open(
+            DEMO_WORKSPACE_ROOT as never,
+        );
+        if (!fs.ok) throw new Error("demo missing");
+        await fs.value.writeTextAtomic("mine.md" as never, "keep");
+
+        const second = createMemoryPlatform(localStorage);
+        await second.platform.picker.pickDirectory();
+        await second.platform.access.open(DEMO_WORKSPACE_ROOT as never);
+
+        expect(second.testFs.listFiles()).toContain("mine.md");
     });
 
     it("rejects opening an unknown workspace", async () => {

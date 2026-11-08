@@ -7,7 +7,6 @@
         "close": "Close window"
     },
     "welcome": {
-        "brand": "Basalt",
         "headline": "Make room for what matters.",
         "intro": "A space for notes, plans, and everything you want to remember. Simple files, kept where you choose.",
         "openFolder": "Open folder as workspace",
@@ -25,10 +24,25 @@
                 "title": "Private by design",
                 "description": "Your notes live on your device and remain in your control."
             }
+        },
+        "restoring": "Restoring your last workspace",
+        "openError": {
+            "title": "Could not open the folder"
+        },
+        "notices": {
+            "workspace-missing": {
+                "title": "Workspace not found",
+                "message": "Your last workspace folder could not be found. It may have been moved or deleted. Open a folder to continue."
+            },
+            "workspace-unavailable": {
+                "title": "Workspace unavailable",
+                "message": "Your last workspace folder could not be opened. Check that it still exists and that Basalt may access it, then open a folder again."
+            }
         }
     },
     "workspace": {
-        "emptyTitle": "Create your first note"
+        "emptyTitle": "Create your first note",
+        "openTitle": "Workspace open"
     },
     "notes": {
         "untitled": "Untitled",

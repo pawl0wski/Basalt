@@ -1,5 +1,5 @@
-import { BookOpen, FileText, FolderOpen, LockKeyhole } from "lucide-react";
-import { Button, Card } from "@basalt/ui";
+import { FileText, FolderOpen, LockKeyhole } from "lucide-react";
+import { Alert, Button, Card } from "@basalt/ui";
 
 const principleIcons = {
     markdown: FileText,
@@ -13,42 +13,36 @@ export type WelcomePrinciple = {
     description: string;
 };
 
+export type WelcomeMessage = {
+    title: string;
+    message: string;
+};
+
 export type WelcomeScreenProps = {
     texts: {
-        brand: string;
         headline: string;
         intro: string;
         openFolder: string;
         folderHint: string;
     };
     principles: readonly WelcomePrinciple[];
+    notice?: WelcomeMessage | null;
+    error?: WelcomeMessage | null;
+    busy?: boolean;
     onOpenFolder: () => void;
 };
 
 export function WelcomeScreen({
     texts,
     principles,
+    notice = null,
+    error = null,
+    busy = false,
     onOpenFolder,
 }: WelcomeScreenProps) {
     return (
         <div className="flex min-h-full flex-col bg-surface-editor text-text-ui">
-            <header className="mx-auto flex w-full max-w-note items-center gap-in-group px-note-x py-panel">
-                <BookOpen
-                    aria-hidden="true"
-                    className="size-icon text-icon-default"
-                />
-                <a
-                    className="rounded-control text-size-ui text-text-ui focus-visible:focus-ring"
-                    href="#home"
-                >
-                    {texts.brand}
-                </a>
-            </header>
-
-            <div
-                className="mx-auto flex w-full max-w-note flex-1 flex-col gap-section px-note-x py-section"
-                id="home"
-            >
+            <div className="mx-auto flex w-full max-w-note flex-1 flex-col gap-section px-note-x py-section">
                 <div className="flex flex-col gap-between-groups">
                     <h1 className="text-size-note-h1 text-text-note">
                         {texts.headline}
@@ -58,10 +52,23 @@ export function WelcomeScreen({
                     </p>
                 </div>
 
+                {notice ? (
+                    <Alert variant="warning" title={notice.title}>
+                        {notice.message}
+                    </Alert>
+                ) : null}
+                {error ? (
+                    <Alert variant="danger" title={error.title}>
+                        {error.message}
+                    </Alert>
+                ) : null}
+
                 <div className="flex flex-col gap-in-group">
                     <div className="flex flex-col gap-between-groups tablet:flex-row">
                         <Button
+                            aria-busy={busy}
                             className="w-full tablet:w-auto"
+                            disabled={busy}
                             onClick={onOpenFolder}
                             size="lg"
                         >
