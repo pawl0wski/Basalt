@@ -45,6 +45,7 @@ describe("AppWindow", () => {
                         },
                         sidebarOpen: true,
                         onToggleSidebar: vi.fn(),
+                        onNewNote: vi.fn(),
                         activityBar: null,
                         sidebar: null,
                         statusBar: null,
@@ -55,6 +56,29 @@ describe("AppWindow", () => {
 
         expect(screen.getByRole("tab", { name: /a/ })).toBeInTheDocument();
         expect(screen.queryByText("Basalt")).not.toBeInTheDocument();
+    });
+
+    it("creates a note from the title bar plus button", async () => {
+        const user = userEvent.setup();
+        const onNewNote = vi.fn();
+        render(
+            <AppWindow
+                {...props({
+                    workspace: {
+                        sidebarOpen: true,
+                        onToggleSidebar: vi.fn(),
+                        onNewNote,
+                        activityBar: null,
+                        sidebar: null,
+                        statusBar: null,
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole("button", { name: "New note" }));
+
+        expect(onNewNote).toHaveBeenCalledOnce();
     });
 
     it("emits each window callback from its own named button", async () => {
@@ -96,6 +120,7 @@ describe("AppWindow", () => {
         const workspace = {
             sidebarOpen: true,
             onToggleSidebar,
+            onNewNote: vi.fn(),
             activityBar: <p>activity</p>,
             sidebar: <p>sidebar</p>,
             statusBar: <p>status</p>,

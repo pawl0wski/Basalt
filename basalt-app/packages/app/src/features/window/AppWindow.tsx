@@ -18,6 +18,7 @@ export type AppWindowWorkspace = {
     tabs?: AppWindowTabs;
     sidebarOpen: boolean;
     onToggleSidebar: () => void;
+    onNewNote: () => void;
     activityBar: ReactNode;
     sidebar: ReactNode;
     statusBar: ReactNode;
@@ -55,6 +56,7 @@ export function AppWindow({
                     onCloseTab={workspace?.tabs?.onCloseTab}
                     sidebarOpen={workspace?.sidebarOpen}
                     onToggleSidebar={workspace?.onToggleSidebar}
+                    onNewNote={workspace?.onNewNote}
                     windowControls={{
                         labels,
                         maximized,

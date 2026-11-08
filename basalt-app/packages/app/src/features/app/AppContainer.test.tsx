@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StrictMode } from "react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
@@ -259,7 +259,11 @@ describe("AppContainer", () => {
             const { harness } = await openLayout();
 
             await userEvent.click(
-                screen.getByRole("button", { name: en.workspace.newNote }),
+                within(
+                    screen.getByRole("navigation", {
+                        name: en.workspace.sidebarLabel,
+                    }),
+                ).getByRole("button", { name: en.workspace.newNote }),
             );
             await screen.findByRole("option", { name: "Untitled" });
             const event = pressCtrl("n");
@@ -268,6 +272,21 @@ describe("AppContainer", () => {
             expect(event.defaultPrevented).toBe(true);
             expect(harness.notesStore.getState().activeNote).toBe(
                 "Untitled 1.md",
+            );
+        });
+
+        it("creates a note from the title bar New note button", async () => {
+            const { harness } = await openLayout();
+
+            await userEvent.click(
+                within(
+                    screen.getByRole("banner", { name: "Window title bar" }),
+                ).getByRole("button", { name: en.workspace.newNote }),
+            );
+
+            await screen.findByRole("option", { name: "Untitled" });
+            expect(harness.notesStore.getState().activeNote).toBe(
+                "Untitled.md",
             );
         });
 
@@ -287,7 +306,11 @@ describe("AppContainer", () => {
             await openLayout({ readOnly: true });
 
             await userEvent.click(
-                screen.getByRole("button", { name: en.workspace.newNote }),
+                within(
+                    screen.getByRole("navigation", {
+                        name: en.workspace.sidebarLabel,
+                    }),
+                ).getByRole("button", { name: en.workspace.newNote }),
             );
 
             expect(

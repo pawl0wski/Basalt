@@ -91,6 +91,9 @@ function AppContent() {
                     onToggleSidebar: () => {
                         setSidebarOpen((open) => !open);
                     },
+                    onNewNote: () => {
+                        void notesActions.createNote();
+                    },
                     activityBar: <WorkspaceActivityBarContainer />,
                     sidebar: <WorkspaceSidebarContainer />,
                     statusBar: <AppStatusBarContainer />,

@@ -273,7 +273,11 @@ describe("editor area and tabs", () => {
         await openApp({ "a.md": "1" });
 
         await user.click(
-            screen.getByRole("button", { name: en.workspace.newNote }),
+            within(
+                screen.getByRole("navigation", {
+                    name: en.workspace.sidebarLabel,
+                }),
+            ).getByRole("button", { name: en.workspace.newNote }),
         );
 
         const editor = await screen.findByRole("textbox", {

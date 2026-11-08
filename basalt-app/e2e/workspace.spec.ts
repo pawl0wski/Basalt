@@ -158,7 +158,10 @@ test.describe("new note", () => {
     }) => {
         await openWorkspaceWith(page, "/work/W", { "a.md": "" });
 
-        await page.getByRole("button", NEW_NOTE).click();
+        await page
+            .getByRole("navigation")
+            .getByRole("button", NEW_NOTE)
+            .click();
         await expect(
             page.getByRole("option", { name: "Untitled" }),
         ).toBeVisible();
@@ -175,6 +178,19 @@ test.describe("new note", () => {
         expect(files.sort()).toEqual(["Untitled 1.md", "Untitled.md", "a.md"]);
     });
 
+    test("the title bar plus button creates a note and opens it in a tab", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", { "a.md": "" });
+
+        await page.getByRole("banner").getByRole("button", NEW_NOTE).click();
+
+        await expect(options(page)).toHaveText(["a", "Untitled"]);
+        await expect(
+            page.getByRole("banner").getByRole("tab", { name: /Untitled/ }),
+        ).toHaveAttribute("aria-selected", "true");
+    });
+
     test("in a read-only workspace the message is shown and no entry is added", async ({
         page,
     }) => {
@@ -185,7 +201,10 @@ test.describe("new note", () => {
             { readOnly: true },
         );
 
-        await page.getByRole("button", NEW_NOTE).click();
+        await page
+            .getByRole("navigation")
+            .getByRole("button", NEW_NOTE)
+            .click();
 
         await expect(page.getByText(READ_ONLY)).toBeVisible();
         await expect(options(page)).toHaveText(["a"]);
