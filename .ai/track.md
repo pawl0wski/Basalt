@@ -36,12 +36,18 @@ Manual test checkpoint: the app still shows the welcome screen; Storybook/unit t
 Manual test checkpoint: full manual test of the app (open a workspace, create a note, type, autosave, external edits, errors) in the browser on the memory platform and, where possible, in the Tauri desktop app.
 
 - [ ] 2b.1 Workspace and note stores/actions, `restoreWorkspace`
-- [ ] 2b.2 Presentational components, containers, keymap, autosave and watcher wiring, banners, dialogs, close guard
+- [ ] 2b.2a Custom window chrome: native Tauri title bar disabled (`decorations: false`, window permissions for minimize/maximize/close/drag), HTML title bar built from the `@basalt/ui` window shell components as in `prototypes/workspace-basic`; works on the memory platform without Tauri
+- [ ] 2b.2b Welcome screen wiring: workspace store connected to the picker, open workspace, restore last workspace, notices (AC-01.4 to AC-01.6, AC-01.20, keymap module)
+- [ ] 2b.2c Workspace layout: sidebar with flat note list, empty state, live refresh via watcher and focus fallback, collapse animation, Ctrl/Cmd+N instant new note (AC-01.7 to AC-01.10)
+- [ ] 2b.2d Editor and tabs: `NoteEditor` wrapping `@basalt/editor`, open tabs with dirty dot, per-workspace tab restore (AC-01.16, AC-01.17), note error states (AC-01.15)
+- [ ] 2b.2e Autosave and status bar: autosave wiring with `SaveStatus` (AC-01.11, AC-01.19), flush on leave, Save-failed dialog (AC-01.13), Tauri close guard
+- [ ] 2b.2f External changes: clean reload, dirty conflict banner, deleted-file banner, unavailable workspace, confirmation dialogs (AC-01.12, AC-01.14, AC-01.5)
 - [ ] 2b.3 Playwright specs (memory platform), update `welcome.spec.ts`
 - [ ] 2b.4 Docs: README, lessons, run log, move spec to `implemented/`
 
 ## Notes
 
+- Owner decision (2026-11-08): the native Tauri title bar must not be visible; the window uses a custom HTML title bar like the prototype (task 2b.2a).
 - Acceptance criteria AC-01.1 to AC-01.20 come from the spec; each needs a Vitest test and a Playwright test.
 - Open issues and deviations are recorded here as they appear.
 - For 2a.2: the Tauri `readText` must keep a leading BOM (decode with `ignoreBOM: true`); note use cases detect BOM from the returned text. `listNotes` lists nested Markdown files; `createNote` is root-only and rejects dot-leading names.
