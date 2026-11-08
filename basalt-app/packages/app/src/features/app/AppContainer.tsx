@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
-import { StatusBar } from "@basalt/ui";
 import { useTranslation } from "react-i18next";
 import { useServices } from "../../useServices";
 import { useNoteTabs } from "../editor/useNoteTabs";
 import { useKeymap } from "../keymap/useKeymap";
+import { SaveFailedDialogContainer } from "../leave/SaveFailedDialogContainer";
+import { AppStatusBarContainer } from "../status/AppStatusBarContainer";
 import { WelcomeScreenContainer } from "../welcome/WelcomeScreenContainer";
 import { AppWindowContainer } from "../window/AppWindowContainer";
 import { WorkspaceActivityBarContainer } from "../workspace/WorkspaceActivityBarContainer";
@@ -12,9 +13,16 @@ import { WorkspaceMainContainer } from "../workspace/WorkspaceMainContainer";
 import { WorkspaceSidebarContainer } from "../workspace/WorkspaceSidebarContainer";
 import { StartupScreen } from "./StartupScreen";
 
-export function AppContainer() {
+function AppContent() {
     const { t } = useTranslation();
-    const { workspaceStore, workspaceActions, notesActions } = useServices();
+    const {
+        workspaceStore,
+        workspaceActions,
+        notesStore,
+        notesActions,
+        leaveActions,
+        windowChrome,
+    } = useServices();
     const status = useStore(workspaceStore, (state) => state.status);
     const [restored, setRestored] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -42,6 +50,14 @@ export function AppContainer() {
         };
     }, [workspaceActions]);
 
+    useEffect(
+        () =>
+            windowChrome.onCloseRequested(() =>
+                leaveActions.handleCloseRequest(),
+            ),
+        [windowChrome, leaveActions],
+    );
+
     const inWorkspace = restored && status === "open";
 
     useKeymap({
@@ -49,6 +65,10 @@ export function AppContainer() {
             void workspaceActions.openWorkspace();
         },
         ...(inWorkspace && {
+            save: () => {
+                const active = notesStore.getState().activeNote;
+                if (active) void notesActions.saveNow(active);
+            },
             new: () => {
                 void notesActions.createNote();
             },
@@ -73,7 +93,7 @@ export function AppContainer() {
                     },
                     activityBar: <WorkspaceActivityBarContainer />,
                     sidebar: <WorkspaceSidebarContainer />,
-                    statusBar: <StatusBar />,
+                    statusBar: <AppStatusBarContainer />,
                 }}
             >
                 <WorkspaceMainContainer />
@@ -84,5 +104,14 @@ export function AppContainer() {
         <AppWindowContainer>
             <WelcomeScreenContainer />
         </AppWindowContainer>
+    );
+}
+
+export function AppContainer() {
+    return (
+        <>
+            <AppContent />
+            <SaveFailedDialogContainer />
+        </>
     );
 }

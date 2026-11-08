@@ -5,7 +5,7 @@ import type { AppWindowTabs } from "../window/AppWindow";
 import { noteTitle } from "./note-title";
 
 export function useNoteTabs(): AppWindowTabs {
-    const { notesStore, notesActions } = useServices();
+    const { notesStore, notesActions, leaveActions } = useServices();
     const openNotes = useStore(notesStore, (state) => state.openNotes);
     const activeNote = useStore(notesStore, (state) => state.activeNote);
 
@@ -22,7 +22,7 @@ export function useNoteTabs(): AppWindowTabs {
         },
         onCloseTab: (id) => {
             const session = openNotes.find((note) => note.path === id);
-            if (session) void notesActions.closeTab(session.path);
+            if (session) void leaveActions.closeTab(session.path);
         },
     };
 }

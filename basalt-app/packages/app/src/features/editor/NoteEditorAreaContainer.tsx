@@ -1,6 +1,8 @@
 import { useStore } from "zustand";
 import { useTranslation } from "react-i18next";
 import { useServices } from "../../useServices";
+import { Button } from "@basalt/ui";
+import { ErrorBanner } from "./ErrorBanner";
 import { NoteEditor } from "./NoteEditor";
 import { NoteOpenError } from "./NoteOpenError";
 import { noteTitle } from "./note-title";
@@ -32,18 +34,45 @@ export function NoteEditorAreaContainer() {
                                 )}
                             />
                         ) : (
-                            <NoteEditor
-                                label={title}
-                                text={session.text}
-                                focusRequest={
-                                    focusRequest?.path === session.path
-                                        ? focusRequest.id
-                                        : 0
-                                }
-                                onChange={(text) => {
-                                    notesActions.updateText(session.path, text);
-                                }}
-                            />
+                            <>
+                                {session.error ? (
+                                    <ErrorBanner
+                                        title={t("notes.saveError.title")}
+                                        message={t("notes.saveError.message", {
+                                            reason: t(
+                                                `errors.${session.error.code}`,
+                                            ),
+                                        })}
+                                        action={
+                                            <Button
+                                                variant="secondary"
+                                                onClick={() => {
+                                                    void notesActions.saveNow(
+                                                        session.path,
+                                                    );
+                                                }}
+                                            >
+                                                {t("notes.saveError.retry")}
+                                            </Button>
+                                        }
+                                    />
+                                ) : null}
+                                <NoteEditor
+                                    label={title}
+                                    text={session.text}
+                                    focusRequest={
+                                        focusRequest?.path === session.path
+                                            ? focusRequest.id
+                                            : 0
+                                    }
+                                    onChange={(text) => {
+                                        notesActions.updateText(
+                                            session.path,
+                                            text,
+                                        );
+                                    }}
+                                />
+                            </>
                         )}
                     </div>
                 );

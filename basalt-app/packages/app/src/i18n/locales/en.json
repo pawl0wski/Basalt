@@ -82,6 +82,11 @@
             "message": "\"{name}\" was deleted or moved. Your unsaved changes will be lost.",
             "confirm": "Close note",
             "cancel": "Cancel"
+        },
+        "saveError": {
+            "title": "Could not save the note",
+            "message": "{reason} Your text is kept here and saving is paused.",
+            "retry": "Retry"
         }
     },
     "errors": {
@@ -99,5 +104,11 @@
         "saved": "Saved",
         "saving": "Saving…",
         "notSaved": "Not saved"
+    },
+    "saveFailed": {
+        "title": "Could not save \"{name}\"",
+        "retry": "Retry",
+        "discard": "Discard changes",
+        "cancel": "Cancel"
     }
 }

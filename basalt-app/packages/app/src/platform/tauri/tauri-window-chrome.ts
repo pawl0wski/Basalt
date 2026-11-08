@@ -3,7 +3,13 @@ import type { WindowChrome } from "../platform";
 
 type TauriWindow = Pick<
     ReturnType<typeof getCurrentWindow>,
-    "minimize" | "toggleMaximize" | "close" | "isMaximized" | "onResized"
+    | "minimize"
+    | "toggleMaximize"
+    | "close"
+    | "destroy"
+    | "isMaximized"
+    | "onResized"
+    | "onCloseRequested"
 >;
 
 function ignoreFailure(): undefined {
@@ -22,6 +28,23 @@ export function createTauriWindowChrome(
         },
         close() {
             getWindow().close().catch(ignoreFailure);
+        },
+        destroy() {
+            getWindow().destroy().catch(ignoreFailure);
+        },
+        onCloseRequested(handler) {
+            const unlisten = getWindow().onCloseRequested(async (event) => {
+                let allowed = false;
+                try {
+                    allowed = await handler();
+                } catch {
+                    allowed = false;
+                }
+                if (!allowed) event.preventDefault();
+            });
+            return () => {
+                unlisten.then((stop) => stop()).catch(ignoreFailure);
+            };
         },
         subscribeMaximized(listener) {
             const target = getWindow();

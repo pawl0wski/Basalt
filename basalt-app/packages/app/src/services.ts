@@ -4,6 +4,14 @@ import {
     createNotesStore,
     type NotesStore,
 } from "./features/notes/notes-store";
+import {
+    createLeaveActions,
+    type LeaveActions,
+} from "./features/leave/leave-actions";
+import {
+    createLeaveStore,
+    type LeaveStore,
+} from "./features/leave/leave-store";
 import { createSettingsWriter } from "./features/settings/settings-writer";
 import { createWorkspaceActions } from "./features/workspace/workspace-actions";
 import {
@@ -22,6 +30,8 @@ export type Services = {
     readonly notesStore: NotesStore;
     readonly workspaceActions: WorkspaceActions;
     readonly notesActions: NotesActions;
+    readonly leaveStore: LeaveStore;
+    readonly leaveActions: LeaveActions;
     readonly windowChrome: WindowChrome;
 };
 
@@ -52,6 +62,7 @@ export function createServices(
         autosaveDelayMs: AUTOSAVE_DELAY_MS,
         untitledName: options.untitledName,
     });
+    const leaveStore = createLeaveStore();
     const workspaceActions = createWorkspaceActions({
         store: workspaceStore,
         notes: notesActions,
@@ -60,12 +71,26 @@ export function createServices(
         settings,
         watchSchedule: options.watchSchedule ?? timeoutScheduler,
         watchDebounceMs: WATCH_DEBOUNCE_MS,
+        onFlushBlocked: (error) => {
+            leaveStore.setState({
+                pending: { kind: "change-workspace" },
+                error,
+            });
+        },
+    });
+    const leaveActions = createLeaveActions({
+        store: leaveStore,
+        notes: notesActions,
+        workspace: workspaceActions,
+        windowChrome: platform.windowChrome,
     });
     return {
         workspaceStore,
         notesStore,
         workspaceActions,
         notesActions,
+        leaveStore,
+        leaveActions,
         windowChrome: platform.windowChrome,
     };
 }

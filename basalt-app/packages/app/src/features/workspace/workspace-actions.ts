@@ -2,6 +2,7 @@ import {
     batchAffectsNoteList,
     createWorkspaceWatcher,
     ok,
+    type AppError,
     type AutosaveScheduler,
     type Result,
     type WorkspaceWatcher,
@@ -12,7 +13,7 @@ import {
 } from "@basalt/core";
 import type { NotesActions } from "../notes/notes-actions";
 import type { SettingsWriter } from "../settings/settings-writer";
-import type { WorkspaceStore } from "./workspace-store";
+import type { WorkspaceStatus, WorkspaceStore } from "./workspace-store";
 
 export type WorkspaceActionsOptions = {
     readonly store: WorkspaceStore;
@@ -22,10 +23,13 @@ export type WorkspaceActionsOptions = {
     readonly settings: SettingsWriter;
     readonly watchSchedule: AutosaveScheduler;
     readonly watchDebounceMs: number;
+    readonly onFlushBlocked?: (error: AppError) => void;
 };
 
 export type WorkspaceActions = {
     openWorkspace(): Promise<Result<void>>;
+    continueOpen(options: { readonly discard: boolean }): Promise<Result<void>>;
+    cancelOpen(): void;
     restoreWorkspace(): Promise<void>;
     leaveWorkspace(): Promise<void>;
     refreshOnFocus(): Promise<void>;
@@ -37,6 +41,7 @@ export function createWorkspaceActions(
 ): WorkspaceActions {
     const { store, notes, access, picker, settings } = options;
     let watcher: WorkspaceWatcher | null = null;
+    let held: WorkspaceRoot | null = null;
 
     async function stopWatching(): Promise<void> {
         const current = watcher;
@@ -87,8 +92,6 @@ export function createWorkspaceActions(
         root: WorkspaceRoot,
         fs: WorkspaceFileSystem,
     ): Promise<Result<void>> {
-        const flushed = await notes.flushAll();
-        if (!flushed.ok) return flushed;
         await stopWatching();
         notes.leaveWorkspace();
         await notes.enterWorkspace(root, fs);
@@ -107,6 +110,29 @@ export function createWorkspaceActions(
         return ok(undefined);
     }
 
+    async function openRoot(
+        target: WorkspaceRoot,
+        previous: WorkspaceStatus,
+        discard: boolean,
+    ): Promise<Result<void>> {
+        if (!discard) {
+            const flushed = await notes.flushAll();
+            if (!flushed.ok) {
+                held = target;
+                options.onFlushBlocked?.(flushed.error);
+                return flushed;
+            }
+        }
+        held = null;
+        store.setState({ status: "opening", error: null });
+        const opened = await access.open(target);
+        if (!opened.ok) {
+            store.setState({ status: previous, error: opened.error });
+            return opened;
+        }
+        return enter(target, opened.value);
+    }
+
     return {
         async openWorkspace() {
             const previous = store.getState().status;
@@ -117,15 +143,15 @@ export function createWorkspaceActions(
                 return picked;
             }
             if (picked.value === null) return ok(undefined);
-            store.setState({ status: "opening", error: null });
-            const opened = await access.open(picked.value);
-            if (!opened.ok) {
-                store.setState({ status: previous, error: opened.error });
-                return opened;
-            }
-            const entered = await enter(picked.value, opened.value);
-            if (!entered.ok) store.setState({ status: previous });
-            return entered;
+            return openRoot(picked.value, previous, false);
+        },
+        async continueOpen({ discard }) {
+            const target = held;
+            if (target === null) return ok(undefined);
+            return openRoot(target, store.getState().status, discard);
+        },
+        cancelOpen() {
+            held = null;
         },
         leaveWorkspace,
         handleWorkspaceLost,

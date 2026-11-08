@@ -15,6 +15,8 @@ function setup() {
         minimize: vi.fn(),
         toggleMaximize: vi.fn(),
         close: vi.fn(),
+        destroy: vi.fn(),
+        onCloseRequested: vi.fn(() => () => {}),
         subscribeMaximized: vi.fn((listener) => {
             listeners.add(listener);
             return () => listeners.delete(listener);

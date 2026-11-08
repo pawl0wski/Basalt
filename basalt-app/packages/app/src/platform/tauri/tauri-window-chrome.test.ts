@@ -7,7 +7,18 @@ function fakeWindow(initial = false) {
     const state = { maximized: initial };
     const handlers: Array<(event: Event<PhysicalSize>) => void> = [];
     const unlisten = vi.fn();
+    const closeHandlers: Array<
+        (event: { preventDefault(): void }) => Promise<void>
+    > = [];
+    const closeUnlisten = vi.fn();
     const target = {
+        destroy: vi.fn(() => Promise.resolve()),
+        onCloseRequested: vi.fn(
+            (handler: (event: { preventDefault(): void }) => Promise<void>) => {
+                closeHandlers.push(handler);
+                return Promise.resolve(closeUnlisten);
+            },
+        ),
         minimize: vi.fn(() => Promise.resolve()),
         toggleMaximize: vi.fn(() => Promise.resolve()),
         close: vi.fn(() => Promise.resolve()),
@@ -20,6 +31,12 @@ function fakeWindow(initial = false) {
     return {
         target,
         unlisten,
+        closeUnlisten,
+        async requestClose() {
+            const event = { preventDefault: vi.fn() };
+            for (const handler of closeHandlers) await handler(event);
+            return event;
+        },
         resize(maximized: boolean) {
             state.maximized = maximized;
             for (const handler of handlers) handler({} as Event<PhysicalSize>);
@@ -89,5 +106,53 @@ describe("createTauriWindowChrome", () => {
 
         expect(listener).not.toHaveBeenCalled();
         expect(win.unlisten).toHaveBeenCalledOnce();
+    });
+
+    it("destroys the window", () => {
+        const win = fakeWindow();
+
+        createTauriWindowChrome(() => win.target).destroy();
+
+        expect(win.target.destroy).toHaveBeenCalledOnce();
+    });
+
+    it("lets the window close when the close handler allows it", async () => {
+        const win = fakeWindow();
+        createTauriWindowChrome(() => win.target).onCloseRequested(() =>
+            Promise.resolve(true),
+        );
+
+        const event = await win.requestClose();
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+    });
+
+    it("prevents the close when the handler refuses or fails", async () => {
+        const refusing = fakeWindow();
+        createTauriWindowChrome(() => refusing.target).onCloseRequested(() =>
+            Promise.resolve(false),
+        );
+        const failing = fakeWindow();
+        createTauriWindowChrome(() => failing.target).onCloseRequested(() =>
+            Promise.reject(new Error("boom")),
+        );
+
+        const first = await refusing.requestClose();
+        const second = await failing.requestClose();
+
+        expect(first.preventDefault).toHaveBeenCalledOnce();
+        expect(second.preventDefault).toHaveBeenCalledOnce();
+    });
+
+    it("stops listening for close requests after unsubscribe", async () => {
+        const win = fakeWindow();
+        const stop = createTauriWindowChrome(() => win.target).onCloseRequested(
+            () => Promise.resolve(true),
+        );
+
+        stop();
+        await flush();
+
+        expect(win.closeUnlisten).toHaveBeenCalledOnce();
     });
 });

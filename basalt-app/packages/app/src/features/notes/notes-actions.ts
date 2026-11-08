@@ -36,6 +36,7 @@ export type NotesActions = {
     ): Promise<Result<void>>;
     leaveWorkspace(): void;
     flushAll(): Promise<Result<void>>;
+    retryAll(): Promise<Result<void>>;
     refreshNotes(): Promise<Result<void>>;
     openNote(
         path: WorkspacePath,
@@ -220,6 +221,11 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             result = await addSession(active, path);
             if (!findSession(path)) return result;
         }
+        const previous = store.getState().activeNote;
+        const leaving = previous === null ? undefined : findSession(previous);
+        if (previous !== path && leaving && isDirty(leaving)) {
+            void autosaves.get(leaving.path)?.flush();
+        }
         store.setState((state) => ({
             activeNote: path,
             focusRequest:
@@ -287,6 +293,22 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             const dirty = store.getState().openNotes.filter(isDirty);
             const results = await Promise.all(
                 dirty.map((note) => autosaves.get(note.path)?.flush()),
+            );
+            for (const result of results) {
+                if (result && !result.ok) return result;
+            }
+            return ok(undefined);
+        },
+        async retryAll() {
+            const dirty = store.getState().openNotes.filter(isDirty);
+            const results = await Promise.all(
+                dirty.map((note) => {
+                    const autosave = autosaves.get(note.path);
+                    if (!autosave) return undefined;
+                    return autosave.getError()
+                        ? autosave.resume()
+                        : autosave.flush();
+                }),
             );
             for (const result of results) {
                 if (result && !result.ok) return result;

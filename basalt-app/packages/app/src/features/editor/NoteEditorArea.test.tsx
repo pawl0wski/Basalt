@@ -238,8 +238,11 @@ describe("editor area and tabs", () => {
         await user.click(screen.getByRole("button", { name: "Close a" }));
         await settle();
 
-        expect(tabs()).toHaveLength(1);
-        expect(screen.getByRole("textbox", { name: "a" })).toBeInTheDocument();
+        expect(screen.getAllByRole("tab", { hidden: true })).toHaveLength(1);
+        expect(
+            screen.getByRole("textbox", { name: "a", hidden: true }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole("alertdialog")).toBeInTheDocument();
     });
 
     it("moves between tabs with the arrow keys", async () => {

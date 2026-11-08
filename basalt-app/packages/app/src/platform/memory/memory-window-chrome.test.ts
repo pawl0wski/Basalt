@@ -13,3 +13,17 @@ it("ignores window commands and never reports a maximized change", () => {
     }).not.toThrow();
     expect(listener).not.toHaveBeenCalled();
 });
+
+it("runs close handlers when close is requested and stops after unsubscribe", async () => {
+    const chrome = createMemoryWindowChrome();
+    const handler = vi.fn(() => Promise.resolve(true));
+    const stop = chrome.onCloseRequested(handler);
+
+    chrome.close();
+    stop();
+    chrome.close();
+    await Promise.resolve();
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(() => chrome.destroy()).not.toThrow();
+});

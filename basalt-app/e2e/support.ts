@@ -8,6 +8,7 @@ export type TestFs = {
     setPickerResult(root: string | null | undefined): void;
     setReadOnly(readOnly: boolean): void;
     setFailWatch(failWatch: boolean): void;
+    failNextWrite(): void;
     listFiles(): string[];
     readBytes(path: string): Uint8Array | null;
     externalWrite(path: string, bytes: Uint8Array): void;
@@ -102,4 +103,19 @@ export async function readSavedText(
 ): Promise<string | null> {
     const bytes = await readSavedBytes(page, path);
     return bytes ? new TextDecoder().decode(Uint8Array.from(bytes)) : null;
+}
+
+export async function failNextWrite(page: Page): Promise<void> {
+    await page.evaluate(() => {
+        window.__basaltTestFs?.failNextWrite();
+    });
+}
+
+export async function setReadOnly(
+    page: Page,
+    readOnly: boolean,
+): Promise<void> {
+    await page.evaluate((value) => {
+        window.__basaltTestFs?.setReadOnly(value);
+    }, readOnly);
 }

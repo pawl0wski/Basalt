@@ -15,7 +15,7 @@ import {
     type InMemoryWorkspaceFileSystem,
     type InMemoryWorkspaceFileSystemOptions,
 } from "@basalt/core/testing";
-import type { Platform } from "../platform/platform";
+import type { Platform, WindowChrome } from "../platform/platform";
 import { createServices, type Services } from "../services";
 
 export function wsPath(value: string): WorkspacePath {
@@ -97,6 +97,25 @@ export function createHarness(
             return Promise.resolve(ok(undefined));
         },
     };
+    const closeHandlers = new Set<() => Promise<boolean>>();
+    const windowState = { destroyed: 0 };
+    const windowChrome: WindowChrome = {
+        minimize() {},
+        toggleMaximize() {},
+        close() {
+            for (const handler of [...closeHandlers]) void handler();
+        },
+        destroy() {
+            windowState.destroyed += 1;
+        },
+        onCloseRequested(handler) {
+            closeHandlers.add(handler);
+            return () => {
+                closeHandlers.delete(handler);
+            };
+        },
+        subscribeMaximized: () => () => {},
+    };
     const platform: Platform = {
         access: {
             open(target) {
@@ -121,12 +140,7 @@ export function createHarness(
             },
         },
         settings: settingsStore,
-        windowChrome: {
-            minimize() {},
-            toggleMaximize() {},
-            close() {},
-            subscribeMaximized: () => () => {},
-        },
+        windowChrome,
     };
     const scheduler = createFakeScheduler();
     const watchScheduler = createFakeScheduler();
@@ -140,6 +154,13 @@ export function createHarness(
         scheduler,
         watchScheduler,
         saves,
+        windowState,
+        requestWindowClose: async () => {
+            const results = await Promise.all(
+                [...closeHandlers].map((handler) => handler()),
+            );
+            return results.every(Boolean);
+        },
         persisted: () => persisted,
         pick(value: WorkspaceRoot | null) {
             state.picked = value;

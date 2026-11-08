@@ -8,6 +8,8 @@ export interface WindowChrome {
     minimize(): void;
     toggleMaximize(): void;
     close(): void;
+    destroy(): void;
+    onCloseRequested(handler: () => Promise<boolean>): () => void;
     subscribeMaximized(listener: (maximized: boolean) => void): () => void;
 }
 
