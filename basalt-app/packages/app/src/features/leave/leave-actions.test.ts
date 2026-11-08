@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createHarness, root, seedFs, wsPath } from "../test-harness";
 
 const A = root("/a");
@@ -81,6 +81,22 @@ describe("closing a tab", () => {
 
         expect(leave(h).pending).toEqual({ kind: "close-tab", path: "n.md" });
         expect(h.notesStore.getState().openNotes[0]?.text).toBe("typed");
+    });
+
+    it("retry re-blocks with the error when closing the tab fails after the save", async () => {
+        const { h, fsA } = await setup();
+        h.notesActions.updateText(n, "typed");
+        fsA.failNextWrite();
+        await h.leaveActions.closeTab(n);
+        vi.spyOn(h.notesActions, "closeTab").mockResolvedValueOnce({
+            ok: false,
+            error: { code: "permission-denied", message: "read-only" },
+        });
+
+        await h.leaveActions.retry();
+
+        expect(leave(h).pending).toEqual({ kind: "close-tab", path: "n.md" });
+        expect(leave(h).error?.code).toBe("permission-denied");
     });
 
     it("discard closes the tab, drops the text and writes nothing", async () => {

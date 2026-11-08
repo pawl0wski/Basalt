@@ -111,6 +111,7 @@
         "permission-denied": "The workspace folder is read-only. Nothing was changed.",
         "already-exists": "A file with this name already exists.",
         "invalid-path": "This name or location is not valid.",
+        "not-a-file": "This is a folder, not a note, so it cannot be opened.",
         "conflict": "This note was changed on disk by another program.",
         "too-large": "This note is too large to open.",
         "not-utf8": "This file is not a UTF-8 text file and cannot be opened.",

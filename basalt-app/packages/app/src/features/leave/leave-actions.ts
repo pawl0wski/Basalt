@@ -52,7 +52,11 @@ export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
                     block(pending, saved.error);
                     return;
                 }
-                await notes.closeTab(pending.path);
+                const closed = await notes.closeTab(pending.path);
+                if (!closed.ok) {
+                    block(pending, closed.error);
+                    return;
+                }
                 clear();
                 await workspace.retryLost();
                 return;

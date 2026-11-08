@@ -23,6 +23,10 @@ describe("openErrorMessage", () => {
             en.notes.openError.symlink,
         );
         expect(openErrorMessage(t, "unknown")).toBe(en.notes.openError.unknown);
+        expect(openErrorMessage(t, "not-a-file")).toBe(en.errors["not-a-file"]);
+        expect(openErrorMessage(t, "not-a-file")).not.toBe(
+            en.notes.openError.symlink,
+        );
     });
 
     it("falls back to the shared error text for every other code", () => {
