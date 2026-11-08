@@ -43,7 +43,7 @@ Manual test checkpoint: full manual test of the app (open a workspace, create a 
 - [x] 2b.2e (close guard UNVERIFIED) Autosave and status bar: autosave wiring with `SaveStatus` (AC-01.11, AC-01.19), flush on leave, Save-failed dialog (AC-01.13), Tauri close guard
 - [x] 2b.2f External changes: clean reload, dirty conflict banner, deleted-file banner, unavailable workspace, confirmation dialogs (AC-01.12, AC-01.14, AC-01.5)
 - [x] 2b.3 Playwright specs (memory platform), update `welcome.spec.ts`
-- [ ] 2b.4 Docs: README, lessons, run log, move spec to `implemented/`
+- [x] 2b.4 Docs: README, lessons, run log (spec NOT moved to `implemented/`: desktop smoke test and Rust verification outstanding; Phase 3 extracted to `.ai/specs/2026-11-08-live-preview-editor.md`)
 
 ## Notes
 
