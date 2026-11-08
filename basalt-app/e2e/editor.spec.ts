@@ -59,7 +59,10 @@ test.describe("note editor", () => {
     }) => {
         await openWorkspaceWith(page, "/work/W", { "a.md": "x" });
 
-        await page.getByRole("banner").getByRole("button", { name: "New note" }).click();
+        await page
+            .getByRole("banner")
+            .getByRole("button", { name: "New note" })
+            .click();
         await expect(editor(page, "Untitled")).toBeFocused();
         await page.keyboard.type("typed at once");
 

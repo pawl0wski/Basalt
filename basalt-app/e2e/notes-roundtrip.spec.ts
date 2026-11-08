@@ -48,7 +48,10 @@ test.describe("create, edit and save", () => {
     }) => {
         await openWorkspaceWith(page, "/work/W", { "a.md": "x" });
 
-        await page.getByRole("banner").getByRole("button", { name: "New note" }).click();
+        await page
+            .getByRole("banner")
+            .getByRole("button", { name: "New note" })
+            .click();
         await expect(editor(page, "Untitled")).toBeFocused();
         await page.keyboard.type("# Heading\n\nbody text");
         await expect(saveState(page)).toHaveText("Saved", { timeout: 5000 });
