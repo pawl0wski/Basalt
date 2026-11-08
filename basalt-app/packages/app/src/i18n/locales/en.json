@@ -1,4 +1,11 @@
 {
+    "window": {
+        "title": "Basalt",
+        "minimize": "Minimize window",
+        "maximize": "Maximize window",
+        "restore": "Restore window",
+        "close": "Close window"
+    },
     "welcome": {
         "brand": "Basalt",
         "headline": "Make room for what matters.",

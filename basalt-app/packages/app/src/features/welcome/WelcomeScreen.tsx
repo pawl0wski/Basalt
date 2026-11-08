@@ -31,7 +31,7 @@ export function WelcomeScreen({
     onOpenFolder,
 }: WelcomeScreenProps) {
     return (
-        <div className="flex min-h-svh flex-col bg-surface-editor text-text-ui">
+        <div className="flex min-h-full flex-col bg-surface-editor text-text-ui">
             <header className="mx-auto flex w-full max-w-note items-center gap-in-group px-note-x py-panel">
                 <BookOpen
                     aria-hidden="true"
@@ -45,7 +45,7 @@ export function WelcomeScreen({
                 </a>
             </header>
 
-            <main
+            <div
                 className="mx-auto flex w-full max-w-note flex-1 flex-col gap-section px-note-x py-section"
                 id="home"
             >
@@ -98,7 +98,7 @@ export function WelcomeScreen({
                         );
                     })}
                 </Card>
-            </main>
+            </div>
         </div>
     );
 }

@@ -51,7 +51,7 @@ function SelectableTitleBar(props: ComponentProps<typeof TitleBar>) {
             {...props}
             activeTabId={activeTabId}
             onSelectTab={(id) => {
-                props.onSelectTab(id);
+                props.onSelectTab?.(id);
                 setActiveTabId(id);
             }}
         />
@@ -127,6 +127,26 @@ export const TooManyNotes: Story = {
 
 export const WithoutWindowButtons: Story = {
     args: { windowControls: undefined },
+};
+
+export const WindowOnly: Story = {
+    args: {
+        title: "Basalt",
+        tabs: undefined,
+        onSelectTab: undefined,
+        onCloseTab: undefined,
+        onNewNote: undefined,
+        onToggleSidebar: undefined,
+        onToggleSidePanel: undefined,
+    },
+};
+
+export const WindowMaximized: Story = {
+    args: {
+        title: "Basalt",
+        tabs: undefined,
+        windowControls: { ...windowControls, maximized: true },
+    },
 };
 
 export const States: Story = {

@@ -12,7 +12,7 @@ import {
 } from "./features/workspace/workspace-store";
 import type { NotesActions } from "./features/notes/notes-actions";
 import type { WorkspaceActions } from "./features/workspace/workspace-actions";
-import type { Platform } from "./platform/platform";
+import type { Platform, WindowChrome } from "./platform/platform";
 
 export const AUTOSAVE_DELAY_MS = 1000;
 
@@ -21,6 +21,7 @@ export type Services = {
     readonly notesStore: NotesStore;
     readonly workspaceActions: WorkspaceActions;
     readonly notesActions: NotesActions;
+    readonly windowChrome: WindowChrome;
 };
 
 export type ServicesOptions = {
@@ -56,5 +57,11 @@ export function createServices(
         picker: platform.picker,
         settings,
     });
-    return { workspaceStore, notesStore, workspaceActions, notesActions };
+    return {
+        workspaceStore,
+        notesStore,
+        workspaceActions,
+        notesActions,
+        windowChrome: platform.windowChrome,
+    };
 }

@@ -79,6 +79,7 @@ export { TitleBar } from "./product/TitleBar";
 export type {
     TitleBarProps,
     TitleBarTab,
+    WindowControlLabels,
     WindowControls,
 } from "./product/TitleBar";
 export { WelcomeScreen } from "./product/WelcomeScreen";

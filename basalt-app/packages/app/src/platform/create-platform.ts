@@ -1,5 +1,6 @@
 import {
     createTauriAppSettingsStore,
+    createTauriWindowChrome,
     createTauriWorkspaceAccess,
     createTauriWorkspacePicker,
 } from "./tauri";
@@ -14,5 +15,6 @@ export async function createPlatform(): Promise<Platform> {
         access: createTauriWorkspaceAccess(),
         picker: createTauriWorkspacePicker(),
         settings: createTauriAppSettingsStore(),
+        windowChrome: createTauriWindowChrome(),
     };
 }

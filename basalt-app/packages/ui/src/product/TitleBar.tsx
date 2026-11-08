@@ -5,6 +5,7 @@ import {
     PanelLeft,
     PanelRight,
     Plus,
+    Copy,
     Square,
     X,
 } from "lucide-react";
@@ -20,20 +21,37 @@ type TitleBarTab = {
     unsaved?: boolean;
 };
 
+type WindowControlLabels = {
+    minimize: string;
+    maximize: string;
+    restore: string;
+    close: string;
+};
+
+const defaultWindowControlLabels: WindowControlLabels = {
+    minimize: "Minimize window",
+    maximize: "Maximize window",
+    restore: "Restore window",
+    close: "Close window",
+};
+
 type WindowControls = {
+    maximized?: boolean;
+    labels?: WindowControlLabels;
     onMinimize: () => void;
     onToggleMaximize: () => void;
     onClose: () => void;
 };
 
 type TitleBarProps = {
-    tabs: TitleBarTab[];
+    title?: string;
+    tabs?: TitleBarTab[];
     activeTabId?: string;
-    onSelectTab: (id: string) => void;
-    onCloseTab: (id: string) => void;
-    onNewNote: () => void;
-    onToggleSidebar: () => void;
-    onToggleSidePanel: () => void;
+    onSelectTab?: (id: string) => void;
+    onCloseTab?: (id: string) => void;
+    onNewNote?: () => void;
+    onToggleSidebar?: () => void;
+    onToggleSidePanel?: () => void;
     sidebarOpen?: boolean;
     sidePanelOpen?: boolean;
     windowControls?: WindowControls;
@@ -41,7 +59,8 @@ type TitleBarProps = {
 };
 
 function TitleBar({
-    tabs,
+    title,
+    tabs = [],
     activeTabId,
     onSelectTab,
     onCloseTab,
@@ -70,23 +89,39 @@ function TitleBar({
         return () => observer.disconnect();
     }, [tabs]);
 
+    const labels = windowControls?.labels ?? defaultWindowControlLabels;
+
     return (
         <header
             aria-label="Window title bar"
+            data-tauri-drag-region
             className={cn(
                 "bs-title-bar flex h-titlebar items-center gap-between-groups bg-surface-frame px-between-groups",
                 className,
             )}
         >
-            <IconButton
-                aria-label="Toggle sidebar"
-                aria-expanded={sidebarOpen}
-                active={sidebarOpen}
-                onClick={onToggleSidebar}
+            {onToggleSidebar ? (
+                <IconButton
+                    aria-label="Toggle sidebar"
+                    aria-expanded={sidebarOpen}
+                    active={sidebarOpen}
+                    onClick={onToggleSidebar}
+                >
+                    <PanelLeft aria-hidden="true" />
+                </IconButton>
+            ) : null}
+            <div
+                data-tauri-drag-region
+                className="flex min-w-none flex-1 items-center gap-in-group self-stretch"
             >
-                <PanelLeft aria-hidden="true" />
-            </IconButton>
-            <div className="flex min-w-none flex-1 items-center gap-in-group self-stretch">
+                {title ? (
+                    <span
+                        data-tauri-drag-region
+                        className="min-w-none flex-1 truncate px-in-group text-size-ui text-text-ui"
+                    >
+                        {title}
+                    </span>
+                ) : null}
                 {tabs.length > 0 ? (
                     <ul
                         ref={listRef}
@@ -99,8 +134,8 @@ function TitleBar({
                                 name={tab.name}
                                 active={tab.id === activeTabId}
                                 unsaved={tab.unsaved}
-                                onSelect={() => onSelectTab(tab.id)}
-                                onClose={() => onCloseTab(tab.id)}
+                                onSelect={() => onSelectTab?.(tab.id)}
+                                onClose={() => onCloseTab?.(tab.id)}
                             />
                         ))}
                     </ul>
@@ -118,41 +153,53 @@ function TitleBar({
                                 tab.id === activeTabId ? (
                                     <Check aria-hidden="true" />
                                 ) : undefined,
-                            onSelect: () => onSelectTab(tab.id),
+                            onSelect: () => onSelectTab?.(tab.id),
                         }))}
                     />
                 ) : null}
-                <IconButton aria-label="New note" onClick={onNewNote}>
-                    <Plus aria-hidden="true" />
-                </IconButton>
+                {onNewNote ? (
+                    <IconButton aria-label="New note" onClick={onNewNote}>
+                        <Plus aria-hidden="true" />
+                    </IconButton>
+                ) : null}
             </div>
             <div className="flex shrink-0 items-center gap-in-group">
-                <IconButton
-                    aria-label="Toggle right panel"
-                    aria-expanded={sidePanelOpen}
-                    active={sidePanelOpen}
-                    onClick={onToggleSidePanel}
-                >
-                    <PanelRight aria-hidden="true" />
-                </IconButton>
+                {onToggleSidePanel ? (
+                    <IconButton
+                        aria-label="Toggle right panel"
+                        aria-expanded={sidePanelOpen}
+                        active={sidePanelOpen}
+                        onClick={onToggleSidePanel}
+                    >
+                        <PanelRight aria-hidden="true" />
+                    </IconButton>
+                ) : null}
                 {windowControls ? (
                     <>
                         <IconButton
-                            aria-label="Minimize window"
+                            aria-label={labels.minimize}
                             tooltip={false}
                             onClick={windowControls.onMinimize}
                         >
                             <Minus aria-hidden="true" />
                         </IconButton>
                         <IconButton
-                            aria-label="Maximize window"
+                            aria-label={
+                                windowControls.maximized
+                                    ? labels.restore
+                                    : labels.maximize
+                            }
                             tooltip={false}
                             onClick={windowControls.onToggleMaximize}
                         >
-                            <Square aria-hidden="true" />
+                            {windowControls.maximized ? (
+                                <Copy aria-hidden="true" />
+                            ) : (
+                                <Square aria-hidden="true" />
+                            )}
                         </IconButton>
                         <IconButton
-                            aria-label="Close window"
+                            aria-label={labels.close}
                             tooltip={false}
                             onClick={windowControls.onClose}
                         >
@@ -166,4 +213,4 @@ function TitleBar({
 }
 
 export { TitleBar };
-export type { TitleBarProps, TitleBarTab, WindowControls };
+export type { TitleBarProps, TitleBarTab, WindowControlLabels, WindowControls };

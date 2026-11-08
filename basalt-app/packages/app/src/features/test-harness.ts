@@ -118,6 +118,12 @@ export function createHarness(
             },
         },
         settings: settingsStore,
+        windowChrome: {
+            minimize() {},
+            toggleMaximize() {},
+            close() {},
+            subscribeMaximized: () => () => {},
+        },
     };
     const scheduler = createFakeScheduler();
     const services: Services = createServices(platform, {

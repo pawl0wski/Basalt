@@ -1,7 +1,12 @@
+import { AppWindowContainer } from "./features/window/AppWindowContainer";
 import { WelcomeScreenContainer } from "./features/welcome/WelcomeScreenContainer";
 
 function App() {
-    return <WelcomeScreenContainer />;
+    return (
+        <AppWindowContainer>
+            <WelcomeScreenContainer />
+        </AppWindowContainer>
+    );
 }
 
 export default App;

@@ -13,6 +13,7 @@ import {
     type InMemoryWorkspaceFileSystem,
 } from "@basalt/core/testing/in-memory";
 import type { Platform } from "../platform";
+import { createMemoryWindowChrome } from "./memory-window-chrome";
 import type { BasaltTestFs } from "./test-fs";
 
 export const WORKSPACES_KEY = "basalt.memory.workspaces";
@@ -127,6 +128,7 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
                 return ok(undefined);
             },
         },
+        windowChrome: createMemoryWindowChrome(),
     };
 
     const testFs: BasaltTestFs = {

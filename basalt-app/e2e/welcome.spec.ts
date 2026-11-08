@@ -15,7 +15,7 @@ test.describe("welcome screen", () => {
         await expect(
             page.getByRole("button", { name: "Open folder as workspace" }),
         ).toBeEnabled();
-        await expect(page.getByRole("button")).toHaveCount(1);
+        await expect(page.getByRole("main").getByRole("button")).toHaveCount(1);
         await expect(
             page.getByRole("button", { name: "Create new workspace" }),
         ).toHaveCount(0);

@@ -125,6 +125,88 @@ describe("TitleBar", () => {
     });
 });
 
+describe("TitleBar window chrome", () => {
+    const windowControls = () => ({
+        onMinimize: vi.fn(),
+        onToggleMaximize: vi.fn(),
+        onClose: vi.fn(),
+    });
+
+    it("shows a title and only the controls it is given handlers for", () => {
+        render(<TitleBar title="Basalt" windowControls={windowControls()} />);
+
+        expect(screen.getByText("Basalt")).toBeTruthy();
+        expect(
+            screen.queryByRole("button", { name: "Toggle sidebar" }),
+        ).toBeNull();
+        expect(screen.queryByRole("button", { name: "New note" })).toBeNull();
+        expect(
+            screen.queryByRole("button", { name: "Toggle right panel" }),
+        ).toBeNull();
+        expect(screen.getAllByRole("button")).toHaveLength(3);
+    });
+
+    it("offers restore instead of maximize while the window is maximized", () => {
+        const { rerender } = render(
+            <TitleBar windowControls={windowControls()} />,
+        );
+        expect(
+            screen.getByRole("button", { name: "Maximize window" }),
+        ).toBeTruthy();
+
+        rerender(
+            <TitleBar
+                windowControls={{ ...windowControls(), maximized: true }}
+            />,
+        );
+
+        expect(
+            screen.getByRole("button", { name: "Restore window" }),
+        ).toBeTruthy();
+        expect(
+            screen.queryByRole("button", { name: "Maximize window" }),
+        ).toBeNull();
+    });
+
+    it("uses the labels it is given for the window buttons", () => {
+        render(
+            <TitleBar
+                windowControls={{
+                    ...windowControls(),
+                    labels: {
+                        minimize: "Minimise",
+                        maximize: "Enlarge",
+                        restore: "Shrink",
+                        close: "Quit",
+                    },
+                }}
+            />,
+        );
+
+        expect(
+            screen
+                .getAllByRole("button")
+                .map((b) => b.getAttribute("aria-label")),
+        ).toEqual(["Minimise", "Enlarge", "Quit"]);
+    });
+
+    it("marks the bar and the empty space as drag regions but not the buttons", () => {
+        render(<TitleBar title="Basalt" windowControls={windowControls()} />);
+
+        expect(
+            screen.getByRole("banner").hasAttribute("data-tauri-drag-region"),
+        ).toBe(true);
+        expect(
+            screen.getByText("Basalt").hasAttribute("data-tauri-drag-region"),
+        ).toBe(true);
+        expect(
+            screen
+                .getByRole("button", { name: "Close window" })
+                .hasAttribute("data-tauri-drag-region"),
+        ).toBe(false);
+    });
+});
+
 describe("TitleBar overflow", () => {
     afterEach(() => {
         Reflect.deleteProperty(HTMLElement.prototype, "scrollWidth");
