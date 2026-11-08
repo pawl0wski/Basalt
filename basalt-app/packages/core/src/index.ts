@@ -54,3 +54,9 @@ export type {
     WorkspaceWatcherHandlers,
     WorkspaceWatcherOptions,
 } from "./workspace-watcher";
+export {
+    APP_SETTINGS_VERSION,
+    defaultAppSettings,
+    parseAppSettings,
+    parseAppSettingsText,
+} from "./settings";

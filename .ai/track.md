@@ -17,7 +17,7 @@ Manual test checkpoint: no visible change; run `npm test` in `basalt-app` and co
 - [x] 1.4 Note use cases and `isMarkdownPath`
 - [x] 1.5 Autosave state machine
 - [x] 1.6 Workspace watcher handling
-- [ ] 1.7 Settings schema and parser for `basalt.json`
+- [x] 1.7 Settings schema and parser for `basalt.json`
 
 ## Phase 2a: Platform and building blocks (PR 2)
 
@@ -46,3 +46,4 @@ Manual test checkpoint: full manual test of the app (open a workspace, create a 
 - Open issues and deviations are recorded here as they appear.
 - For 2a.2: the Tauri `readText` must keep a leading BOM (decode with `ignoreBOM: true`); note use cases detect BOM from the returned text. `listNotes` lists nested Markdown files; `createNote` is root-only and rejects dot-leading names.
 - For 2b.1/1.6: autosave has no `rebase(text)`; a watcher reload that changes baseText needs one (or recreate the autosave). The follow-up save after an in-flight save runs immediately, without a second debounce.
+- For 2a.2: `AppSettingsStore.save` should skip writing when the file on disk has a higher version, so a downgraded app does not overwrite newer settings.
