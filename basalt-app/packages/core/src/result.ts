@@ -3,6 +3,7 @@ export const APP_ERROR_CODES = [
     "permission-denied",
     "already-exists",
     "invalid-path",
+    "not-a-file",
     "conflict",
     "too-large",
     "not-utf8",

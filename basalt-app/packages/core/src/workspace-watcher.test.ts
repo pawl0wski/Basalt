@@ -235,7 +235,7 @@ describe("resolveOpenNoteChange", () => {
         });
         expect(outcome).toMatchObject({
             kind: "error",
-            error: { code: "invalid-path" },
+            error: { code: "not-a-file" },
         });
     });
 });

@@ -1,5 +1,5 @@
 import { err, ok, type Result } from "./result";
-import type { FileEntry, WorkspaceFileSystem } from "./ports";
+import type { FileEntry, FileKind, WorkspaceFileSystem } from "./ports";
 import {
     pathKey,
     toWorkspacePath,
@@ -42,6 +42,7 @@ export interface NoteService {
 export const MAX_NOTE_BYTES = 5 * 1024 * 1024;
 
 const EXTENSION = ".md";
+const MARKDOWN_SUFFIX = /\.md$/i;
 const BOM = "﻿";
 const CRLF_COUNT = /\r\n/g;
 const LONE_LF_COUNT = /(?<!\r)\n/g;
@@ -58,7 +59,7 @@ function toNote(entry: FileEntry): Note {
     const fileName = entry.path.slice(entry.path.lastIndexOf("/") + 1);
     return {
         path: entry.path,
-        name: fileName.slice(0, fileName.length - EXTENSION.length),
+        name: fileName.replace(MARKDOWN_SUFFIX, ""),
     };
 }
 
@@ -79,7 +80,13 @@ function serialize(text: string, eol: Eol, bom: boolean): string {
     return bom ? BOM + body : body;
 }
 
-function notRegularFile(): Result<never> {
+function notRegularFile(kind: FileKind): Result<never> {
+    if (kind === "directory") {
+        return err({
+            code: "not-a-file",
+            message: "The path is a folder, not a note.",
+        });
+    }
     return err({
         code: "invalid-path",
         message: "The path is not a regular file.",
@@ -105,7 +112,7 @@ export function createNotes({ fs }: { fs: WorkspaceFileSystem }): NoteService {
     async function openNote(path: WorkspacePath): Promise<Result<OpenedNote>> {
         const stat = await fs.stat(path);
         if (!stat.ok) return stat;
-        if (stat.value.kind !== "file") return notRegularFile();
+        if (stat.value.kind !== "file") return notRegularFile(stat.value.kind);
         if (stat.value.size > MAX_NOTE_BYTES) {
             return err({
                 code: "too-large",
@@ -168,7 +175,9 @@ export function createNotes({ fs }: { fs: WorkspaceFileSystem }): NoteService {
                 return stat;
             }
         } else {
-            if (stat.value.kind !== "file") return notRegularFile();
+            if (stat.value.kind !== "file") {
+                return notRegularFile(stat.value.kind);
+            }
             const raw = await fs.readText(path);
             if (!raw.ok) return raw;
             const disk = parseDiskText(raw.value);

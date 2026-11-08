@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createAutosave, type AutosaveStatus } from "./autosave";
+import type { SaveMode } from "./notes";
 import { err, ok, type AppError, type Result } from "./result";
 
 const DELAY = 1000;
@@ -28,11 +29,14 @@ function createFakeScheduler() {
 
 function createFakeSave() {
     const calls: string[] = [];
+    const modes: SaveMode[] = [];
     const waiting: Array<(result: Result<void>) => void> = [];
     return {
         calls,
-        save(text: string) {
+        modes,
+        save(text: string, mode: SaveMode) {
             calls.push(text);
+            modes.push(mode);
             return new Promise<Result<void>>((resolve) => {
                 waiting.push(resolve);
             });
@@ -351,5 +355,72 @@ describe("createAutosave", () => {
             err({ code: "permission-denied", message: "ro" }),
         );
         expect(autosave.getStatus()).toBe("paused");
+    });
+
+    it("forceSave does not write a clean note that has no error", async () => {
+        const { saver, autosave } = setup();
+
+        expect((await autosave.forceSave()).ok).toBe(true);
+        expect((await autosave.forceSave("overwrite")).ok).toBe(true);
+
+        expect(saver.calls).toEqual([]);
+        expect(autosave.getStatus()).toBe("saved");
+    });
+
+    it("forceSave does not write after the text was reverted to the baseline", async () => {
+        const { saver, autosave } = setup();
+        autosave.change("edited");
+        autosave.change("base");
+
+        await autosave.forceSave();
+
+        expect(saver.calls).toEqual([]);
+    });
+
+    it("forceSave writes a dirty note without an error", async () => {
+        const { saver, autosave } = setup();
+        autosave.change("edited");
+
+        const forced = autosave.forceSave();
+        expect(saver.calls).toEqual(["edited"]);
+        saver.settle();
+
+        expect((await forced).ok).toBe(true);
+        expect(autosave.getStatus()).toBe("saved");
+    });
+
+    it("forceSave passes its mode only to its own save, not to a queued flush save", async () => {
+        const { scheduler, saver, autosave } = setup();
+        autosave.change("a");
+        scheduler.advance(DELAY);
+        expect(saver.modes).toEqual(["normal"]);
+        autosave.change("ab");
+        const flushed = autosave.flush();
+        const forced = autosave.forceSave("overwrite");
+
+        saver.settle();
+        await tick();
+        expect(saver.modes).toEqual(["normal", "normal"]);
+        saver.settle(err(conflict));
+        await tick();
+        expect(saver.modes).toEqual(["normal", "normal", "overwrite"]);
+        saver.settle();
+
+        expect(await flushed).toEqual(err(conflict));
+        expect((await forced).ok).toBe(true);
+        expect(autosave.getStatus()).toBe("saved");
+        expect(autosave.getError()).toBeNull();
+    });
+
+    it("forceSave with a mode saves a paused note in that mode", async () => {
+        const { saver, autosave } = setup();
+        autosave.change("mine");
+        autosave.pause(conflict);
+
+        const forced = autosave.forceSave("overwrite");
+        saver.settle();
+
+        expect((await forced).ok).toBe(true);
+        expect(saver.modes).toEqual(["overwrite"]);
     });
 });

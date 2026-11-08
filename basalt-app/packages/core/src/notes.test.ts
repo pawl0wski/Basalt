@@ -107,6 +107,11 @@ describe("suggestNoteName", () => {
         expect(notes.suggestNoteName(listed.value, "Fresh")).toBe("Fresh");
     });
 
+    it("returns an unsanitizable base name instead of looping", () => {
+        const { notes } = setup();
+        expect(notes.suggestNoteName([], "a:b")).toBe("a:b");
+    });
+
     it("compares Unicode forms equal", async () => {
         const { memory, notes } = setup();
         memory.externalWrite(path("Café.md"), encode(""));
@@ -249,12 +254,19 @@ describe("openNote", () => {
         if (!result.ok) expect(result.error.code).toBe("invalid-path");
     });
 
-    it("rejects a directory path as invalid-path", async () => {
+    it("rejects a directory path as not-a-file", async () => {
         const { memory, notes } = setup();
         memory.externalWrite(path("dir/a.md"), encode("x"));
         const result = await notes.openNote(path("dir"));
         expect(result.ok).toBe(false);
-        if (!result.ok) expect(result.error.code).toBe("invalid-path");
+        if (!result.ok) expect(result.error.code).toBe("not-a-file");
+    });
+
+    it("lists an upper-case extension without a dangling dot", async () => {
+        const { memory, notes } = setup();
+        memory.externalWrite(path("Foo.MD"), encode("x"));
+        const listed = await notes.listNotes();
+        expect(listed.ok && listed.value.map((n) => n.name)).toEqual(["Foo"]);
     });
 
     it("reports not-found for a missing note", async () => {

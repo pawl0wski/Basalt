@@ -1,3 +1,4 @@
+import type { SaveMode } from "./notes";
 import { err, ok, type AppError, type Result } from "./result";
 
 export type AutosaveStatus = "saved" | "pending" | "saving" | "paused";
@@ -9,7 +10,7 @@ export type AutosaveScheduler = (
 
 export type AutosaveOptions = {
     readonly baseText: string;
-    readonly save: (text: string) => Promise<Result<void>>;
+    readonly save: (text: string, mode: SaveMode) => Promise<Result<void>>;
     readonly schedule: AutosaveScheduler;
     readonly delayMs: number;
 };
@@ -19,7 +20,7 @@ export type Autosave = {
     flush(): Promise<Result<void>>;
     resume(): Promise<Result<void>>;
     pause(error: AppError): void;
-    forceSave(): Promise<Result<void>>;
+    forceSave(mode?: SaveMode): Promise<Result<void>>;
     rebase(text: string): void;
     dispose(): void;
     getStatus(): AutosaveStatus;
@@ -58,11 +59,11 @@ export function createAutosave(options: AutosaveOptions): Autosave {
         }, delayMs);
     }
 
-    async function saveLatest(): Promise<void> {
+    async function saveLatest(mode: SaveMode = "normal"): Promise<void> {
         const text = latestText;
         setStatus("saving");
         const startedAt = epoch;
-        const result = await save(text);
+        const result = await save(text, mode);
         inflight = null;
         if (startedAt !== epoch) return;
         if (!result.ok) {
@@ -116,13 +117,18 @@ export function createAutosave(options: AutosaveOptions): Autosave {
             error = reason;
             setStatus("paused");
         },
-        async forceSave() {
+        async forceSave(mode = "normal") {
             if (disposed) return ok(undefined);
+            const wasPaused = error !== null;
+            if (!wasPaused && latestText === baseText) return flush();
             error = null;
             clearTimer();
             while (inflight) await inflight;
-            inflight = saveLatest();
-            await inflight;
+            if (!disposed && (wasPaused || latestText !== baseText)) {
+                error = null;
+                inflight = saveLatest(mode);
+                await inflight;
+            }
             if (error) return err(error);
             return flush();
         },

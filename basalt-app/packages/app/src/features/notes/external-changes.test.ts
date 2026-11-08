@@ -333,4 +333,82 @@ describe("external changes to open notes", () => {
 
         expect(h.notesStore.getState().openNotes).toEqual([]);
     });
+
+    it("still resolves an external change when the note keeps changing while it is checked", async () => {
+        const memory = seedFs({ "n.md": "base" });
+        let interleave: (() => void) | null = null;
+        let remaining = 3;
+        const fs: typeof memory = {
+            ...memory,
+            readText: async (target) => {
+                const result = await memory.readText(target);
+                if (interleave && remaining > 0) {
+                    remaining -= 1;
+                    interleave();
+                }
+                return result;
+            },
+        };
+        const h = createHarness({ workspaces: { [A]: fs }, picked: A });
+        await h.workspaceActions.openWorkspace();
+        await h.notesActions.openNote(n);
+        let typed = 0;
+        interleave = () => {
+            typed += 1;
+            h.notesActions.updateText(n, `typed ${typed}`);
+        };
+
+        fs.externalWrite(n, bytes("theirs"));
+        await deliver(h);
+
+        expect(typed).toBe(3);
+        expect(session(h)).toMatchObject({
+            text: "typed 3",
+            error: { code: "conflict" },
+            saveStatus: "paused",
+        });
+    });
+
+    it("keeps my version while a queued save of the same note conflicts, ending with the editor text", async () => {
+        const memory = seedFs({ "n.md": "base" });
+        const gate: { release?: () => void } = {};
+        let hold = false;
+        const fs: typeof memory = {
+            ...memory,
+            writeTextAtomic: async (target, text) => {
+                const result = await memory.writeTextAtomic(target, text);
+                if (hold) {
+                    hold = false;
+                    await new Promise<void>((resolve) => {
+                        gate.release = resolve;
+                    });
+                }
+                return result;
+            },
+        };
+        const h = createHarness({ workspaces: { [A]: fs }, picked: A });
+        await h.workspaceActions.openWorkspace();
+        await h.notesActions.openNote(n);
+
+        h.notesActions.updateText(n, "v1");
+        hold = true;
+        h.scheduler.fire();
+        await settle();
+        h.notesActions.updateText(n, "v2");
+        const flushed = h.notesActions.flushAll();
+        fs.externalWrite(n, bytes("theirs"));
+        const kept = h.notesActions.keepMine(n);
+        gate.release?.();
+        await Promise.all([flushed, kept]);
+        await settle();
+
+        expect((await kept).ok).toBe(true);
+        expect(await diskText(fs)).toBe("v2");
+        expect(session(h)).toMatchObject({
+            text: "v2",
+            baseText: "v2",
+            error: null,
+            saveStatus: "saved",
+        });
+    });
 });

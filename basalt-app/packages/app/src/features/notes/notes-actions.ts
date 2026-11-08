@@ -78,6 +78,8 @@ const NO_WORKSPACE: AppError = {
     message: "No workspace is open.",
 };
 
+const EXTERNAL_CHECK_ATTEMPTS = 4;
+
 function sortKey(note: Note): string {
     return note.path.slice(0, -".md".length).toLowerCase();
 }
@@ -90,7 +92,6 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
     const { store, settings, schedule, autosaveDelayMs, untitledName } =
         options;
     const autosaves = new Map<WorkspacePath, Autosave>();
-    const nextSaveModes = new Map<WorkspacePath, SaveMode>();
     let workspace: ActiveWorkspace | null = null;
 
     function findSession(path: WorkspacePath): NoteSession | undefined {
@@ -131,11 +132,9 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             baseText: text,
             schedule,
             delayMs: autosaveDelayMs,
-            save: async (latest) => {
+            save: async (latest, mode) => {
                 const session = findSession(path);
                 if (!session) return err(NO_WORKSPACE);
-                const mode = nextSaveModes.get(path) ?? "normal";
-                nextSaveModes.delete(path);
                 const saved = await active.notes.saveNote({
                     path,
                     text: latest,
@@ -291,10 +290,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
     ): Promise<Result<void>> {
         const autosave = autosaves.get(path);
         if (!autosave) return err(NO_WORKSPACE);
-        nextSaveModes.set(path, mode);
-        const result = await autosave.forceSave();
-        nextSaveModes.delete(path);
-        return result;
+        return autosave.forceSave(mode);
     }
 
     function pauseWithError(path: WorkspacePath, error: AppError): void {
@@ -308,7 +304,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         path: WorkspacePath,
         changed: readonly WorkspacePath[],
     ): Promise<void> {
-        for (let attempt = 0; attempt < 3; attempt += 1) {
+        for (let attempt = 0; attempt < EXTERNAL_CHECK_ATTEMPTS; attempt += 1) {
             const session = findSession(path);
             if (!session || session.openFailed || !autosaves.has(path)) return;
             const change = await resolveOpenNoteChange({

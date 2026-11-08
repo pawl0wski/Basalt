@@ -14,6 +14,7 @@ function describeCode(error: AppError): string {
         case "permission-denied":
         case "already-exists":
         case "invalid-path":
+        case "not-a-file":
         case "conflict":
         case "too-large":
         case "not-utf8":
@@ -34,6 +35,7 @@ describe("AppError", () => {
             "permission-denied",
             "already-exists",
             "invalid-path",
+            "not-a-file",
             "conflict",
             "too-large",
             "not-utf8",
