@@ -41,3 +41,16 @@ export type {
     AutosaveScheduler,
     AutosaveStatus,
 } from "./autosave";
+export {
+    batchAffectsNoteList,
+    createWorkspaceWatcher,
+    resolveOpenNoteChange,
+} from "./workspace-watcher";
+export type {
+    OpenNoteChange,
+    OpenNoteChangeInput,
+    WatchMode,
+    WorkspaceWatcher,
+    WorkspaceWatcherHandlers,
+    WorkspaceWatcherOptions,
+} from "./workspace-watcher";

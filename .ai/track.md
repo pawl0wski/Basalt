@@ -16,7 +16,7 @@ Manual test checkpoint: no visible change; run `npm test` in `basalt-app` and co
 - [x] 1.3 Port interfaces, `@basalt/core/testing` in-memory file system and `describeWorkspaceFileSystemContract`
 - [x] 1.4 Note use cases and `isMarkdownPath`
 - [x] 1.5 Autosave state machine
-- [ ] 1.6 Workspace watcher handling
+- [x] 1.6 Workspace watcher handling
 - [ ] 1.7 Settings schema and parser for `basalt.json`
 
 ## Phase 2a: Platform and building blocks (PR 2)
