@@ -52,14 +52,16 @@ basalt-app/
 │   ├── app/                # Main app: routing, pages, layout, Tauri integration
 │   ├── core/               # Shared logic: file ops, markdown parsing, encryption, types
 │   ├── ui/                 # Shared UI: shadcn components, themes, design system
+│   ├── editor/             # Markdown editor on CodeMirror 6 (framework-agnostic)
 │   └── api/                # Backend API client for future sync server
 ├── package.json            # Workspace root
 └── tauri.conf.json
 ```
 
-- **`@basalt/app`** — the main application. Contains pages, routing, layout, and Tauri plugin integration through app-owned adapters (file system, dialogs, window management).
+- **`@basalt/app`** — the main application. Contains pages, routing, layout, i18n (`i18next` + `react-i18next`, typed keys, English only for now), and Tauri plugin integration through app-owned adapters (file system, dialogs, window management) under `src/platform/`. `createPlatform()` selects the Tauri platform or, for browser tests, the in-memory one (excluded from production bundles, verified by `npm run check:bundle`).
 - **`@basalt/core`** — framework-agnostic shared logic. Markdown parsing, encryption primitives, file operations, shared TypeScript types, and utility functions.
 - **`@basalt/ui`** — the design system. shadcn/ui components, theme tokens, layout primitives, and reusable UI patterns. Depends only on `@basalt/core` for types.
+- **`@basalt/editor`** — the Markdown editor built on CodeMirror 6. A leaf package: no React, no Tauri, no other `@basalt/*` dependency (enforced by ESLint). `@basalt/app` wraps it in a React component.
 - **`@basalt/api`** — HTTP client and data layer for future sync server communication. Authentication, API types, and request handling.
 
 ### Development
