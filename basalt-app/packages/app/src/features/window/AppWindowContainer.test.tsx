@@ -37,10 +37,9 @@ describe("AppWindowContainer", () => {
         await initI18n();
     });
 
-    it("renders translated title and button names", () => {
+    it("renders translated button names", () => {
         setup();
 
-        expect(screen.getByText(en.window.title)).toBeInTheDocument();
         for (const name of [
             en.window.minimize,
             en.window.maximize,

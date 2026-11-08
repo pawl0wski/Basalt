@@ -44,7 +44,6 @@ type WindowControls = {
 };
 
 type TitleBarProps = {
-    title?: string;
     tabs?: TitleBarTab[];
     activeTabId?: string;
     onSelectTab?: (id: string) => void;
@@ -59,7 +58,6 @@ type TitleBarProps = {
 };
 
 function TitleBar({
-    title,
     tabs = [],
     activeTabId,
     onSelectTab,
@@ -146,14 +144,6 @@ function TitleBar({
                 data-tauri-drag-region
                 className="flex min-w-none flex-1 items-center gap-in-group self-stretch"
             >
-                {title ? (
-                    <span
-                        data-tauri-drag-region
-                        className="min-w-none flex-1 truncate px-in-group text-size-ui text-text-ui"
-                    >
-                        {title}
-                    </span>
-                ) : null}
                 {tabs.length > 0 ? (
                     <ul
                         ref={listRef}

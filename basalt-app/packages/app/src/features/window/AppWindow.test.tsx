@@ -13,7 +13,6 @@ const labels = {
 
 function props(overrides: Partial<AppWindowProps> = {}): AppWindowProps {
     return {
-        title: "Basalt",
         labels,
         maximized: false,
         onMinimize: vi.fn(),
@@ -25,14 +24,14 @@ function props(overrides: Partial<AppWindowProps> = {}): AppWindowProps {
 }
 
 describe("AppWindow", () => {
-    it("shows the title and content", () => {
+    it("shows no title text and the content", () => {
         render(<AppWindow {...props()} />);
 
-        expect(screen.getByText("Basalt")).toBeInTheDocument();
+        expect(screen.queryByText("Basalt")).not.toBeInTheDocument();
         expect(screen.getByText("content")).toBeInTheDocument();
     });
 
-    it("hides the title while tabs are open so they sit on the left", () => {
+    it("places the new note button right after the last tab", () => {
         render(
             <AppWindow
                 {...props({
@@ -54,7 +53,14 @@ describe("AppWindow", () => {
             />,
         );
 
-        expect(screen.getByRole("tab", { name: /a/ })).toBeInTheDocument();
+        const tab = screen.getByRole("tab", { name: /a/ });
+        const plus = screen.getByRole("button", { name: "New note" });
+        expect(tab.compareDocumentPosition(plus)).toBe(
+            Node.DOCUMENT_POSITION_FOLLOWING,
+        );
+        expect(
+            screen.queryByRole("button", { name: "Toggle right panel" }),
+        ).not.toBeInTheDocument();
         expect(screen.queryByText("Basalt")).not.toBeInTheDocument();
     });
 

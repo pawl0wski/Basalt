@@ -1,17 +1,18 @@
 import { expect, test } from "@playwright/test";
+import { openWorkspaceWith } from "./support";
 
 test.describe("custom window title bar", () => {
     test.beforeEach(async ({ page }) => {
         await page.goto("/");
     });
 
-    test("shows the Basalt title bar with minimize, maximize and close", async ({
+    test("shows a title bar without title text and with minimize, maximize and close", async ({
         page,
     }) => {
         const bar = page.getByRole("banner", { name: "Window title bar" });
 
         await expect(bar).toBeVisible();
-        await expect(bar.getByText("Basalt", { exact: true })).toBeVisible();
+        await expect(bar.getByText("Basalt")).toHaveCount(0);
         await expect(
             bar.getByRole("button", { name: "Minimize window" }),
         ).toBeVisible();
@@ -66,5 +67,35 @@ test.describe("custom window title bar", () => {
         await expect(
             page.getByRole("heading", { level: 1, name: /what matters/ }),
         ).toBeVisible();
+    });
+
+    test("keeps the new note button right after the last tab with no title text", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/notes", {
+            "a.md": "",
+            "b.md": "",
+        });
+        const bar = page.getByRole("banner", { name: "Window title bar" });
+        await bar.getByRole("button", { name: "New note" }).click();
+        await bar.getByRole("button", { name: "New note" }).click();
+
+        const tabs = bar.getByRole("tab");
+        await expect(tabs).toHaveCount(2);
+        await expect(bar.getByText("Basalt")).toHaveCount(0);
+        const last = await tabs.last().boundingBox();
+        const plus = await bar
+            .getByRole("button", { name: "New note" })
+            .boundingBox();
+        const toggle = await bar
+            .getByRole("button", { name: "Toggle sidebar" })
+            .boundingBox();
+        const close = await bar
+            .getByRole("button", { name: "Close window" })
+            .boundingBox();
+        if (!last || !plus || !toggle || !close) throw new Error("no boxes");
+        expect(toggle.x).toBeLessThan(last.x);
+        expect(plus.x - (last.x + last.width)).toBeLessThan(48);
+        expect(plus.x + plus.width).toBeLessThan(close.x - 200);
     });
 });

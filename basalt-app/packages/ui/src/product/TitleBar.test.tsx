@@ -177,10 +177,10 @@ describe("TitleBar window chrome", () => {
         onClose: vi.fn(),
     });
 
-    it("shows a title and only the controls it is given handlers for", () => {
-        render(<TitleBar title="Basalt" windowControls={windowControls()} />);
+    it("shows only the controls it is given handlers for", () => {
+        render(<TitleBar windowControls={windowControls()} />);
 
-        expect(screen.getByText("Basalt")).toBeTruthy();
+        expect(screen.queryByText("Basalt")).toBeNull();
         expect(
             screen.queryByRole("button", { name: "Toggle sidebar" }),
         ).toBeNull();
@@ -236,13 +236,10 @@ describe("TitleBar window chrome", () => {
     });
 
     it("marks the bar and the empty space as drag regions but not the buttons", () => {
-        render(<TitleBar title="Basalt" windowControls={windowControls()} />);
+        render(<TitleBar windowControls={windowControls()} />);
 
         expect(
             screen.getByRole("banner").hasAttribute("data-tauri-drag-region"),
-        ).toBe(true);
-        expect(
-            screen.getByText("Basalt").hasAttribute("data-tauri-drag-region"),
         ).toBe(true);
         expect(
             screen

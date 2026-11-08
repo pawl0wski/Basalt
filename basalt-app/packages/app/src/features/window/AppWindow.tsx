@@ -25,7 +25,6 @@ export type AppWindowWorkspace = {
 };
 
 export type AppWindowProps = {
-    title: string;
     labels: WindowControlLabels;
     maximized: boolean;
     onMinimize: () => void;
@@ -36,7 +35,6 @@ export type AppWindowProps = {
 };
 
 export function AppWindow({
-    title,
     labels,
     maximized,
     onMinimize,
@@ -49,7 +47,6 @@ export function AppWindow({
         <AppShell
             titleBar={
                 <TitleBar
-                    title={workspace?.tabs?.tabs.length ? undefined : title}
                     tabs={workspace?.tabs?.tabs}
                     activeTabId={workspace?.tabs?.activeTabId}
                     onSelectTab={workspace?.tabs?.onSelectTab}

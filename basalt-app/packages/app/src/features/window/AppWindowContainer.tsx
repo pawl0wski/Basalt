@@ -21,7 +21,6 @@ export function AppWindowContainer({
 
     return (
         <AppWindow
-            title={t("window.title")}
             labels={{
                 minimize: t("window.minimize"),
                 maximize: t("window.maximize"),

@@ -136,7 +136,6 @@ export const WithoutWindowButtons: Story = {
 
 export const WindowOnly: Story = {
     args: {
-        title: "Basalt",
         tabs: undefined,
         onSelectTab: undefined,
         onCloseTab: undefined,
@@ -148,7 +147,6 @@ export const WindowOnly: Story = {
 
 export const WindowMaximized: Story = {
     args: {
-        title: "Basalt",
         tabs: undefined,
         windowControls: { ...windowControls, maximized: true },
     },
