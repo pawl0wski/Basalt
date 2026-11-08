@@ -84,7 +84,6 @@ function Workspace({
                 sidebar={
                     <NoteSidebar
                         workspaceName={workspaceName}
-                        onChangeWorkspace={noop}
                         onNewNote={noop}
                         notice={notice}
                     >

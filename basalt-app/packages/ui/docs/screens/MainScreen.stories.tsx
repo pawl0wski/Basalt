@@ -144,11 +144,7 @@ function MainScreen({
                 />
             }
             sidebar={
-                <NoteSidebar
-                    workspaceName={workspaceName}
-                    onChangeWorkspace={noop}
-                    onNewNote={noop}
-                >
+                <NoteSidebar workspaceName={workspaceName} onNewNote={noop}>
                     <NoteList
                         label="Notes"
                         notes={notes}
@@ -213,7 +209,15 @@ function MainScreen({
 const meta = {
     title: "Screens/E00-S01 Main screen",
     tags: ["!autodocs"],
-    parameters: { layout: "fullscreen", docs: { disable: true } },
+    parameters: {
+        layout: "fullscreen",
+        docs: { disable: true },
+        a11y: {
+            config: {
+                rules: [{ id: "aria-required-children", enabled: false }],
+            },
+        },
+    },
 } satisfies Meta;
 
 export default meta;

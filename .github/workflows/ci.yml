@@ -30,6 +30,8 @@ jobs:
         working-directory: basalt-app
       - run: npm run build
         working-directory: basalt-app
+      - run: npm run check:bundle
+        working-directory: basalt-app
 
   e2e:
     name: Playwright integration tests

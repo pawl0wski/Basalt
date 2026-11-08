@@ -198,6 +198,16 @@ export const catalog: CatalogEntry[] = [
         preview: <Skeleton className="w-sidebar" />,
     },
     {
+        name: "ScrollArea",
+        group: "Primitives",
+        importName: "ScrollArea",
+        summary:
+            "A named, keyboard-reachable region that scrolls with token-styled bars.",
+        use: "A list or panel whose content can be taller than its box.",
+        avoid: "Page scroll, content that always fits.",
+        docs: "primitives-scrollarea",
+    },
+    {
         name: "Tooltip",
         group: "Primitives",
         importName: "Tooltip",
@@ -315,7 +325,7 @@ export const catalog: CatalogEntry[] = [
         group: "Product",
         importName: "NoteSidebar",
         summary: "The left column of an open workspace.",
-        use: "Workspace name, New note, Change workspace, the list.",
+        use: "Workspace name, New note, the list.",
         avoid: "The welcome screen.",
         docs: "product-notesidebar",
     },

@@ -1,0 +1,132 @@
+{
+    "window": {
+        "minimize": "Minimize window",
+        "maximize": "Maximize window",
+        "restore": "Restore window",
+        "close": "Close window"
+    },
+    "welcome": {
+        "headline": "Make room for what matters.",
+        "intro": "A space for notes, plans, and everything you want to remember. Simple files, kept where you choose.",
+        "openFolder": "Open folder as workspace",
+        "folderHint": "Markdown files and attachments stay in your folder.",
+        "principles": {
+            "markdown": {
+                "title": "Plain Markdown",
+                "description": "Your notes stay as simple files you can open anywhere."
+            },
+            "workspace": {
+                "title": "Your workspace",
+                "description": "Choose a folder you already use, or create a new one."
+            },
+            "private": {
+                "title": "Private by design",
+                "description": "Your notes live on your device and remain in your control."
+            }
+        },
+        "restoring": "Restoring your last workspace",
+        "openError": {
+            "title": "Could not open the folder"
+        },
+        "notices": {
+            "workspace-missing": {
+                "title": "Workspace not found",
+                "message": "Your last workspace folder could not be found. It may have been moved or deleted. Open a folder to continue."
+            },
+            "workspace-unavailable": {
+                "title": "Workspace unavailable",
+                "message": "Your last workspace folder could not be opened. Check that it still exists and that Basalt may access it, then open a folder again."
+            }
+        }
+    },
+    "workspace": {
+        "sidebarLabel": "Workspace",
+        "notesLabel": "Notes",
+        "newNote": "New note",
+        "sections": {
+            "notes": "Notes"
+        },
+        "empty": {
+            "title": "No notes yet",
+            "description": "Notes you create are saved as Markdown files in this folder.",
+            "action": "Create your first note"
+        },
+        "listError": {
+            "title": "Notes could not be read",
+            "retry": "Retry"
+        },
+        "watchFallback": "The list refreshes when the window is focused.",
+        "noNote": {
+            "title": "No note open",
+            "description": "Select a note from the list to start writing."
+        },
+        "unavailable": {
+            "title": "The workspace folder is not available",
+            "message": "The folder was deleted or renamed. Your text is kept here and saving is paused.",
+            "retry": "Retry",
+            "changeWorkspace": "Change workspace"
+        }
+    },
+    "notes": {
+        "untitled": "Untitled",
+        "openError": {
+            "title": "This note could not be opened",
+            "too-large": "Notes over 5 MiB are not opened in the editor. The file is never changed.",
+            "not-utf8": "This file is not UTF-8 text, so Basalt does not open it. The file is never changed.",
+            "symlink": "This note is a symbolic link. Basalt does not follow symbolic links, so it is not opened and never changed.",
+            "unknown": "An unknown error stopped Basalt from opening this note. The file is never changed."
+        },
+        "confirmReload": {
+            "title": "Load the version from disk?",
+            "message": "Your unsaved changes in \"{name}\" will be lost.",
+            "confirm": "Load version from disk",
+            "cancel": "Cancel"
+        },
+        "confirmClose": {
+            "title": "Close this note?",
+            "message": "\"{name}\" was deleted or moved. Your unsaved changes will be lost.",
+            "confirm": "Close note",
+            "cancel": "Cancel"
+        },
+        "saveError": {
+            "title": "Could not save the note",
+            "message": "{reason} Your text is kept here and saving is paused.",
+            "retry": "Retry"
+        },
+        "conflict": {
+            "title": "This note changed on disk",
+            "message": "Another program changed this file while you had unsaved edits. Saving is paused until you choose.",
+            "keepMine": "Keep my version",
+            "loadFromDisk": "Load version from disk"
+        },
+        "deleted": {
+            "title": "This note was deleted or moved",
+            "message": "The file is no longer in the workspace. Saving is paused so it is not recreated by accident.",
+            "saveAgain": "Save again here",
+            "closeNote": "Close note"
+        }
+    },
+    "errors": {
+        "not-found": "The file or folder could not be found. It may have been moved or deleted.",
+        "permission-denied": "The workspace folder is read-only. Nothing was changed.",
+        "already-exists": "A file with this name already exists.",
+        "invalid-path": "This name or location is not valid.",
+        "not-a-file": "This is a folder, not a note, so it cannot be opened.",
+        "conflict": "This note was changed on disk by another program.",
+        "too-large": "This note is too large to open.",
+        "not-utf8": "This file is not a UTF-8 text file and cannot be opened.",
+        "unavailable": "The workspace folder is not available. Check that it still exists.",
+        "unknown": "Something went wrong. Nothing was changed."
+    },
+    "saveStatus": {
+        "saved": "Saved",
+        "saving": "Saving…",
+        "notSaved": "Not saved"
+    },
+    "saveFailed": {
+        "title": "Could not save \"{name}\"",
+        "retry": "Retry",
+        "discard": "Discard changes",
+        "cancel": "Cancel"
+    }
+}

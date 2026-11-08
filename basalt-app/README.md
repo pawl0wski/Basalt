@@ -11,6 +11,7 @@ See `packages/` for the monorepo packages:
 - `packages/app` — main application (Vite + React, Tauri plugin adapters)
 - `packages/core` — shared logic and types
 - `packages/ui` — shared UI components
+- `packages/editor` — Markdown editor on CodeMirror 6 (no React, Tauri or `@basalt/*` dependencies)
 - `packages/api` — backend API client
 
 ## Rust

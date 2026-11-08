@@ -26,7 +26,7 @@ The window's own title bar: the left panel toggle, the tabs of the open notes, "
 
 1. Bar: `header`, 36 px (`h-titlebar`), `surface-frame`, `px-between-groups`. [AppShell](?path=/docs/product-appshell--docs) draws a 1 px `border-divider` under it.
 2. Left panel toggle (`PanelLeft`).
-3. Note tabs: a list named "Open notes". Each tab is 28 px high (`h-icon-button`), a note icon, the name (truncated) and a close button. Elastic: up to 200 px (`note-tab-max-width`), down to 128 px (`note-tab-min-width`).
+3. Note tabs: a tab list named "Open notes". Each tab is 28 px high (`h-icon-button`), a note icon, the name (truncated) and a close button. Elastic: up to 200 px (`note-tab-max-width`), down to 128 px (`note-tab-min-width`).
 4. Open note: `surface-editor` fill, `text-note` name and a 2 px `tab-indicator` in `action-primary` at the bottom of the tab. Other tabs are transparent, `text-muted`, `state-hover` on hover.
 5. When the tabs do not fit: the extra tabs are clipped, the open tab is scrolled into view and a "Show all open notes" menu appears after the list.
 6. "New note" (`Plus`).
@@ -65,7 +65,7 @@ The matrix repeats the component, so the "unique landmark" and "one banner" acce
 
 ## 7. Behavior and accessibility
 
-- `header` named "Window title bar". The open notes are a list of buttons with `aria-current="true"` on the open one. They are not ARIA tabs, because a tab cannot hold a second button (close).
+- `header` named "Window title bar". The open notes are a `tablist` named "Open notes". Each tab is a button with `role="tab"` and `aria-selected`; only the open tab is in the tab order. Arrow Left/Right (wrapping), Home and End select and focus the neighbouring tab. The close button is a sibling of the tab, not inside it, so a tab holds no second control. axe still reports `aria-required-children` for the close buttons inside the tab list, so the TitleBar and main screen stories switch that one rule off. A middle mouse button click on a tab calls `onCloseTab`.
 - Every icon button has a name: "Toggle sidebar", "New note", `Close {name}`, "Show all open notes", "Toggle right panel", "Minimize window", "Maximize window", "Close window".
 - The window buttons have no tooltip: their names are fixed by the platform.
 - Overflow: `ResizeObserver` decides when to show the menu. The menu lists every open note and marks the open one.

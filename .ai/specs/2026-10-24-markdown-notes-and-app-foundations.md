@@ -344,7 +344,7 @@ Tests: each criterion needs a Vitest test for its logic and a Playwright test (m
 1. **Phase 1 — Core primitives (PR 1).** Errors, paths, ports, note use cases, autosave, watcher handling, in-memory FS and contract suite, settings parser. No visible change; the app keeps working.
 2. **Phase 2a — Platform and building blocks (PR 2).** Tauri plugins and capability, adapters (including watch), memory platform, `@basalt/editor` (source mode), i18n setup, `@basalt/ui` primitives. No visible change beyond what the welcome screen already shows.
 3. **Phase 2b — E01-S01 on desktop (PR 3).** Stores, workspace UI, autosave and watcher wiring, e2e, docs. Closes issue #8.
-4. **Phase 3 — Live-preview editor.** Extracted into its own spec and issue when issue #8 closes (Q1); listed here so the editor API is designed for it.
+4. **Phase 3 — Live-preview editor.** Extracted into `.ai/specs/2026-11-08-live-preview-editor.md` (Q1); listed here so the editor API is designed for it.
 
 Phases are sequential.
 
@@ -377,16 +377,11 @@ Each step is testable and leaves the app working. Vitest next to code, Playwrigh
 1. Workspace and note stores/actions; `restoreWorkspace` (last workspace, its open tabs) on launch. Tests with fake ports: open, cancel, restore failure, error mapping, dirty derivation, failure keeps text, `openNotes` and `activeNote` saved per workspace.
 2. Presentational components and containers; single welcome action; keymap; autosave wiring with `SaveStatus`; watcher wiring (live list, clean reload, dirty conflict, fallback notice); flush on leave and Save-failed dialog; Tauri window close guard; conflict and deleted-file banners.
 3. Playwright specs (memory platform): open a workspace and see Markdown files listed; create a note, type, wait for "Saved", reload and see the content, and assert the bytes through `__basaltTestFs`; read-only workspace shows the error and keeps the text (AC3); external edit of a clean open note reloads it; external edit of a dirty note shows the conflict banner; external add shows the new note in the list; deleted-file banner; save-failed dialog; last workspace and note restored; update `welcome.spec.ts`.
-4. Docs: README workspace section (local-first, nothing but notes written into the workspace), `.ai/lessons`, run log, manual smoke test results. Extract Phase 3 into its own spec and move this one to `implemented/` (Q1).
+4. Docs: README workspace section (local-first, nothing but notes written into the workspace), `.ai/lessons`, run log, manual smoke test results. Phase 3 is extracted into its own spec (Q1). Moving this spec to `implemented/` waits for the manual smoke test (see "Implementation status").
 
-### Phase 3 — Live-preview editor (to be extracted)
+### Phase 3 — Live-preview editor (extracted)
 
-The owner wants live preview in epic E01 (decision D-5 of the screen map, 2026-10-31; review of 2026-11-01: "seamless, like Obsidian"). AC-01.18 is its acceptance criterion. Whether Phase 3 stays in this spec or moves to its own spec and issue (Q1) is still open (GAP-30). Step 4 below must also assert AC-01.18: no separate input element, rendered line after the cursor leaves it, source on the cursor line.
-
-1. Theme tokens for preview styles. Test: default config unchanged.
-2. Marker-hiding decorations for headings, emphasis, strong, inline code; source shown on the active line/selection. Tests on decoration sets for given states.
-3. Links, lists, task lists, blockquotes, fenced code styling. Tests as above.
-4. Playwright: typing Markdown renders the styled result; cursor entry reveals source; saved file text is the exact source.
+Phase 3 now lives in its own draft spec, `.ai/specs/2026-11-08-live-preview-editor.md` (AC-01.18, decision D-5, editor-extension approach, bounded element list). It is not part of this spec's implementation.
 
 ### Acceptance criteria traceability (issue #8)
 
@@ -395,3 +390,13 @@ The owner wants live preview in epic E01 (decision D-5 of the screen map, 2026-1
 | Choose a directory → app opens it and lists its Markdown files  | Phase 1 step 4 listing tests; Phase 2b step 1 store tests; step 3 e2e                            |
 | Create, edit, save → `.md` file with that content exists        | Phase 1 steps 4–5; Phase 2b step 3 e2e (bytes asserted in the memory FS); manual smoke on a built desktop app |
 | Not writable → error shown, unsaved text kept (proposed)        | Phase 1 step 4; Phase 2b step 1 store test; step 3 e2e                                           |
+
+## Implementation status
+
+Status as of 2026-11-08. This spec stays `draft` and in `.ai/specs/` until the items under "Unverified" are resolved.
+
+- Done in code, with Vitest and Playwright coverage on the memory platform: Phase 1, Phase 2a, Phase 2b.
+- Phase 3 (AC-01.18, live preview) is deferred to `.ai/specs/2026-11-08-live-preview-editor.md`.
+- Partial e2e coverage: AC-01.6 (failed listing with Retry) and AC-01.15 (symlink and unknown-error messages) have Vitest only, because the memory test handle cannot fail a listing or read, or create a symlink after listing.
+- Unverified (no Rust toolchain recent enough, no GUI, no Windows in the sandbox): the Rust build, `cargo clippy` and `Cargo.lock`; real Tauri fs, dialog, watch (including root-deletion events), close-guard and window-chrome behavior; Windows; the `core:window:allow-*` permission identifiers; widening the fs scope for `$APPCONFIG` (mkdir and the temporary files of the atomic settings write).
+- Still to do: the manual desktop smoke test on a built app (Linux and Windows), whose results go in the Phase 2b PR (see "What tests can and cannot prove").

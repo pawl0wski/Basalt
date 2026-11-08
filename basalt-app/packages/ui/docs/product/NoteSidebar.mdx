@@ -7,7 +7,7 @@ import * as NoteSidebarStories from "../../src/product/NoteSidebar.stories";
 
 ## 1. What it is for
 
-The left column of an open workspace: the workspace name, "New note", "Change workspace" and the list of notes. Source: E01-S01 UI/UX.
+The left column of an open workspace: the workspace name, "New note" and the list of notes. Ctrl/Cmd+O opens the picker, so there is no "Change workspace" button (AC-01.7). Source: E01-S01 UI/UX.
 
 <Canvas of={NoteSidebarStories.Playground} />
 
@@ -24,7 +24,7 @@ The left column of an open workspace: the workspace name, "New note", "Change wo
 
 ## 4. Anatomy
 
-1. Header: workspace name (`font-ui-strong`, truncated), a "New note" icon button, a "Change workspace" ghost button, a 1 px divider below.
+1. Header: workspace name (`font-ui-strong`, truncated), a "New note" icon button, a 1 px divider below.
 2. Optional notice: an info [Alert](?path=/docs/primitives-alert--docs), for the watcher fallback ("the list refreshes when you return to this window").
 3. Content slot: normally [NoteList](?path=/docs/product-notelist--docs).
 
@@ -49,7 +49,7 @@ Only the states of its buttons and the list. No collapsed state exists in the so
 
 ## 8. Content
 
-Workspace name as the folder name. Actions are "New note" and "Change workspace".
+Workspace name as the folder name. The only action is "New note".
 
 ## 9. Responsiveness
 
@@ -57,19 +57,19 @@ Fixed 300 px at 768 px and above. Below that it fills the width, but the stacked
 
 ## 10. API
 
-`workspaceName`, `onChangeWorkspace`, `onNewNote`, `notice`, `children`, `className`.
+`workspaceName`, `onNewNote`, `label`, `newNoteLabel`, `notice`, `children`, `className`.
 
 ## 11. Code
 
 ```tsx
-<NoteSidebar workspaceName={name} onChangeWorkspace={change} onNewNote={openDialog}>
+<NoteSidebar workspaceName={name} onNewNote={create}>
     <NoteList label="Notes" notes={notes} selectedPath={path} onSelect={open} />
 </NoteSidebar>
 ```
 
 ## 12. Do and don't
 
-- Do keep the two header actions; do not add more without a spec.
+- Do keep the single header action; do not add more without a spec.
 - Don't put the notice inside the list.
 
 ## 13. Related

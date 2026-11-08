@@ -3,5 +3,33 @@
     "identifier": "default",
     "description": "Capability for the main window",
     "windows": ["main"],
-    "permissions": ["core:default", "opener:default"]
+    "permissions": [
+        "core:default",
+        "core:window:allow-destroy",
+        "core:window:allow-close",
+        "core:window:allow-minimize",
+        "core:window:allow-toggle-maximize",
+        "core:window:allow-is-maximized",
+        "core:window:allow-start-dragging",
+        "opener:default",
+        "dialog:allow-open",
+        "fs:allow-read-dir",
+        "fs:allow-read-file",
+        "fs:allow-write-file",
+        "fs:allow-rename",
+        "fs:allow-remove",
+        "fs:allow-stat",
+        "fs:allow-lstat",
+        "fs:allow-watch",
+        "fs:allow-unwatch",
+        "fs:allow-mkdir",
+        {
+            "identifier": "fs:scope",
+            "allow": [
+                { "path": "$APPCONFIG" },
+                { "path": "$APPCONFIG/basalt.json" },
+                { "path": "$APPCONFIG/basalt.json.tmp" }
+            ]
+        }
+    ]
 }

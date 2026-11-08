@@ -11,3 +11,18 @@ button,
 a {
     -webkit-tap-highlight-color: transparent;
 }
+
+.app-sidebar-collapse {
+    width: var(--bs-sidebar-width);
+    transition-property: width;
+    transition-duration: var(--bs-motion-panel-duration);
+    transition-timing-function: var(--bs-motion-ease);
+}
+
+.app-sidebar-collapse[data-open="false"] {
+    width: 0;
+}
+
+.bs-app-shell div:has(> .app-sidebar-collapse[data-open="false"]) {
+    border-width: 0;
+}
