@@ -11,7 +11,7 @@ Legend: `[ ]` todo, `[x]` done.
 
 Manual test checkpoint: no visible change; run `npm test` in `basalt-app` and confirm the app still starts and shows the welcome screen.
 
-- [ ] 1.1 `AppError`, `Result`, helpers (`ok`, `err`, `mapError`)
+- [x] 1.1 `AppError`, `Result`, helpers (`ok`, `err`, `mapError`)
 - [ ] 1.2 `toWorkspacePath`, `pathKey`, `validateNoteName`
 - [ ] 1.3 Port interfaces, `@basalt/core/testing` in-memory file system and `describeWorkspaceFileSystemContract`
 - [ ] 1.4 Note use cases and `isMarkdownPath`
