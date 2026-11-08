@@ -32,6 +32,31 @@ describe("AppWindow", () => {
         expect(screen.getByText("content")).toBeInTheDocument();
     });
 
+    it("hides the title while tabs are open so they sit on the left", () => {
+        render(
+            <AppWindow
+                {...props({
+                    workspace: {
+                        tabs: {
+                            tabs: [{ id: "a.md", name: "a" }],
+                            activeTabId: "a.md",
+                            onSelectTab: vi.fn(),
+                            onCloseTab: vi.fn(),
+                        },
+                        sidebarOpen: true,
+                        onToggleSidebar: vi.fn(),
+                        activityBar: null,
+                        sidebar: null,
+                        statusBar: null,
+                    },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole("tab", { name: /a/ })).toBeInTheDocument();
+        expect(screen.queryByText("Basalt")).not.toBeInTheDocument();
+    });
+
     it("emits each window callback from its own named button", async () => {
         const user = userEvent.setup();
         const p = props();

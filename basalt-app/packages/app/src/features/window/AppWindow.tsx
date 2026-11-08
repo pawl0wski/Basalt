@@ -48,7 +48,7 @@ export function AppWindow({
         <AppShell
             titleBar={
                 <TitleBar
-                    title={title}
+                    title={workspace?.tabs?.tabs.length ? undefined : title}
                     tabs={workspace?.tabs?.tabs}
                     activeTabId={workspace?.tabs?.activeTabId}
                     onSelectTab={workspace?.tabs?.onSelectTab}
