@@ -6,7 +6,7 @@ This file documents how work flows from ticket to merged PR in this repository. 
 
 Work enters through two paths: a free-form task brief handed to an agent, or a filed ticket. Both converge on the same review loop, the same validation gate, and the same merge gates.
 
-Before intake, the work is shaped: `om-brainstorm` turns a single idea or question into a routing decision and a brief, and the spec skills (`om-spec-writing`, `om-auto-write-spec`) turn a feature into a design document in `.ai/specs/` before anything is built. Those steps feed the table below; they are not the ticket flow itself. Repository-wide conventions for specs, run logs, and lessons live in `AGENTS.md`.
+Before intake, the work is shaped: `om-brainstorm` turns a single idea or question into a routing decision and a brief, and the spec skills (`om-spec-writing`, `om-auto-write-spec`) turn a feature into a design document in `.ai/specs/` before anything is built. Those steps feed the table below; they are not the ticket flow itself. Repository-wide conventions for specs, run logs, and lessons live in `.ai/AGENTS.md`.
 
 Pipeline labels are disabled in this repository (`labels.enabled: false`): skills skip every label operation and say so in their PR summaries. The QA gate is advisory (`qaGate: false`).
 
@@ -43,7 +43,7 @@ Agents post reviews and comments as soon as their work is done, without waiting 
 
 ## The automation contract
 
-The `om-auto-*` skills run this process unattended and are chainable: each accepts the artifact the previous one produced (an issue id, a spec path, or a PR number from the `PR: #<number> (link: <url>)` reference line) and detects work already started rather than opening a duplicate. A completed autonomous run leaves a ready (non-draft) PR with a run-summary comment and, for user-facing changes, screenshots from the working app. Autonomous runs also write a run log to `.ai/runs/` and record lessons per `AGENTS.md`.
+The `om-auto-*` skills run this process unattended and are chainable: each accepts the artifact the previous one produced (an issue id, a spec path, or a PR number from the `PR: #<number> (link: <url>)` reference line) and detects work already started rather than opening a duplicate. A completed autonomous run leaves a ready (non-draft) PR with a run-summary comment and, for user-facing changes, screenshots from the working app. Autonomous runs also write a run log to `.ai/runs/` and record lessons per `.ai/AGENTS.md`.
 
 ## Validation gate
 

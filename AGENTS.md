@@ -1,71 +1,46 @@
 # AGENTS.md
 
-## Project Overview
+Basalt is a local-first, end-to-end encrypted Markdown note-taking app: Tauri 2 host, React 19 + TypeScript in an npm workspace under `basalt-app/packages/` (`app`, `core`, `ui`, `editor`, `api`). Architecture and workspace model: `README.md`. Run all npm commands from `basalt-app/`.
 
-Basalt is a note-taking application. See `README.md` for the project architecture, technology choices, and workspace model.
+## Hard rules
 
-## AI Workspace Conventions
-
-All AI-generated artifacts (specifications, run logs, and lessons) live under the `.ai/` directory.
-
-### Directory Structure
-
-```
-.ai/
-├── specs/
-│   ├── YYYY-MM-DD-slug.md    # New specifications
-│   ├── implemented/          # Specifications that have been fully implemented
-│   └── archive/              # Specifications that are superseded, rejected, or no longer relevant
-├── runs/
-│   └── YYYY-MM-DD-slug.md    # Logs of AI autonomous runs
-├── lessons.md                # Index/summary of lessons learned
-└── lessons/
-    └── YYYY-MM-DD-slug.md    # Detailed lessons learned entries
-```
-
-### Naming Conventions
-
-- `YYYY-MM-DD` is the date a spec or lesson was created, or the date a run started.
-- `slug` is a short kebab-case descriptor (e.g. `sync-protocol-v2`, `fix-e2ee-key-rotation`).
-
-### Rules
-
-1. **Specifications** — Write a new spec in `.ai/specs/` before implementing a non-trivial feature. If work goes off track, stop and re-plan. When a spec is fully implemented, move it to `.ai/specs/implemented/`; when it is superseded or dropped, move it to `.ai/specs/archive/`. Do not delete spec files.
-2. **Run logs** — At the end of every autonomous AI run, write a log to `.ai/runs/` following the naming convention. Include the goal, what was done, decisions made, outcomes, and any open issues.
-3. **Lessons** — After a correction, fixing a bug, discovering a gotcha, or learning something worth remembering long-term, record it:
-   - Append a one-line summary to `.ai/lessons.md` (dated, with a link to the full entry).
-   - Write the full detail to a new file in `.ai/lessons/` following the naming convention.
-4. **Metadata** — Every spec, run log, and detailed lesson file in `.ai/` must start with the YAML front matter shown below.
-5. Use the current date (`YYYY-MM-DD`) when naming files. Never reuse an old date for new content.
-
-### Example Front Matter
-
-```yaml
----
-date: 2026-10-17 # YYYY-MM-DD creation date
-slug: sync-protocol-v2 # kebab-case slug used in the filename
-type: spec # spec | run | lesson
-status: draft # spec: draft | implemented | archived; run: completed | interrupted; lesson: active
-tags: [sync, e2ee] # relevant tags, e.g. e2ee, sync, tauri, bug
----
-```
-
-## Engineering Guidelines
-
-- When you build or change UI, read `basalt-app/packages/ui/docs/design-system.md` first: use `@basalt/ui` components and design tokens, and run `npm run check:tokens`.
-- Follow the current engineering standards specification at `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` for package boundaries, coding principles, React component/presentation patterns, testing, PRs, and CI.
-- Build current requirements only, share genuinely common rules rather than superficial similarities, and keep modules/components focused without splitting cohesive code mechanically.
-- In React, presentational components render from typed props and emit callbacks; containers/integration hooks connect state/actions. Do not add a container when a component has no application integration needs.
-- Name React component files and component folders in PascalCase (for example, `Button.tsx` and `WorkspaceStatus/`), never lowercase. Non-component files follow their package's established naming convention.
-- Validate untrusted data at runtime, avoid unjustified `any`/assertions, keep state minimal, derive values when possible, and avoid unnecessary abstractions or memoization.
-- Minimize Rust: implement features in TypeScript using official Tauri plugins. `basalt-app/src-tauri/` stays a thin host (bootstrap, plugin registration). Add custom Rust code or commands only when a plugin or TypeScript cannot do the job, and document the justification in a spec.
-- Do not add comments to code unless asked.
-- Every change must ship with unit tests (Vitest; Rust tests for native code) that guard against regressions: cover edge cases, error paths, and the exact scenario of a fixed bug; assert observable outcomes rather than implementation details; and make sure each test fails when the behavior it protects is broken. Do not add trivial tests that only exercise code without verifying anything meaningful.
-- Every new user-facing feature or workflow must also be covered by Playwright integration tests in `basalt-app/e2e/` (`npm run test:e2e`). Update the existing e2e tests when behavior changes. Integration tests run in CI and must pass there.
-- Verify changes with relevant tests, lint, and typecheck before considering the task complete. Before pushing, run the full validation gate listed in `SDLC.md`.
+- Every change ships with unit tests (Vitest; Rust tests for native code) that guard against regressions: cover edge cases, error paths, and the exact scenario of a fixed bug; assert observable outcomes; each test must fail when the behavior it protects breaks. No trivial tests.
+- Every new user-facing feature or workflow is covered by Playwright tests in `basalt-app/e2e/` (`npm run test:e2e`); update existing e2e tests when behavior changes. They must pass in CI.
+- Verify with relevant tests, lint, and typecheck before calling a task done. Before pushing, run the full validation gate in `SDLC.md`.
+- Validate untrusted data (files, IPC payloads, HTTP responses) at runtime.
 - Never commit secrets or keys. Never log or expose credentials.
+- Do not add comments to code unless asked.
+- Minimize Rust: build features in TypeScript on official Tauri plugins; custom Rust needs a spec justifying it (see `basalt-app/src-tauri/AGENTS.md`).
+- Write documentation, specs, and AI artifacts in English.
+- Write a spec in `.ai/specs/` before implementing a non-trivial feature. At the end of every autonomous run, write a run log to `.ai/runs/`. After a correction, a bug fix, or a discovered gotcha, record a lesson. Format for all three: `.ai/AGENTS.md`.
 
-## Documentation language
+## Task routing
 
-- Write and maintain repository documentation, specifications, and AI-generated artifacts in English.
-- User-facing application text should follow the product's localization requirements (see "Internationalization" in the engineering standards specification).
+Before starting, read the files listed for the task, and the listed `§` sections where given.
+
+| Task                                | Read                                                                                                                                                                                       |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Bug fix                             | `.ai/lessons.md`; `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § Testing strategy                                                                         |
+| New feature                         | `.ai/specs/backlog.md`; `.ai/AGENTS.md`; `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § Engineering standards                                             |
+| Refactor                            | `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § Code design principles, § Dependency direction; `basalt-app/eslint.config.js`; `BACKWARD_COMPATIBILITY.md` |
+| Review                              | `CODE_REVIEW.md`; `BACKWARD_COMPATIBILITY.md`                                                                                                                                              |
+| Writing a spec, run log, or lesson  | `.ai/AGENTS.md`                                                                                                                                                                            |
+| UI, components, styling             | `basalt-app/packages/ui/docs/design-system.md` (run `npm run check:tokens`)                                                                                                                |
+| React components, containers, hooks | `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § React component and presentation pattern                                                                   |
+| TypeScript style                    | `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § TypeScript and JavaScript                                                                                  |
+| User-facing text, i18n              | `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § Internationalization                                                                                       |
+| Errors and logging                  | `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § Errors and logging                                                                                         |
+| Adding a dependency                 | `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § Dependencies                                                                                               |
+| Files on disk, workspace format     | `BACKWARD_COMPATIBILITY.md`; `README.md` § Workspace Model                                                                                                                                 |
+| Playwright tests, memory platform   | `README.md` § Running the app; `basalt-app/e2e/support.ts`                                                                                                                                 |
+| Pull request, validation gate       | `SDLC.md`; `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § Pull request standards                                                                          |
+| CI                                  | `.github/workflows/ci.yml`; `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § CI standards                                                                   |
+| Product scope, backlog, screens     | `.ai/specs/product-brief.md`; `.ai/specs/backlog.md`; `prototypes/e01-screen-map.md`                                                                                                       |
+| `packages/app`                      | `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § `@basalt/app`                                                                                              |
+| `packages/core`                     | `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § `@basalt/core`                                                                                             |
+| `packages/ui`                       | `basalt-app/packages/ui/docs/design-system.md`; `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § `@basalt/ui`                                               |
+| `packages/editor`                   | `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § `@basalt/editor`                                                                                           |
+| `packages/api`                      | `.ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md` § `@basalt/api`                                                                                              |
+| `src-tauri`, Rust, capabilities     | `basalt-app/src-tauri/AGENTS.md`                                                                                                                                                           |
+
+Check routes and size budgets: `node .ai/scripts/check-agent-routes.mjs`.

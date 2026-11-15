@@ -18,7 +18,7 @@ Applied automatically by `om-code-review` and `om-auto-review-pr`. Project conve
 - **TypeScript.** Strict types; flag unjustified `any` and type assertions; state is minimal and derived values are computed, not stored; no unnecessary memoization.
 - **No code comments** unless explicitly requested.
 - **Tests are mandatory and meaningful.** Every change ships Vitest unit tests (Rust tests for native code) covering behavior, edge cases, and the exact scenario of a fixed bug; they must fail if the protected behavior breaks. Flag trivial tests that only exercise code. Every new user-facing feature or workflow also needs Playwright coverage in `basalt-app/e2e/`; changed behavior must update existing e2e tests.
-- **AI workspace artifacts.** Specs, run logs, and lessons under `.ai/` follow the naming and front-matter rules in `AGENTS.md`; specs are moved, never deleted. Documentation and AI artifacts are in English.
+- **AI workspace artifacts.** Specs, run logs, and lessons under `.ai/` follow the naming and front-matter rules in `.ai/AGENTS.md`; specs are moved, never deleted. Documentation and AI artifacts are in English.
 - **Formatting.** Prettier (`npm run format:check`) and ESLint with zero warnings.
 
 ## Validation gate
