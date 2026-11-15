@@ -22,6 +22,7 @@ jobs:
       - run: npm run format:check
         working-directory: basalt-app
       - run: npx prettier --check AGENTS.md .ai/specs/implemented/2026-10-17-engineering-standards-package-structure.md .github/workflows/ci.yml
+      - run: node .ai/scripts/check-agent-routes.mjs
       - run: npm run lint
         working-directory: basalt-app
       - run: npm run typecheck
