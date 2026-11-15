@@ -10,3 +10,4 @@ export {
     livePreview,
 } from "./livePreview";
 export type { ImageOptions, ImageSource } from "./imagePreview";
+export type { FileInputOptions } from "./fileInput";

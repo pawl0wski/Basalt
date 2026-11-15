@@ -196,7 +196,11 @@ export function installFakePluginFs(
                 fire("read_dir");
                 const path = a.path as string;
                 guard(path);
-                if (entries.get(path)?.kind !== "directory") throw NOT_FOUND;
+                const dir = entries.get(path);
+                if (!dir) throw NOT_FOUND;
+                if (dir.kind !== "directory") {
+                    throw "Not a directory (os error 20)";
+                }
                 return [...entries.entries()]
                     .filter(([key]) => parentOf(key) === path && key !== path)
                     .map(([key, entry]) => ({
@@ -211,11 +215,20 @@ export function installFakePluginFs(
                 const path = a.path as string;
                 guard(path);
                 const parts = path.slice(1).split("/");
+                const created: string[] = [];
                 for (let i = 1; i <= parts.length; i += 1) {
                     const dir = `/${parts.slice(0, i).join("/")}`;
-                    if (!entries.has(dir)) {
-                        entries.set(dir, { kind: "directory" });
+                    const existing = entries.get(dir);
+                    if (existing && existing.kind !== "directory") {
+                        throw "File exists (os error 17)";
                     }
+                    if (!existing) {
+                        entries.set(dir, { kind: "directory" });
+                        created.push(dir);
+                    }
+                }
+                if (created.length > 0) {
+                    emit({ create: { kind: "folder" } }, created);
                 }
                 return null;
             }

@@ -75,7 +75,29 @@ export type {
     ImageFormatDefinition,
     ImageInfo,
 } from "./images";
-export { resolveLinkTarget } from "./links";
+export {
+    buildRelativeLink,
+    encodeLinkSegment,
+    formatImageLink,
+    resolveLinkTarget,
+} from "./links";
+export {
+    attachmentExtension,
+    pastedImageBaseName,
+    planAttachmentName,
+    sanitizeFileName,
+    splitFileName,
+} from "./attachment-names";
+export {
+    DEFAULT_ATTACHMENT_LOCATION,
+    attachmentFolderFor,
+} from "./attachment-location";
+export type { AttachmentLocation } from "./attachment-location";
 export type { LinkTarget } from "./links";
 export { createAttachments } from "./attachments";
-export type { Attachments, ReadImageResult } from "./attachments";
+export type {
+    AddImageInput,
+    AddImageResult,
+    Attachments,
+    ReadImageResult,
+} from "./attachments";

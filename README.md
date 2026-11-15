@@ -29,15 +29,15 @@ The sync backend is open-source and fully self-hostable. You can deploy it on yo
 
 ### Tech Stack
 
-| Layer | Choice |
-|---|---|
+| Layer                | Choice                                                                             |
+| -------------------- | ---------------------------------------------------------------------------------- |
 | Desktop/Mobile shell | **Tauri v2** (targets: desktop + Android); Rust limited to a thin, logic-free host |
-| Native capabilities | Official Tauri plugins (filesystem, dialog, opener) called from TypeScript |
-| Frontend framework | **React 19** with **TypeScript** |
-| UI components | **shadcn/ui** (Radix primitives + Tailwind CSS) |
-| State management | **Zustand** |
-| Build tool | **Vite** |
-| Monorepo | npm workspaces under `packages/` |
+| Native capabilities  | Official Tauri plugins (filesystem, dialog, opener) called from TypeScript         |
+| Frontend framework   | **React 19** with **TypeScript**                                                   |
+| UI components        | **shadcn/ui** (Radix primitives + Tailwind CSS)                                    |
+| State management     | **Zustand**                                                                        |
+| Build tool           | **Vite**                                                                           |
+| Monorepo             | npm workspaces under `packages/`                                                   |
 
 ### Workspace Model
 
@@ -45,7 +45,9 @@ Users create a workspace at a directory of their choosing (default: `~/Basalt`).
 
 **Local-first.** The local Markdown files are the source of truth, and the app is fully usable without a server or an account. Sync (when it arrives) is layered on top of the files, not a prerequisite for using them.
 
-**Nothing but notes is written into the workspace.** Basalt never creates an index, a database, or per-device files inside the directory you pick. Per-device state (the last workspace, and for each workspace its open tabs and active note) is stored in `$APPCONFIG/basalt.json` in the app config directory. A `.basalt/` directory inside a workspace is reserved for future workspace-wide settings and is not created today.
+**Nothing but notes and your attachments is written into the workspace.** Basalt never creates an index, a database, or per-device files inside the directory you pick. The only other files it writes are images you add to a note. Per-device state (the last workspace, and for each workspace its open tabs and active note) is stored in `$APPCONFIG/basalt.json` in the app config directory. A `.basalt/` directory inside a workspace is reserved for future workspace-wide settings and is not created today.
+
+**Images.** Paste an image (Ctrl/Cmd+V) or drop image files onto the editor. Each file is copied into `attachments/` at the workspace root (created on first use, original name, ` 1`, ` 2`… on collision; unnamed pasted images become `Pasted image YYYYMMDDHHmmss.<ext>`) and a standard Markdown link relative to the note is inserted, for example `![shot](../attachments/shot.png)`. Images show below their line; a missing, unsupported, oversized (over 20 MiB or 100 megapixels), remote or invalid link shows a placeholder and never changes the note. Formats are PNG, JPEG, GIF, WebP, AVIF and SVG, recognised by their bytes. Links are resolved relative to the note only (no vault-wide lookup), so a link written by another editor as `![](x.png)` for `attachments/x.png` shows "Image not found".
 
 **Window.** The desktop app has no native title bar. It draws its own HTML title bar (note tabs, sidebar toggle, minimize, maximize and close buttons).
 

@@ -180,6 +180,7 @@ export function NoteEditorAreaContainer() {
                                 {unavailable ? null : noteBanner(session)}
                                 <NoteSessionEditor
                                     notePath={session.path}
+                                    active={session.path === activeNote}
                                     label={title}
                                     text={session.text}
                                     focusRequest={

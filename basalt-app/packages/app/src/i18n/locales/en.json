@@ -141,6 +141,12 @@
             "invalid": "Invalid image link",
             "broken": "Image could not be displayed",
             "unsupportedScheme": "This image link type is not supported"
+        },
+        "notice": {
+            "skippedOne": "1 file was not added: {reason}",
+            "skippedMany": "{count} files were not added: {reason}",
+            "tooLarge": "the image is over 20 MiB or 100 megapixels.",
+            "dismiss": "Dismiss notice"
         }
     }
 }

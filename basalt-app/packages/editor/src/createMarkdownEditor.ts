@@ -1,7 +1,8 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { EditorState, type Extension } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
+import { EditorView, dropCursor, keymap } from "@codemirror/view";
+import { createFileInput, type FileInputOptions } from "./fileInput";
 import { createImagePreview, type ImageOptions } from "./imagePreview";
 import { livePreview } from "./livePreview";
 import { basaltTheme } from "./theme";
@@ -13,6 +14,7 @@ export type MarkdownEditorOptions = {
     readOnly?: boolean;
     ariaLabel?: string;
     images?: ImageOptions;
+    files?: FileInputOptions;
 };
 
 export type MarkdownEditor = {
@@ -32,6 +34,7 @@ export function createMarkdownEditor(
         readOnly = false,
         ariaLabel,
         images,
+        files,
     }: MarkdownEditorOptions,
 ): MarkdownEditor {
     const imagePreview = images ? createImagePreview(images) : null;
@@ -43,6 +46,7 @@ export function createMarkdownEditor(
         basaltTheme,
         livePreview,
         ...(imagePreview ? [imagePreview.extension] : []),
+        ...(files ? [createFileInput(files), dropCursor()] : []),
         EditorView.updateListener.of((update) => {
             if (update.docChanged) onChange(update.state.doc.toString());
         }),

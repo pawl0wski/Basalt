@@ -95,3 +95,24 @@ export const NarrowScreen: Story = {
         </div>
     ),
 };
+
+export const Dismissible: Story = {
+    args: {
+        variant: "info",
+        children: "2 files were not added: this file format is not supported.",
+    },
+    render: (args) => (
+        <Alert
+            {...args}
+            onDismiss={() => undefined}
+            dismissLabel="Dismiss notice"
+        />
+    ),
+    play: async ({ canvasElement }) => {
+        await expect(
+            within(canvasElement).getByRole("button", {
+                name: "Dismiss notice",
+            }),
+        ).toBeVisible();
+    },
+};

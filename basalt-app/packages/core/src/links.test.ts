@@ -1,5 +1,12 @@
+import { parser } from "@lezer/markdown";
+import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { resolveLinkTarget } from "./links";
+import {
+    buildRelativeLink,
+    encodeLinkSegment,
+    formatImageLink,
+    resolveLinkTarget,
+} from "./links";
 import { toWorkspacePath, type WorkspacePath } from "./workspace-path";
 
 function p(input: string): WorkspacePath {
@@ -108,6 +115,112 @@ describe("resolveLinkTarget", () => {
     it("does not search elsewhere for a missing folder", () => {
         expect(resolveLinkTarget(p("Projects/Plan.md"), "x.png")).toEqual(
             workspace("Projects/x.png"),
+        );
+    });
+});
+
+describe("encodeLinkSegment", () => {
+    it("encodes characters CommonMark or other editors misread and keeps non-ASCII", () => {
+        expect(
+            encodeLinkSegment('a b#c%d(e)f:g<h>i?j[k\\l]m^n`o{p|q}r"s'),
+        ).toBe(
+            "a%20b%23c%25d%28e%29f%3Ag%3Ch%3Ei%3Fj%5Bk%5Cl%5Dm%5En%60o%7Bp%7Cq%7Dr%22s",
+        );
+        expect(encodeLinkSegment("zażółć.png")).toBe("zażółć.png");
+        expect(encodeLinkSegment("a\tb\u007f")).toBe("a%09b%7F");
+    });
+
+    it("encodes a colon so a first segment is never read as a scheme", () => {
+        expect(
+            resolveLinkTarget(p("d/a.md"), encodeLinkSegment("a:b.png")),
+        ).toEqual(workspace("d/a:b.png"));
+    });
+});
+
+describe("buildRelativeLink", () => {
+    it.each([
+        ["a.md", "attachments/x.png", "attachments/x.png"],
+        ["Projects/Plan.md", "attachments/x.png", "../attachments/x.png"],
+        ["a/b/c.md", "a/img/x.png", "../img/x.png"],
+        ["a/b.md", "a/x.png", "x.png"],
+        ["a/b.md", "a/b/x.png", "b/x.png"],
+        [
+            "Pasted image 1.md",
+            "attachments/Pasted image 2.png",
+            "attachments/Pasted%20image%202.png",
+        ],
+    ])("from %s to %s", (note, target, expected) => {
+        expect(buildRelativeLink(p(note), p(target))).toBe(expected);
+    });
+
+    it("round-trips through resolveLinkTarget for generated paths", () => {
+        const segment = fc
+            .stringMatching(/^[A-Za-z0-9 :#%()._é-]{1,8}$/)
+            .filter(
+                (value) =>
+                    value !== "." &&
+                    value !== ".." &&
+                    !value.endsWith(".") &&
+                    !value.endsWith(" "),
+            );
+        const path = fc
+            .array(segment, { minLength: 1, maxLength: 4 })
+            .map((parts) => parts.join("/"))
+            .filter(
+                (value) =>
+                    toWorkspacePath(value).ok &&
+                    toWorkspacePath(`${value}.md`).ok,
+            );
+        fc.assert(
+            fc.property(path, path, (note, target) => {
+                const notePath = p(`${note}.md`);
+                const targetPath = p(target);
+                const link = buildRelativeLink(notePath, targetPath);
+                expect(resolveLinkTarget(notePath, link)).toEqual({
+                    kind: "workspace",
+                    path: targetPath,
+                });
+            }),
+            { numRuns: 500 },
+        );
+    });
+
+    it("produces a link that a CommonMark parser reads back as the same destination", () => {
+        const names = [
+            "a b.png",
+            "x#1.png",
+            "p(1).png",
+            "c:d.png",
+            "100%.png",
+            "é.png",
+        ];
+        for (const name of names) {
+            const link = formatImageLink(
+                "alt",
+                buildRelativeLink(p("n/note.md"), p(`attachments/${name}`)),
+            );
+            const tree = parser.parse(link);
+            let url = "";
+            tree.iterate({
+                enter: (node) => {
+                    if (node.name === "URL")
+                        url = link.slice(node.from, node.to);
+                },
+            });
+            expect(resolveLinkTarget(p("n/note.md"), url)).toEqual(
+                workspace(`attachments/${name}`),
+            );
+        }
+    });
+});
+
+describe("formatImageLink", () => {
+    it("escapes backslashes and brackets in the alt text only", () => {
+        expect(formatImageLink("a[b]\\c", "x.png")).toBe(
+            "![a\\[b\\]\\\\c](x.png)",
+        );
+        expect(formatImageLink("plain", "dir/x.png")).toBe(
+            "![plain](dir/x.png)",
         );
     });
 });

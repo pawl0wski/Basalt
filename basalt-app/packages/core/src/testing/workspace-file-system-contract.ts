@@ -249,6 +249,99 @@ export function describeWorkspaceFileSystemContract(
             });
         });
 
+        describe("createExclusive with bytes", () => {
+            it("writes the bytes as-is and refuses to overwrite", async () => {
+                const { fs } = await createFixture();
+                const bytes = Uint8Array.of(0x00, 0xff, 0xfe, 0x80);
+
+                expect(
+                    (await fs.createExclusive(path("attachments/a.bin"), bytes))
+                        .ok,
+                ).toBe(true);
+                const again = await fs.createExclusive(
+                    path("attachments/a.bin"),
+                    Uint8Array.of(1),
+                );
+
+                expect(again.ok).toBe(false);
+                if (!again.ok) expect(again.error.code).toBe("already-exists");
+                const read = await fs.readBytes(path("attachments/a.bin"));
+                expect(read.ok && Array.from(read.value)).toEqual(
+                    Array.from(bytes),
+                );
+            });
+        });
+
+        describe("readDir", () => {
+            it("lists direct children only and reports symlinks without following", async () => {
+                const { fs, seedFile, seedSymlink } = await createFixture();
+                await seedFile(path("d/a.png"), encode("a"));
+                await seedFile(path("d/sub/deep.png"), encode("b"));
+                await seedSymlink(path("d/link"));
+                await seedFile(path("other.png"), encode("c"));
+
+                const result = await fs.readDir(path("d"));
+
+                expect(result.ok && result.value).toEqual(
+                    expect.arrayContaining([
+                        { path: "d/a.png", kind: "file" },
+                        { path: "d/sub", kind: "directory" },
+                        { path: "d/link", kind: "symlink" },
+                    ]),
+                );
+                expect(result.ok && result.value).toHaveLength(3);
+            });
+
+            it("reports not-found for a missing folder and invalid-path for a file", async () => {
+                const { fs, seedFile } = await createFixture();
+                await seedFile(path("a.md"), encode("x"));
+
+                const missing = await fs.readDir(path("nope"));
+                const file = await fs.readDir(path("a.md"));
+
+                expect(!missing.ok && missing.error.code).toBe("not-found");
+                expect(!file.ok && file.error.code).toBe("invalid-path");
+            });
+        });
+
+        describe("mkdir", () => {
+            it("creates missing parents and is idempotent", async () => {
+                const { fs } = await createFixture();
+
+                expect((await fs.mkdir(path("a/b/c"))).ok).toBe(true);
+                expect((await fs.mkdir(path("a/b/c"))).ok).toBe(true);
+
+                const stat = await fs.stat(path("a/b"));
+                expect(stat.ok && stat.value.kind).toBe("directory");
+            });
+
+            it("fails with already-exists over a file", async () => {
+                const { fs, seedFile } = await createFixture();
+                await seedFile(path("attachments"), encode("x"));
+
+                const result = await fs.mkdir(path("attachments"));
+
+                expect(!result.ok && result.error.code).toBe("already-exists");
+            });
+
+            it("emits a changed event when it creates a folder", async () => {
+                const { fixture, events, unwatch } = await watched();
+
+                await fixture.fs.mkdir(path("new/folder"));
+
+                expect(
+                    events.some(
+                        (event) =>
+                            event.kind === "changed" &&
+                            event.paths.some((changed) =>
+                                changed.startsWith("new"),
+                            ),
+                    ),
+                ).toBe(true);
+                await unwatch();
+            });
+        });
+
         describe("watch", () => {
             it("emits a changed event for the app's own writes", async () => {
                 const { fixture, events } = await watched();

@@ -13,7 +13,7 @@
 | Product brief | `.ai/specs/product-brief.md` | Scope (D05), non-goals (N01–N03), owner as the only user (D02). The brief has **no Key flows and no Business rules** ("Deferred"), so the flow order below comes from the specs, not the brief. |
 | Backlog | `.ai/specs/backlog.md`, issues #5, #8, #10, #16 | Story and acceptance criteria numbers. The backlog file is only an index; the criteria are in the issues. |
 | S01 spec | `.ai/specs/2026-10-24-markdown-notes-and-app-foundations.md` | Screens and states of E01-S01. |
-| S03 spec | `.ai/specs/2026-10-25-images-in-notes.md` | Screens and states of E01-S03. |
+| S03 spec | `.ai/specs/implemented/2026-10-25-images-in-notes.md` | Screens and states of E01-S03. |
 | S04 | issue #16 only | **No spec exists** ("a dedicated S04 spec is still owed"). Screens for S04 rest on the seven criteria, two open questions and the owner's folder-tree direction of 2026-10-30. |
 | Design system | `basalt-app/packages/ui/docs/` (guide, `design-system.md`, product, primitives, screens, proposals), `src/product/`, `src/components/` | Component names, state coverage, "What is missing". |
 | Personas from lesson 4 | none | Not available. The brief names one user, the owner. |
