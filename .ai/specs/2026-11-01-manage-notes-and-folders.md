@@ -89,7 +89,7 @@ moveNotes(input: { paths; destinationFolder: WorkspacePath | null }): Promise<Re
 deleteNotes(input: { paths }): Promise<Result<{ deleted: readonly WorkspacePath[]; failed: readonly { path; error }[] }>>
 ```
 
-A moved note with rewritten links is written with `writeTextAtomic` to the new path, then the old file is removed with `remove`-free semantics: the order is `createExclusive(new, rewritten)`, then `remove`-equivalent through `rename` is not used for notes whose text changes. Notes whose text does not change use `rename`. Failure of the second step leaves a copy at the destination and the original in place; nothing is lost, and the error names both.
+A moved note is first moved with `rename` (atomic, no copy), then, if its links changed, its rewritten text is written with `writeTextAtomic` to the new path (after a re-read, S01 rule). If the second step fails the note stays moved with its old links and the error says so; no text is lost. There is no `remove` on the port; permanent deletion is never used.
 
 ## 📝 Edge cases and failure scenarios
 
