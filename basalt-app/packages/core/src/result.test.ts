@@ -18,6 +18,7 @@ function describeCode(error: AppError): string {
         case "conflict":
         case "too-large":
         case "not-utf8":
+        case "unsupported":
         case "unavailable":
         case "unknown":
             return error.code;
@@ -39,6 +40,7 @@ describe("AppError", () => {
             "conflict",
             "too-large",
             "not-utf8",
+            "unsupported",
             "unavailable",
             "unknown",
         ]);

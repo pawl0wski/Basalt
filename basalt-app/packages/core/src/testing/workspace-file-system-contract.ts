@@ -66,6 +66,40 @@ export function describeWorkspaceFileSystemContract(
             });
         });
 
+        describe("readBytes", () => {
+            it("round-trips exact bytes including NUL and invalid UTF-8", async () => {
+                const { fs, seedFile } = await createFixture();
+                const bytes = Uint8Array.of(0x00, 0xff, 0xfe, 0x80, 0x41, 0x00);
+                await seedFile(path("img.png"), bytes);
+
+                const result = await fs.readBytes(path("img.png"));
+
+                expect(result.ok && Array.from(result.value)).toEqual(
+                    Array.from(bytes),
+                );
+            });
+
+            it("returns the UTF-8 bytes of text written with writeTextAtomic", async () => {
+                const { fs } = await createFixture();
+                await fs.writeTextAtomic(path("a.md"), "Zażółć");
+
+                const result = await fs.readBytes(path("a.md"));
+
+                expect(result.ok && Array.from(result.value)).toEqual(
+                    Array.from(encode("Zażółć")),
+                );
+            });
+
+            it("reports not-found for a missing path", async () => {
+                const { fs } = await createFixture();
+
+                const result = await fs.readBytes(path("missing.png"));
+
+                expect(result.ok).toBe(false);
+                if (!result.ok) expect(result.error.code).toBe("not-found");
+            });
+        });
+
         describe("stat", () => {
             it("reports kind, size in bytes and mtime of a file", async () => {
                 const { fs, seedFile } = await createFixture();

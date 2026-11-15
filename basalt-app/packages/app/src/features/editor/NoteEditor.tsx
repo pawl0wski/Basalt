@@ -1,4 +1,8 @@
-import { createMarkdownEditor, type MarkdownEditor } from "@basalt/editor";
+import {
+    createMarkdownEditor,
+    type ImageOptions,
+    type MarkdownEditor,
+} from "@basalt/editor";
 import { useEffect, useRef } from "react";
 
 export type NoteEditorProps = {
@@ -7,6 +11,12 @@ export type NoteEditorProps = {
     onChange: (text: string) => void;
     focusRequest?: number;
     readOnly?: boolean;
+    images?: NoteEditorImages;
+};
+
+export type NoteEditorImages = {
+    options: ImageOptions;
+    subscribe(listener: () => void): () => void;
 };
 
 export function NoteEditor({
@@ -15,6 +25,7 @@ export function NoteEditor({
     onChange,
     focusRequest = 0,
     readOnly = false,
+    images,
 }: NoteEditorProps) {
     const parentRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<MarkdownEditor | null>(null);
@@ -22,11 +33,13 @@ export function NoteEditor({
     const onChangeRef = useRef(onChange);
     const textRef = useRef(text);
     const focusRef = useRef(focusRequest);
+    const imagesRef = useRef(images);
 
     useEffect(() => {
         onChangeRef.current = onChange;
         textRef.current = text;
         focusRef.current = focusRequest;
+        imagesRef.current = images;
     });
 
     useEffect(() => {
@@ -40,11 +53,16 @@ export function NoteEditor({
             },
             readOnly,
             ariaLabel: label,
+            images: imagesRef.current?.options,
+        });
+        const unsubscribe = imagesRef.current?.subscribe(() => {
+            editor.refreshImages();
         });
         knownText.current = textRef.current;
         editorRef.current = editor;
         if (focusRef.current > 0) editor.focus();
         return () => {
+            unsubscribe?.();
             editor.destroy();
             editorRef.current = null;
         };

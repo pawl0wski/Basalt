@@ -211,6 +211,22 @@ export function createInMemoryWorkspaceFileSystem(
             }
         },
 
+        async readBytes(path) {
+            const removed = rootGuard();
+            if (removed) return removed;
+            const entry = entries.get(path);
+            if (!entry) {
+                return err({ code: "not-found", message: "No such file." });
+            }
+            if (entry.kind !== "file") {
+                return err({
+                    code: "invalid-path",
+                    message: "The entry is not a regular file.",
+                });
+            }
+            return ok(entry.bytes.slice());
+        },
+
         async writeTextAtomic(path, text) {
             const blocked = writeGuard(path);
             if (blocked) return blocked;

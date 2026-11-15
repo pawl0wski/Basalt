@@ -26,6 +26,7 @@ export interface WorkspaceFileSystem {
     list(): Promise<Result<readonly FileEntry[]>>;
     stat(path: WorkspacePath): Promise<Result<FileStat>>;
     readText(path: WorkspacePath): Promise<Result<string>>;
+    readBytes(path: WorkspacePath): Promise<Result<Uint8Array>>;
     writeTextAtomic(path: WorkspacePath, text: string): Promise<Result<void>>;
     createExclusive(path: WorkspacePath, text: string): Promise<Result<void>>;
     watch(onEvent: (event: WatchEvent) => void): Promise<Result<Unwatch>>;

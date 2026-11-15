@@ -1,726 +1,1275 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Workspace basics - discovery prototype</title>
-<style>
-  :root { color-scheme: light; --fg: #1a1a1a; --muted: #4d4d4d; --bg: #ffffff; --surface: #f2f2f2; --border: #6b6b6b; --soft: #d0d0d0; }
-  * { box-sizing: border-box; }
-  [hidden] { display: none !important; }
-  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.5; color: var(--fg); background: var(--bg); }
-  :focus-visible { outline: 3px solid #000; outline-offset: 2px; }
-  h1 { font-size: 1.5rem; margin: 0 0 .5rem; }
-  h2 { font-size: 1.125rem; margin: 0 0 .5rem; }
-  h1:focus, h2:focus { outline: none; }
-  h1:focus-visible, h2:focus-visible { outline: 3px solid #000; outline-offset: 2px; }
-  p { margin: 0 0 .75rem; }
-  button { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: .375rem .75rem; min-height: 2.25rem; cursor: pointer; }
-  button:hover:not(:disabled) { background: #e2e2e2; }
-  button.primary { background: #1a1a1a; color: #fff; font-weight: 600; }
-  button.primary:hover:not(:disabled) { background: #333; }
-  button:disabled { color: #6b6b6b; background: #ebebeb; border-color: var(--soft); cursor: not-allowed; }
-  a { color: var(--fg); }
-  ul { list-style: none; margin: 0; padding: 0; }
-  .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-  .proto-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border); }
-  .proto-bar p { margin: 0; font-size: .875rem; color: var(--muted); }
-  #status { margin: 0; padding: .375rem 1rem; min-height: 2rem; font-size: .875rem; background: #fafafa; border-bottom: 1px solid var(--soft); }
-  #app { padding: 1rem; }
-  .screen { max-width: 64rem; }
-  .narrow { max-width: 34rem; }
-  .muted { color: var(--muted); }
-  .choice-list li { margin-bottom: .5rem; }
-  .choice-list button { width: 100%; text-align: left; padding: .5rem .75rem; }
-  .choice-list small { display: block; color: var(--muted); }
-  .ws-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; padding-bottom: .5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
-  .ws-bar h1 { margin: 0; }
-  .ws-body { display: grid; grid-template-columns: 15rem 1fr; gap: 1rem; align-items: start; }
-  .side { border: 1px solid var(--border); border-radius: 4px; padding: .75rem; background: var(--surface); }
-  .side-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .5rem; }
-  .side-head h2 { margin: 0; }
-  #note-list li { margin-bottom: .25rem; }
-  #note-list button { width: 100%; text-align: left; background: transparent; border-color: transparent; }
-  #note-list button[aria-current="true"] { background: #fff; border-color: var(--border); font-weight: 700; }
-  .tabs { display: flex; gap: .25rem; overflow-x: auto; padding-bottom: .25rem; margin-bottom: .75rem; border-bottom: 1px solid var(--border); }
-  .tabs li { flex: none; }
-  .tab-item { display: flex; border: 1px solid var(--border); border-radius: 4px 4px 0 0; background: var(--surface); }
-  .tab-item.active { background: #fff; border-bottom-color: #fff; font-weight: 700; }
-  .tab-item button { border: 0; border-radius: 0; background: transparent; min-height: 2.25rem; }
-  .tab-item button.tab-close { padding: .375rem .5rem; }
-  .dot { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; background: #1a1a1a; margin-left: .375rem; }
-  .meta { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; color: var(--muted); font-size: .875rem; }
-  #save-state { font-weight: 700; color: var(--fg); }
-  .banner { border: 2px solid #1a1a1a; background: #fff; border-radius: 4px; padding: .5rem .75rem; margin-bottom: .75rem; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
-  .banner p { margin: 0; flex: 1 1 14rem; }
-  textarea { width: 100%; min-height: 16rem; font: inherit; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9375rem; padding: .75rem; border: 1px solid var(--border); border-radius: 4px; resize: vertical; color: var(--fg); background: #fff; }
-  label { display: block; font-weight: 600; margin-bottom: .25rem; }
-  input[type="text"] { width: 100%; font: inherit; padding: .5rem .625rem; border: 1px solid var(--border); border-radius: 4px; }
-  input[aria-invalid="true"] { border: 2px solid #1a1a1a; }
-  .field-error { color: var(--fg); font-weight: 600; margin: .375rem 0 0; min-height: 1.5rem; }
-  .field-error:not(:empty)::before { content: "Error: "; }
-  .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); display: flex; align-items: center; justify-content: center; padding: 1rem; pointer-events: none; }
-  .dialog { pointer-events: auto; background: #fff; border: 2px solid #1a1a1a; border-radius: 6px; padding: 1.25rem; width: 100%; max-width: 28rem; max-height: 100%; overflow: auto; }
-  .dialog-actions { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: flex-end; margin-top: 1rem; }
-  .test-state { margin: 0 1rem 1rem; border: 1px dashed var(--border); border-radius: 4px; padding: .75rem 1rem; max-width: 40rem; }
-  .test-state legend { font-weight: 700; padding: 0 .375rem; }
-  .test-state label { font-weight: 400; display: flex; gap: .5rem; align-items: baseline; margin: 0; }
-  @media (max-width: 40rem) {
-    .ws-body { grid-template-columns: 1fr; }
-    #app { padding: .75rem; }
-  }
-</style>
-</head>
-<body>
-<header class="proto-bar">
-  <p>Discovery prototype. Simulated data.</p>
-  <button type="button" id="reset">Reset simulation</button>
-</header>
-<p id="status" role="status" aria-live="polite"></p>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Workspace basics - discovery prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --fg: #1a1a1a;
+        --muted: #4d4d4d;
+        --bg: #ffffff;
+        --surface: #f2f2f2;
+        --border: #6b6b6b;
+        --soft: #d0d0d0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      body {
+        margin: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        color: var(--fg);
+        background: var(--bg);
+      }
+      :focus-visible {
+        outline: 3px solid #000;
+        outline-offset: 2px;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin: 0 0 0.5rem;
+      }
+      h2 {
+        font-size: 1.125rem;
+        margin: 0 0 0.5rem;
+      }
+      h1:focus,
+      h2:focus {
+        outline: none;
+      }
+      h1:focus-visible,
+      h2:focus-visible {
+        outline: 3px solid #000;
+        outline-offset: 2px;
+      }
+      p {
+        margin: 0 0 0.75rem;
+      }
+      button {
+        font: inherit;
+        color: var(--fg);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.375rem 0.75rem;
+        min-height: 2.25rem;
+        cursor: pointer;
+      }
+      button:hover:not(:disabled) {
+        background: #e2e2e2;
+      }
+      button.primary {
+        background: #1a1a1a;
+        color: #fff;
+        font-weight: 600;
+      }
+      button.primary:hover:not(:disabled) {
+        background: #333;
+      }
+      button:disabled {
+        color: #6b6b6b;
+        background: #ebebeb;
+        border-color: var(--soft);
+        cursor: not-allowed;
+      }
+      a {
+        color: var(--fg);
+      }
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .proto-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+      }
+      .proto-bar p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--muted);
+      }
+      #status {
+        margin: 0;
+        padding: 0.375rem 1rem;
+        min-height: 2rem;
+        font-size: 0.875rem;
+        background: #fafafa;
+        border-bottom: 1px solid var(--soft);
+      }
+      #app {
+        padding: 1rem;
+      }
+      .screen {
+        max-width: 64rem;
+      }
+      .narrow {
+        max-width: 34rem;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .choice-list li {
+        margin-bottom: 0.5rem;
+      }
+      .choice-list button {
+        width: 100%;
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+      }
+      .choice-list small {
+        display: block;
+        color: var(--muted);
+      }
+      .ws-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .ws-bar h1 {
+        margin: 0;
+      }
+      .ws-body {
+        display: grid;
+        grid-template-columns: 15rem 1fr;
+        gap: 1rem;
+        align-items: start;
+      }
+      .side {
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.75rem;
+        background: var(--surface);
+      }
+      .side-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .side-head h2 {
+        margin: 0;
+      }
+      #note-list li {
+        margin-bottom: 0.25rem;
+      }
+      #note-list button {
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border-color: transparent;
+      }
+      #note-list button[aria-current="true"] {
+        background: #fff;
+        border-color: var(--border);
+        font-weight: 700;
+      }
+      .tabs {
+        display: flex;
+        gap: 0.25rem;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+        margin-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .tabs li {
+        flex: none;
+      }
+      .tab-item {
+        display: flex;
+        border: 1px solid var(--border);
+        border-radius: 4px 4px 0 0;
+        background: var(--surface);
+      }
+      .tab-item.active {
+        background: #fff;
+        border-bottom-color: #fff;
+        font-weight: 700;
+      }
+      .tab-item button {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        min-height: 2.25rem;
+      }
+      .tab-item button.tab-close {
+        padding: 0.375rem 0.5rem;
+      }
+      .dot {
+        display: inline-block;
+        width: 0.6rem;
+        height: 0.6rem;
+        border-radius: 50%;
+        background: #1a1a1a;
+        margin-left: 0.375rem;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.5rem;
+        color: var(--muted);
+        font-size: 0.875rem;
+      }
+      #save-state {
+        font-weight: 700;
+        color: var(--fg);
+      }
+      .banner {
+        border: 2px solid #1a1a1a;
+        background: #fff;
+        border-radius: 4px;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .banner p {
+        margin: 0;
+        flex: 1 1 14rem;
+      }
+      textarea {
+        width: 100%;
+        min-height: 16rem;
+        font: inherit;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.9375rem;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        resize: vertical;
+        color: var(--fg);
+        background: #fff;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      input[type="text"] {
+        width: 100%;
+        font: inherit;
+        padding: 0.5rem 0.625rem;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+      }
+      input[aria-invalid="true"] {
+        border: 2px solid #1a1a1a;
+      }
+      .field-error {
+        color: var(--fg);
+        font-weight: 600;
+        margin: 0.375rem 0 0;
+        min-height: 1.5rem;
+      }
+      .field-error:not(:empty)::before {
+        content: "Error: ";
+      }
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        pointer-events: none;
+      }
+      .dialog {
+        pointer-events: auto;
+        background: #fff;
+        border: 2px solid #1a1a1a;
+        border-radius: 6px;
+        padding: 1.25rem;
+        width: 100%;
+        max-width: 28rem;
+        max-height: 100%;
+        overflow: auto;
+      }
+      .dialog-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        margin-top: 1rem;
+      }
+      .test-state {
+        margin: 0 1rem 1rem;
+        border: 1px dashed var(--border);
+        border-radius: 4px;
+        padding: 0.75rem 1rem;
+        max-width: 40rem;
+      }
+      .test-state legend {
+        font-weight: 700;
+        padding: 0 0.375rem;
+      }
+      .test-state label {
+        font-weight: 400;
+        display: flex;
+        gap: 0.5rem;
+        align-items: baseline;
+        margin: 0;
+      }
+      @media (max-width: 40rem) {
+        .ws-body {
+          grid-template-columns: 1fr;
+        }
+        #app {
+          padding: 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="proto-bar">
+      <p>Discovery prototype. Simulated data.</p>
+      <button type="button" id="reset">Reset simulation</button>
+    </header>
+    <p id="status" role="status" aria-live="polite"></p>
 
-<div id="app">
-  <main>
-    <section id="welcome" class="screen narrow" data-screen aria-labelledby="welcome-h">
-      <h1 id="welcome-h" tabindex="-1">Welcome to Basalt</h1>
-      <p>Choose a folder on your computer. Basalt keeps every note as a Markdown file in it.</p>
-      <button type="button" id="open-folder" class="primary">Open folder as workspace</button>
-    </section>
+    <div id="app">
+      <main>
+        <section
+          id="welcome"
+          class="screen narrow"
+          data-screen
+          aria-labelledby="welcome-h"
+        >
+          <h1 id="welcome-h" tabindex="-1">Welcome to Basalt</h1>
+          <p>
+            Choose a folder on your computer. Basalt keeps every note as a
+            Markdown file in it.
+          </p>
+          <button type="button" id="open-folder" class="primary">
+            Open folder as workspace
+          </button>
+        </section>
 
-    <section id="picker" class="screen narrow" data-screen hidden aria-labelledby="picker-h">
-      <h1 id="picker-h" tabindex="-1">Choose a folder</h1>
-      <p class="muted">Simulated folder picker. The real picker belongs to the operating system.</p>
-      <ul class="choice-list" id="folder-choices"></ul>
-      <button type="button" id="picker-cancel">Cancel</button>
-    </section>
+        <section
+          id="picker"
+          class="screen narrow"
+          data-screen
+          hidden
+          aria-labelledby="picker-h"
+        >
+          <h1 id="picker-h" tabindex="-1">Choose a folder</h1>
+          <p class="muted">
+            Simulated folder picker. The real picker belongs to the operating
+            system.
+          </p>
+          <ul class="choice-list" id="folder-choices"></ul>
+          <button type="button" id="picker-cancel">Cancel</button>
+        </section>
 
-    <section id="workspace" class="screen" data-screen hidden aria-label="Workspace">
-      <div class="ws-bar">
-        <h1 id="ws-title" tabindex="-1"></h1>
-        <button type="button" id="close-ws">Close workspace</button>
-      </div>
-      <div class="ws-body">
-        <aside class="side" aria-labelledby="notes-h">
-          <div class="side-head">
-            <h2 id="notes-h">Notes</h2>
-            <button type="button" id="new-note">New note</button>
+        <section
+          id="workspace"
+          class="screen"
+          data-screen
+          hidden
+          aria-label="Workspace"
+        >
+          <div class="ws-bar">
+            <h1 id="ws-title" tabindex="-1"></h1>
+            <button type="button" id="close-ws">Close workspace</button>
           </div>
-          <ul id="note-list"></ul>
-          <div id="list-empty" hidden>
-            <p>No notes in this workspace yet.</p>
-            <button type="button" id="create-first" class="primary">Create your first note</button>
-          </div>
-        </aside>
-        <div class="ws-main">
-          <nav id="tabs-nav" aria-label="Open notes" hidden>
-            <ul id="tabs" class="tabs"></ul>
-          </nav>
-          <div id="editor-empty">
-            <h2 id="empty-h" tabindex="-1"></h2>
-          </div>
-          <section id="editor" aria-labelledby="editor-h" hidden>
-            <h2 id="editor-h" tabindex="-1"></h2>
-            <p class="meta"><span>File: <span id="file-name"></span></span><span>Save state: <span id="save-state">Saved</span></span></p>
-            <div id="banner" class="banner" role="alert" hidden>
-              <p id="banner-text"></p>
-              <button type="button" id="banner-retry">Retry</button>
+          <div class="ws-body">
+            <aside class="side" aria-labelledby="notes-h">
+              <div class="side-head">
+                <h2 id="notes-h">Notes</h2>
+                <button type="button" id="new-note">New note</button>
+              </div>
+              <ul id="note-list"></ul>
+              <div id="list-empty" hidden>
+                <p>No notes in this workspace yet.</p>
+                <button type="button" id="create-first" class="primary">
+                  Create your first note
+                </button>
+              </div>
+            </aside>
+            <div class="ws-main">
+              <nav id="tabs-nav" aria-label="Open notes" hidden>
+                <ul id="tabs" class="tabs"></ul>
+              </nav>
+              <div id="editor-empty">
+                <h2 id="empty-h" tabindex="-1"></h2>
+              </div>
+              <section id="editor" aria-labelledby="editor-h" hidden>
+                <h2 id="editor-h" tabindex="-1"></h2>
+                <p class="meta">
+                  <span>File: <span id="file-name"></span></span
+                  ><span>Save state: <span id="save-state">Saved</span></span>
+                </p>
+                <div id="banner" class="banner" role="alert" hidden>
+                  <p id="banner-text"></p>
+                  <button type="button" id="banner-retry">Retry</button>
+                </div>
+                <label for="note-text">Note text</label>
+                <textarea
+                  id="note-text"
+                  spellcheck="false"
+                  placeholder="Start writing"
+                ></textarea>
+              </section>
             </div>
-            <label for="note-text">Note text</label>
-            <textarea id="note-text" spellcheck="false" placeholder="Start writing"></textarea>
-          </section>
+          </div>
+        </section>
+
+        <section
+          id="not-found"
+          class="screen narrow"
+          data-screen
+          hidden
+          aria-labelledby="nf-h"
+        >
+          <h1 id="nf-h" tabindex="-1">
+            This screen is not part of the prototype
+          </h1>
+          <p>The address does not match any screen in this flow.</p>
+          <p><a href="#welcome" id="nf-link">Go to Welcome</a></p>
+        </section>
+      </main>
+    </div>
+
+    <fieldset class="test-state">
+      <legend>Test state (prototype only)</legend>
+      <p class="muted">
+        Controls what the next save does. It is not part of the product.
+      </p>
+      <label
+        ><input type="radio" name="next-save" value="ok" checked /> Next save
+        succeeds</label
+      >
+      <label
+        ><input type="radio" name="next-save" value="fail" /> Next saves fail:
+        folder not writable</label
+      >
+      <label
+        ><input type="radio" name="next-save" value="fail-once" /> Next save
+        fails once, then succeeds on Retry</label
+      >
+    </fieldset>
+
+    <div id="new-note-overlay" class="overlay" hidden>
+      <div
+        class="dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="nn-title"
+      >
+        <h2 id="nn-title">New note</h2>
+        <form id="nn-form" novalidate>
+          <label for="nn-name">Note name</label>
+          <input
+            type="text"
+            id="nn-name"
+            autocomplete="off"
+            aria-describedby="nn-error"
+          />
+          <p id="nn-error" class="field-error" aria-live="polite"></p>
+          <div class="dialog-actions">
+            <button type="button" id="nn-cancel">Cancel</button>
+            <button type="submit" id="nn-create" class="primary">Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="save-failed-overlay" class="overlay" hidden>
+      <div
+        class="dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="sf-title"
+        aria-describedby="sf-body"
+      >
+        <h2 id="sf-title"></h2>
+        <p id="sf-body"></p>
+        <p id="sf-retry-msg" class="field-error" role="alert"></p>
+        <div class="dialog-actions">
+          <button type="button" id="sf-cancel">Cancel</button>
+          <button type="button" id="sf-discard">Discard changes</button>
+          <button type="button" id="sf-retry" class="primary">Retry</button>
         </div>
       </div>
-    </section>
-
-    <section id="not-found" class="screen narrow" data-screen hidden aria-labelledby="nf-h">
-      <h1 id="nf-h" tabindex="-1">This screen is not part of the prototype</h1>
-      <p>The address does not match any screen in this flow.</p>
-      <p><a href="#welcome" id="nf-link">Go to Welcome</a></p>
-    </section>
-  </main>
-</div>
-
-<fieldset class="test-state">
-  <legend>Test state (prototype only)</legend>
-  <p class="muted">Controls what the next save does. It is not part of the product.</p>
-  <label><input type="radio" name="next-save" value="ok" checked> Next save succeeds</label>
-  <label><input type="radio" name="next-save" value="fail"> Next saves fail: folder not writable</label>
-  <label><input type="radio" name="next-save" value="fail-once"> Next save fails once, then succeeds on Retry</label>
-</fieldset>
-
-<div id="new-note-overlay" class="overlay" hidden>
-  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="nn-title">
-    <h2 id="nn-title">New note</h2>
-    <form id="nn-form" novalidate>
-      <label for="nn-name">Note name</label>
-      <input type="text" id="nn-name" autocomplete="off" aria-describedby="nn-error">
-      <p id="nn-error" class="field-error" aria-live="polite"></p>
-      <div class="dialog-actions">
-        <button type="button" id="nn-cancel">Cancel</button>
-        <button type="submit" id="nn-create" class="primary">Create</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div id="save-failed-overlay" class="overlay" hidden>
-  <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="sf-title" aria-describedby="sf-body">
-    <h2 id="sf-title"></h2>
-    <p id="sf-body"></p>
-    <p id="sf-retry-msg" class="field-error" role="alert"></p>
-    <div class="dialog-actions">
-      <button type="button" id="sf-cancel">Cancel</button>
-      <button type="button" id="sf-discard">Discard changes</button>
-      <button type="button" id="sf-retry" class="primary">Retry</button>
     </div>
-  </div>
-</div>
 
-<script>
-(function () {
-  'use strict';
+    <script>
+      (function () {
+        "use strict";
 
-  var FIXTURE = [
-    { id: 'w1', name: 'Basalt notes', notes: [
-      { name: 'Weekly plan', text: '# Weekly plan\n\n- Review the roadmap\n- Write down open questions\n' },
-      { name: 'Meeting notes', text: '# Meeting notes\n\nAgenda for Thursday.\n' },
-      { name: 'Reading list', text: '# Reading list\n\n- Notes on local-first software\n' }
-    ] },
-    { id: 'w2', name: 'Empty notes', notes: [] }
-  ];
-  var AUTOSAVE_MS = 1000;
-  var SAVING_MS = 250;
+        var FIXTURE = [
+          {
+            id: "w1",
+            name: "Basalt notes",
+            notes: [
+              {
+                name: "Weekly plan",
+                text: "# Weekly plan\n\n- Review the roadmap\n- Write down open questions\n",
+              },
+              {
+                name: "Meeting notes",
+                text: "# Meeting notes\n\nAgenda for Thursday.\n",
+              },
+              {
+                name: "Reading list",
+                text: "# Reading list\n\n- Notes on local-first software\n",
+              },
+            ],
+          },
+          { id: "w2", name: "Empty notes", notes: [] },
+        ];
+        var AUTOSAVE_MS = 1000;
+        var SAVING_MS = 250;
 
-  var store, nextNoteId, openWsId, tabs, activeId, renderedFor, dialog, statusTimer;
+        var store,
+          nextNoteId,
+          openWsId,
+          tabs,
+          activeId,
+          renderedFor,
+          dialog,
+          statusTimer;
 
-  function $(id) { return document.getElementById(id); }
-  var el = {
-    app: $('app'), status: $('status'), reset: $('reset'),
-    openFolder: $('open-folder'), folderChoices: $('folder-choices'), pickerCancel: $('picker-cancel'),
-    wsTitle: $('ws-title'), closeWs: $('close-ws'), newNote: $('new-note'), noteList: $('note-list'),
-    listEmpty: $('list-empty'), createFirst: $('create-first'), tabsNav: $('tabs-nav'), tabs: $('tabs'),
-    editorEmpty: $('editor-empty'), emptyH: $('empty-h'), editor: $('editor'), editorH: $('editor-h'),
-    fileName: $('file-name'), saveState: $('save-state'), banner: $('banner'), bannerText: $('banner-text'),
-    bannerRetry: $('banner-retry'), noteText: $('note-text'),
-    nnOverlay: $('new-note-overlay'), nnForm: $('nn-form'), nnName: $('nn-name'), nnError: $('nn-error'),
-    nnCancel: $('nn-cancel'), nnCreate: $('nn-create'),
-    sfOverlay: $('save-failed-overlay'), sfTitle: $('sf-title'), sfBody: $('sf-body'), sfMsg: $('sf-retry-msg'),
-    sfCancel: $('sf-cancel'), sfDiscard: $('sf-discard'), sfRetry: $('sf-retry')
-  };
-  var SCREEN_TITLES = { welcome: 'Welcome', picker: 'Choose a folder', workspace: 'Workspace', 'not-found': 'Screen not found' };
-
-  function makeNote(name, text) {
-    return { id: 'n' + (nextNoteId++), name: name, text: text, savedText: text, saving: false, error: false, timer: null };
-  }
-
-  function clearTimers() {
-    if (!store) return;
-    store.forEach(function (ws) { ws.notes.forEach(function (n) { clearTimeout(n.timer); }); });
-  }
-
-  function resetData() {
-    clearTimers();
-    nextNoteId = 1;
-    store = FIXTURE.map(function (ws) {
-      return { id: ws.id, name: ws.name, notes: ws.notes.map(function (n) { return makeNote(n.name, n.text); }) };
-    });
-    openWsId = null;
-    tabs = [];
-    activeId = null;
-    renderedFor = null;
-    dialog = null;
-    setNextSave('ok');
-  }
-
-  function currentWs() {
-    return store.filter(function (w) { return w.id === openWsId; })[0] || null;
-  }
-  function findNote(id) {
-    var ws = currentWs();
-    return ws ? ws.notes.filter(function (n) { return n.id === id; })[0] || null : null;
-  }
-  function isDirty(note) { return note.text !== note.savedText; }
-
-  var announcePrefix = '';
-  function announce(message) {
-    var text = announcePrefix + message;
-    announcePrefix = '';
-    clearTimeout(statusTimer);
-    el.status.textContent = '';
-    statusTimer = setTimeout(function () { el.status.textContent = text; }, 30);
-  }
-
-  function getNextSave() {
-    return document.querySelector('input[name="next-save"]:checked').value;
-  }
-  function setNextSave(value) {
-    document.querySelector('input[name="next-save"][value="' + value + '"]').checked = true;
-  }
-  function attemptWrite() {
-    var mode = getNextSave();
-    if (mode === 'fail') return false;
-    if (mode === 'fail-once') { setNextSave('ok'); return false; }
-    return true;
-  }
-
-  function trySave(note) {
-    clearTimeout(note.timer);
-    note.saving = false;
-    if (attemptWrite()) {
-      note.savedText = note.text;
-      note.error = false;
-      return true;
-    }
-    note.error = true;
-    return false;
-  }
-
-  function scheduleAutosave(note) {
-    clearTimeout(note.timer);
-    note.saving = false;
-    note.timer = setTimeout(function () {
-      note.saving = true;
-      updateSaveUI();
-      note.timer = setTimeout(function () {
-        note.saving = false;
-        var snapshot = note.text;
-        if (attemptWrite()) {
-          note.savedText = snapshot;
-          note.error = false;
-          if (note.id === activeId && !isDirty(note)) announce('Saved ' + note.name + '.');
-        } else {
-          note.error = true;
-          announce('Could not save ' + note.name + '. Your text is kept.');
+        function $(id) {
+          return document.getElementById(id);
         }
-        updateSaveUI();
-      }, SAVING_MS);
-    }, AUTOSAVE_MS);
-  }
+        var el = {
+          app: $("app"),
+          status: $("status"),
+          reset: $("reset"),
+          openFolder: $("open-folder"),
+          folderChoices: $("folder-choices"),
+          pickerCancel: $("picker-cancel"),
+          wsTitle: $("ws-title"),
+          closeWs: $("close-ws"),
+          newNote: $("new-note"),
+          noteList: $("note-list"),
+          listEmpty: $("list-empty"),
+          createFirst: $("create-first"),
+          tabsNav: $("tabs-nav"),
+          tabs: $("tabs"),
+          editorEmpty: $("editor-empty"),
+          emptyH: $("empty-h"),
+          editor: $("editor"),
+          editorH: $("editor-h"),
+          fileName: $("file-name"),
+          saveState: $("save-state"),
+          banner: $("banner"),
+          bannerText: $("banner-text"),
+          bannerRetry: $("banner-retry"),
+          noteText: $("note-text"),
+          nnOverlay: $("new-note-overlay"),
+          nnForm: $("nn-form"),
+          nnName: $("nn-name"),
+          nnError: $("nn-error"),
+          nnCancel: $("nn-cancel"),
+          nnCreate: $("nn-create"),
+          sfOverlay: $("save-failed-overlay"),
+          sfTitle: $("sf-title"),
+          sfBody: $("sf-body"),
+          sfMsg: $("sf-retry-msg"),
+          sfCancel: $("sf-cancel"),
+          sfDiscard: $("sf-discard"),
+          sfRetry: $("sf-retry"),
+        };
+        var SCREEN_TITLES = {
+          welcome: "Welcome",
+          picker: "Choose a folder",
+          workspace: "Workspace",
+          "not-found": "Screen not found",
+        };
 
-  function saveLabel(note) {
-    if (!isDirty(note)) return 'Saved';
-    if (note.error) return 'Not saved';
-    return note.saving ? 'Saving…' : 'Not saved';
-  }
+        function makeNote(name, text) {
+          return {
+            id: "n" + nextNoteId++,
+            name: name,
+            text: text,
+            savedText: text,
+            saving: false,
+            error: false,
+            timer: null,
+          };
+        }
 
-  function updateSaveUI() {
-    var note = findNote(activeId);
-    if (note) {
-      el.saveState.textContent = saveLabel(note);
-      var showBanner = note.error && isDirty(note);
-      el.banner.hidden = !showBanner;
-      el.bannerText.textContent = showBanner
-        ? 'Could not save this note. The folder is not writable. Your text is kept in the editor and autosave is paused.'
-        : '';
-    }
-    Array.prototype.forEach.call(el.tabs.querySelectorAll('[data-note]'), function (btn) {
-      var n = findNote(btn.getAttribute('data-note'));
-      var dirty = !!n && isDirty(n);
-      btn.querySelector('.dot').hidden = !dirty;
-      btn.querySelector('.dirty-text').hidden = !dirty;
-    });
-  }
+        function clearTimers() {
+          if (!store) return;
+          store.forEach(function (ws) {
+            ws.notes.forEach(function (n) {
+              clearTimeout(n.timer);
+            });
+          });
+        }
 
-  function renderList() {
-    var ws = currentWs();
-    el.noteList.textContent = '';
-    ws.notes.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (n) {
-      var li = document.createElement('li');
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = n.name;
-      b.setAttribute('data-open', n.id);
-      if (n.id === activeId) b.setAttribute('aria-current', 'true');
-      li.appendChild(b);
-      el.noteList.appendChild(li);
-    });
-    el.listEmpty.hidden = ws.notes.length > 0;
-    el.noteList.hidden = ws.notes.length === 0;
-  }
+        function resetData() {
+          clearTimers();
+          nextNoteId = 1;
+          store = FIXTURE.map(function (ws) {
+            return {
+              id: ws.id,
+              name: ws.name,
+              notes: ws.notes.map(function (n) {
+                return makeNote(n.name, n.text);
+              }),
+            };
+          });
+          openWsId = null;
+          tabs = [];
+          activeId = null;
+          renderedFor = null;
+          dialog = null;
+          setNextSave("ok");
+        }
 
-  function renderTabs() {
-    el.tabs.textContent = '';
-    tabs.forEach(function (id) {
-      var n = findNote(id);
-      var li = document.createElement('li');
-      var wrap = document.createElement('div');
-      wrap.className = 'tab-item' + (id === activeId ? ' active' : '');
-      var name = document.createElement('button');
-      name.type = 'button';
-      name.setAttribute('data-note', id);
-      if (id === activeId) name.setAttribute('aria-current', 'true');
-      name.appendChild(document.createTextNode(n.name));
-      var dot = document.createElement('span');
-      dot.className = 'dot';
-      dot.hidden = true;
-      dot.setAttribute('aria-hidden', 'true');
-      var dirtyText = document.createElement('span');
-      dirtyText.className = 'visually-hidden dirty-text';
-      dirtyText.textContent = ' (not saved)';
-      dirtyText.hidden = true;
-      name.appendChild(dot);
-      name.appendChild(dirtyText);
-      var close = document.createElement('button');
-      close.type = 'button';
-      close.className = 'tab-close';
-      close.setAttribute('data-close', id);
-      close.setAttribute('aria-label', 'Close ' + n.name);
-      close.textContent = '×';
-      wrap.appendChild(name);
-      wrap.appendChild(close);
-      li.appendChild(wrap);
-      el.tabs.appendChild(li);
-    });
-    el.tabsNav.hidden = tabs.length === 0;
-  }
+        function currentWs() {
+          return (
+            store.filter(function (w) {
+              return w.id === openWsId;
+            })[0] || null
+          );
+        }
+        function findNote(id) {
+          var ws = currentWs();
+          return ws
+            ? ws.notes.filter(function (n) {
+                return n.id === id;
+              })[0] || null
+            : null;
+        }
+        function isDirty(note) {
+          return note.text !== note.savedText;
+        }
 
-  function renderEditor() {
-    var note = findNote(activeId);
-    var ws = currentWs();
-    if (!note) {
-      el.editor.hidden = true;
-      el.editorEmpty.hidden = false;
-      el.emptyH.textContent = ws && ws.notes.length === 0 ? 'This workspace has no notes' : 'Select a note to start writing';
-      renderedFor = null;
-      return;
-    }
-    el.editorEmpty.hidden = true;
-    el.editor.hidden = false;
-    if (renderedFor !== note.id) {
-      el.editorH.textContent = note.name;
-      el.fileName.textContent = note.name + '.md';
-      el.noteText.value = note.text;
-      renderedFor = note.id;
-    }
-    updateSaveUI();
-  }
+        var announcePrefix = "";
+        function announce(message) {
+          var text = announcePrefix + message;
+          announcePrefix = "";
+          clearTimeout(statusTimer);
+          el.status.textContent = "";
+          statusTimer = setTimeout(function () {
+            el.status.textContent = text;
+          }, 30);
+        }
 
-  function renderWorkspace() {
-    el.wsTitle.textContent = currentWs().name;
-    renderList();
-    renderTabs();
-    renderEditor();
-    updateSaveUI();
-  }
+        function getNextSave() {
+          return document.querySelector('input[name="next-save"]:checked')
+            .value;
+        }
+        function setNextSave(value) {
+          document.querySelector(
+            'input[name="next-save"][value="' + value + '"]',
+          ).checked = true;
+        }
+        function attemptWrite() {
+          var mode = getNextSave();
+          if (mode === "fail") return false;
+          if (mode === "fail-once") {
+            setNextSave("ok");
+            return false;
+          }
+          return true;
+        }
 
-  function activate(id, focusEditor) {
-    activeId = id;
-    renderList();
-    renderTabs();
-    renderEditor();
-    updateSaveUI();
-    if (focusEditor) el.noteText.focus();
-  }
+        function trySave(note) {
+          clearTimeout(note.timer);
+          note.saving = false;
+          if (attemptWrite()) {
+            note.savedText = note.text;
+            note.error = false;
+            return true;
+          }
+          note.error = true;
+          return false;
+        }
 
-  function openNote(id, focusEditor) {
-    if (tabs.indexOf(id) < 0) tabs.push(id);
-    activate(id, focusEditor);
-    announce('Opened ' + findNote(id).name + '. ' + tabs.length + (tabs.length === 1 ? ' note open.' : ' notes open.'));
-  }
+        function scheduleAutosave(note) {
+          clearTimeout(note.timer);
+          note.saving = false;
+          note.timer = setTimeout(function () {
+            note.saving = true;
+            updateSaveUI();
+            note.timer = setTimeout(function () {
+              note.saving = false;
+              var snapshot = note.text;
+              if (attemptWrite()) {
+                note.savedText = snapshot;
+                note.error = false;
+                if (note.id === activeId && !isDirty(note))
+                  announce("Saved " + note.name + ".");
+              } else {
+                note.error = true;
+                announce(
+                  "Could not save " + note.name + ". Your text is kept.",
+                );
+              }
+              updateSaveUI();
+            }, SAVING_MS);
+          }, AUTOSAVE_MS);
+        }
 
-  function finishCloseTab(id) {
-    var idx = tabs.indexOf(id);
-    var name = findNote(id).name;
-    tabs.splice(idx, 1);
-    if (activeId === id) activeId = tabs[idx] || tabs[idx - 1] || null;
-    renderedFor = null;
-    renderList();
-    renderTabs();
-    renderEditor();
-    updateSaveUI();
-    announce('Closed ' + name + '. ' + tabs.length + (tabs.length === 1 ? ' note open.' : ' notes open.'));
-    var target = activeId ? el.tabs.querySelector('[data-note="' + activeId + '"]') : el.emptyH;
-    if (target) target.focus();
-  }
+        function saveLabel(note) {
+          if (!isDirty(note)) return "Saved";
+          if (note.error) return "Not saved";
+          return note.saving ? "Saving…" : "Not saved";
+        }
 
-  function closeTab(id) {
-    var note = findNote(id);
-    if (isDirty(note) && !trySave(note)) {
-      updateSaveUI();
-      showSaveFailed(note, 'Closing this tab needs the note to be saved first.', function () { closeTab(id); });
-      return;
-    }
-    finishCloseTab(id);
-  }
+        function updateSaveUI() {
+          var note = findNote(activeId);
+          if (note) {
+            el.saveState.textContent = saveLabel(note);
+            var showBanner = note.error && isDirty(note);
+            el.banner.hidden = !showBanner;
+            el.bannerText.textContent = showBanner
+              ? "Could not save this note. The folder is not writable. Your text is kept in the editor and autosave is paused."
+              : "";
+          }
+          Array.prototype.forEach.call(
+            el.tabs.querySelectorAll("[data-note]"),
+            function (btn) {
+              var n = findNote(btn.getAttribute("data-note"));
+              var dirty = !!n && isDirty(n);
+              btn.querySelector(".dot").hidden = !dirty;
+              btn.querySelector(".dirty-text").hidden = !dirty;
+            },
+          );
+        }
 
-  function closeWorkspace() {
-    var ws = currentWs();
-    var i, note;
-    for (i = 0; i < ws.notes.length; i++) {
-      note = ws.notes[i];
-      if (isDirty(note) && !trySave(note)) {
-        updateSaveUI();
-        showSaveFailed(note, 'Closing the workspace needs every note to be saved first.', closeWorkspace);
-        return;
-      }
-    }
-    clearTimers();
-    var name = ws.name;
-    openWsId = null;
-    tabs = [];
-    activeId = null;
-    renderedFor = null;
-    goTo('#welcome');
-    announce('Closed workspace ' + name + '. Your notes stay in the folder.');
-  }
+        function renderList() {
+          var ws = currentWs();
+          el.noteList.textContent = "";
+          ws.notes
+            .slice()
+            .sort(function (a, b) {
+              return a.name.localeCompare(b.name);
+            })
+            .forEach(function (n) {
+              var li = document.createElement("li");
+              var b = document.createElement("button");
+              b.type = "button";
+              b.textContent = n.name;
+              b.setAttribute("data-open", n.id);
+              if (n.id === activeId) b.setAttribute("aria-current", "true");
+              li.appendChild(b);
+              el.noteList.appendChild(li);
+            });
+          el.listEmpty.hidden = ws.notes.length > 0;
+          el.noteList.hidden = ws.notes.length === 0;
+        }
 
-  function defaultName() {
-    var ws = currentWs();
-    var name = 'Untitled';
-    var i = 0;
-    while (nameTaken(ws, name)) { i += 1; name = 'Untitled ' + i; }
-    return name;
-  }
+        function renderTabs() {
+          el.tabs.textContent = "";
+          tabs.forEach(function (id) {
+            var n = findNote(id);
+            var li = document.createElement("li");
+            var wrap = document.createElement("div");
+            wrap.className = "tab-item" + (id === activeId ? " active" : "");
+            var name = document.createElement("button");
+            name.type = "button";
+            name.setAttribute("data-note", id);
+            if (id === activeId) name.setAttribute("aria-current", "true");
+            name.appendChild(document.createTextNode(n.name));
+            var dot = document.createElement("span");
+            dot.className = "dot";
+            dot.hidden = true;
+            dot.setAttribute("aria-hidden", "true");
+            var dirtyText = document.createElement("span");
+            dirtyText.className = "visually-hidden dirty-text";
+            dirtyText.textContent = " (not saved)";
+            dirtyText.hidden = true;
+            name.appendChild(dot);
+            name.appendChild(dirtyText);
+            var close = document.createElement("button");
+            close.type = "button";
+            close.className = "tab-close";
+            close.setAttribute("data-close", id);
+            close.setAttribute("aria-label", "Close " + n.name);
+            close.textContent = "×";
+            wrap.appendChild(name);
+            wrap.appendChild(close);
+            li.appendChild(wrap);
+            el.tabs.appendChild(li);
+          });
+          el.tabsNav.hidden = tabs.length === 0;
+        }
 
-  function key(s) { return s.normalize('NFC').toLowerCase(); }
-  function nameTaken(ws, name) {
-    return ws.notes.some(function (n) { return key(n.name) === key(name); });
-  }
-  function validateName(raw) {
-    var name = raw.trim();
-    if (!name) return 'Enter a name for the note.';
-    if (/[\/\\:*?"<>|]/.test(name)) return 'A note name cannot contain / \\ : * ? " < > |';
-    if (name === '.' || name === '..') return 'This name is reserved. Choose a different name.';
-    if (new TextEncoder().encode(name).length > 255) return 'The name is too long. Use at most 255 bytes.';
-    if (nameTaken(currentWs(), name)) return 'A note with this name already exists.';
-    return null;
-  }
-  function refreshNameValidation() {
-    var err = validateName(el.nnName.value);
-    el.nnError.textContent = err || '';
-    el.nnName.setAttribute('aria-invalid', err ? 'true' : 'false');
-    el.nnCreate.disabled = !!err;
-  }
+        function renderEditor() {
+          var note = findNote(activeId);
+          var ws = currentWs();
+          if (!note) {
+            el.editor.hidden = true;
+            el.editorEmpty.hidden = false;
+            el.emptyH.textContent =
+              ws && ws.notes.length === 0
+                ? "This workspace has no notes"
+                : "Select a note to start writing";
+            renderedFor = null;
+            return;
+          }
+          el.editorEmpty.hidden = true;
+          el.editor.hidden = false;
+          if (renderedFor !== note.id) {
+            el.editorH.textContent = note.name;
+            el.fileName.textContent = note.name + ".md";
+            el.noteText.value = note.text;
+            renderedFor = note.id;
+          }
+          updateSaveUI();
+        }
 
-  function openDialog(name, overlay, opener, focusEl) {
-    dialog = { name: name, overlay: overlay, opener: opener };
-    el.app.inert = true;
-    overlay.hidden = false;
-    focusEl.focus();
-  }
-  function closeDialog(restoreFocus) {
-    if (!dialog) return;
-    var d = dialog;
-    dialog = null;
-    d.overlay.hidden = true;
-    el.app.inert = false;
-    if (restoreFocus) {
-      var target = d.opener && d.opener.isConnected && !d.opener.closest('[hidden]') ? d.opener : null;
-      if (target) target.focus();
-      else if (activeId) el.noteText.focus();
-      else el.emptyH.focus();
-    }
-  }
+        function renderWorkspace() {
+          el.wsTitle.textContent = currentWs().name;
+          renderList();
+          renderTabs();
+          renderEditor();
+          updateSaveUI();
+        }
 
-  function openNewNote(opener) {
-    el.nnName.value = defaultName();
-    refreshNameValidation();
-    openDialog('new-note', el.nnOverlay, opener, el.nnName);
-    el.nnName.select();
-  }
+        function activate(id, focusEditor) {
+          activeId = id;
+          renderList();
+          renderTabs();
+          renderEditor();
+          updateSaveUI();
+          if (focusEditor) el.noteText.focus();
+        }
 
-  var pendingAction = null;
-  var pendingNote = null;
-  function showSaveFailed(note, reason, proceed) {
-    pendingAction = proceed;
-    pendingNote = note;
-    el.sfTitle.textContent = 'Could not save “' + note.name + '”';
-    el.sfBody.textContent = 'The folder is not writable, so your changes were not saved. ' + reason;
-    el.sfMsg.textContent = '';
-    var opener = document.activeElement;
-    openDialog('save-failed', el.sfOverlay, opener, el.sfRetry);
-  }
+        function openNote(id, focusEditor) {
+          if (tabs.indexOf(id) < 0) tabs.push(id);
+          activate(id, focusEditor);
+          announce(
+            "Opened " +
+              findNote(id).name +
+              ". " +
+              tabs.length +
+              (tabs.length === 1 ? " note open." : " notes open."),
+          );
+        }
 
-  function showScreen(name) {
-    Array.prototype.forEach.call(document.querySelectorAll('[data-screen]'), function (s) {
-      s.hidden = s.id !== name;
-    });
-    document.title = SCREEN_TITLES[name] + ' - Workspace basics prototype';
-    var heading = { welcome: 'welcome-h', picker: 'picker-h', workspace: 'ws-title', 'not-found': 'nf-h' }[name];
-    $(heading).focus();
-  }
+        function finishCloseTab(id) {
+          var idx = tabs.indexOf(id);
+          var name = findNote(id).name;
+          tabs.splice(idx, 1);
+          if (activeId === id) activeId = tabs[idx] || tabs[idx - 1] || null;
+          renderedFor = null;
+          renderList();
+          renderTabs();
+          renderEditor();
+          updateSaveUI();
+          announce(
+            "Closed " +
+              name +
+              ". " +
+              tabs.length +
+              (tabs.length === 1 ? " note open." : " notes open."),
+          );
+          var target = activeId
+            ? el.tabs.querySelector('[data-note="' + activeId + '"]')
+            : el.emptyH;
+          if (target) target.focus();
+        }
 
-  function route() {
-    var h = location.hash.slice(1) || 'welcome';
-    if ((h === 'welcome' || h === 'picker') && openWsId) {
-      history.replaceState(null, '', '#workspace');
-      h = 'workspace';
-      announce('A workspace is open. Use Close workspace to return to Welcome.');
-    } else if (h === 'workspace' && !openWsId) {
-      history.replaceState(null, '', '#welcome');
-      h = 'welcome';
-      announce('No workspace is open. Open a folder to continue.');
-    }
-    if (!SCREEN_TITLES[h]) h = 'not-found';
-    if (h === 'workspace') renderWorkspace();
-    showScreen(h);
-  }
+        function closeTab(id) {
+          var note = findNote(id);
+          if (isDirty(note) && !trySave(note)) {
+            updateSaveUI();
+            showSaveFailed(
+              note,
+              "Closing this tab needs the note to be saved first.",
+              function () {
+                closeTab(id);
+              },
+            );
+            return;
+          }
+          finishCloseTab(id);
+        }
 
-  function goTo(hash) {
-    if (location.hash === hash) route();
-    else location.hash = hash;
-  }
+        function closeWorkspace() {
+          var ws = currentWs();
+          var i, note;
+          for (i = 0; i < ws.notes.length; i++) {
+            note = ws.notes[i];
+            if (isDirty(note) && !trySave(note)) {
+              updateSaveUI();
+              showSaveFailed(
+                note,
+                "Closing the workspace needs every note to be saved first.",
+                closeWorkspace,
+              );
+              return;
+            }
+          }
+          clearTimers();
+          var name = ws.name;
+          openWsId = null;
+          tabs = [];
+          activeId = null;
+          renderedFor = null;
+          goTo("#welcome");
+          announce(
+            "Closed workspace " + name + ". Your notes stay in the folder.",
+          );
+        }
 
-  function renderFolderChoices() {
-    el.folderChoices.textContent = '';
-    store.forEach(function (ws) {
-      var li = document.createElement('li');
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.setAttribute('data-ws', ws.id);
-      b.appendChild(document.createTextNode(ws.name));
-      var small = document.createElement('small');
-      small.textContent = ws.notes.length === 0 ? 'No files' : ws.notes.length + (ws.notes.length === 1 ? ' Markdown note' : ' Markdown notes');
-      b.appendChild(small);
-      li.appendChild(b);
-      el.folderChoices.appendChild(li);
-    });
-  }
+        function defaultName() {
+          var ws = currentWs();
+          var name = "Untitled";
+          var i = 0;
+          while (nameTaken(ws, name)) {
+            i += 1;
+            name = "Untitled " + i;
+          }
+          return name;
+        }
 
-  el.openFolder.addEventListener('click', function () {
-    renderFolderChoices();
-    goTo('#picker');
-  });
-  el.pickerCancel.addEventListener('click', function () {
-    goTo('#welcome');
-    announce('No folder was chosen. Nothing changed.');
-  });
-  el.folderChoices.addEventListener('click', function (e) {
-    var b = e.target.closest('[data-ws]');
-    if (!b) return;
-    openWsId = b.getAttribute('data-ws');
-    tabs = [];
-    activeId = null;
-    renderedFor = null;
-    var ws = currentWs();
-    goTo('#workspace');
-    announce('Opened workspace ' + ws.name + '. ' + (ws.notes.length === 0 ? 'No notes yet.' : ws.notes.length + (ws.notes.length === 1 ? ' note.' : ' notes.')));
-  });
+        function key(s) {
+          return s.normalize("NFC").toLowerCase();
+        }
+        function nameTaken(ws, name) {
+          return ws.notes.some(function (n) {
+            return key(n.name) === key(name);
+          });
+        }
+        function validateName(raw) {
+          var name = raw.trim();
+          if (!name) return "Enter a name for the note.";
+          if (/[\/\\:*?"<>|]/.test(name))
+            return 'A note name cannot contain / \\ : * ? " < > |';
+          if (name === "." || name === "..")
+            return "This name is reserved. Choose a different name.";
+          if (new TextEncoder().encode(name).length > 255)
+            return "The name is too long. Use at most 255 bytes.";
+          if (nameTaken(currentWs(), name))
+            return "A note with this name already exists.";
+          return null;
+        }
+        function refreshNameValidation() {
+          var err = validateName(el.nnName.value);
+          el.nnError.textContent = err || "";
+          el.nnName.setAttribute("aria-invalid", err ? "true" : "false");
+          el.nnCreate.disabled = !!err;
+        }
 
-  el.closeWs.addEventListener('click', closeWorkspace);
-  el.newNote.addEventListener('click', function () { openNewNote(el.newNote); });
-  el.createFirst.addEventListener('click', function () { openNewNote(el.createFirst); });
+        function openDialog(name, overlay, opener, focusEl) {
+          dialog = { name: name, overlay: overlay, opener: opener };
+          el.app.inert = true;
+          overlay.hidden = false;
+          focusEl.focus();
+        }
+        function closeDialog(restoreFocus) {
+          if (!dialog) return;
+          var d = dialog;
+          dialog = null;
+          d.overlay.hidden = true;
+          el.app.inert = false;
+          if (restoreFocus) {
+            var target =
+              d.opener && d.opener.isConnected && !d.opener.closest("[hidden]")
+                ? d.opener
+                : null;
+            if (target) target.focus();
+            else if (activeId) el.noteText.focus();
+            else el.emptyH.focus();
+          }
+        }
 
-  el.noteList.addEventListener('click', function (e) {
-    var b = e.target.closest('[data-open]');
-    if (b) openNote(b.getAttribute('data-open'), false);
-  });
-  el.tabs.addEventListener('click', function (e) {
-    var close = e.target.closest('[data-close]');
-    if (close) { closeTab(close.getAttribute('data-close')); return; }
-    var tab = e.target.closest('[data-note]');
-    if (tab && tab.getAttribute('data-note') !== activeId) {
-      activate(tab.getAttribute('data-note'), false);
-      el.tabs.querySelector('[data-note="' + activeId + '"]').focus();
-      announce('Showing ' + findNote(activeId).name + '.');
-    }
-  });
+        function openNewNote(opener) {
+          el.nnName.value = defaultName();
+          refreshNameValidation();
+          openDialog("new-note", el.nnOverlay, opener, el.nnName);
+          el.nnName.select();
+        }
 
-  el.noteText.addEventListener('input', function () {
-    var note = findNote(activeId);
-    note.text = el.noteText.value;
-    if (!isDirty(note)) {
-      clearTimeout(note.timer);
-      note.saving = false;
-      note.error = false;
-    } else if (!note.error) {
-      scheduleAutosave(note);
-    } else {
-      clearTimeout(note.timer);
-      note.saving = false;
-    }
-    updateSaveUI();
-  });
-  el.bannerRetry.addEventListener('click', function () {
-    var note = findNote(activeId);
-    if (trySave(note)) {
-      announce('Saved ' + note.name + '.');
-      updateSaveUI();
-      el.noteText.focus();
-    } else {
-      announce('Still could not save ' + note.name + '. Your text is kept.');
-      updateSaveUI();
-    }
-  });
+        var pendingAction = null;
+        var pendingNote = null;
+        function showSaveFailed(note, reason, proceed) {
+          pendingAction = proceed;
+          pendingNote = note;
+          el.sfTitle.textContent = "Could not save “" + note.name + "”";
+          el.sfBody.textContent =
+            "The folder is not writable, so your changes were not saved. " +
+            reason;
+          el.sfMsg.textContent = "";
+          var opener = document.activeElement;
+          openDialog("save-failed", el.sfOverlay, opener, el.sfRetry);
+        }
 
-  el.nnName.addEventListener('input', refreshNameValidation);
-  el.nnCancel.addEventListener('click', function () { closeDialog(true); });
-  el.nnForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    refreshNameValidation();
-    if (el.nnCreate.disabled) { el.nnName.focus(); return; }
-    var ws = currentWs();
-    var note = makeNote(el.nnName.value.trim(), '');
-    ws.notes.push(note);
-    closeDialog(false);
-    openNote(note.id, true);
-    announce('Created note ' + note.name + '. File ' + note.name + '.md.');
-  });
+        function showScreen(name) {
+          Array.prototype.forEach.call(
+            document.querySelectorAll("[data-screen]"),
+            function (s) {
+              s.hidden = s.id !== name;
+            },
+          );
+          document.title =
+            SCREEN_TITLES[name] + " - Workspace basics prototype";
+          var heading = {
+            welcome: "welcome-h",
+            picker: "picker-h",
+            workspace: "ws-title",
+            "not-found": "nf-h",
+          }[name];
+          $(heading).focus();
+        }
 
-  el.sfCancel.addEventListener('click', function () {
-    pendingAction = null;
-    closeDialog(true);
-  });
-  el.sfDiscard.addEventListener('click', function () {
-    var note = pendingNote;
-    var proceed = pendingAction;
-    note.text = note.savedText;
-    note.error = false;
-    note.saving = false;
-    if (note.id === activeId) renderedFor = null;
-    closeDialog(false);
-    renderEditor();
-    updateSaveUI();
-    announcePrefix = 'Discarded unsaved changes in ' + note.name + '. ';
-    pendingAction = null;
-    proceed();
-    if (announcePrefix) announce('');
-  });
-  el.sfRetry.addEventListener('click', function () {
-    var note = pendingNote;
-    var proceed = pendingAction;
-    if (trySave(note)) {
-      closeDialog(false);
-      updateSaveUI();
-      pendingAction = null;
-      proceed();
-    } else {
-      el.sfMsg.textContent = 'Retry failed. The folder is still not writable.';
-      updateSaveUI();
-    }
-  });
+        function route() {
+          var h = location.hash.slice(1) || "welcome";
+          if ((h === "welcome" || h === "picker") && openWsId) {
+            history.replaceState(null, "", "#workspace");
+            h = "workspace";
+            announce(
+              "A workspace is open. Use Close workspace to return to Welcome.",
+            );
+          } else if (h === "workspace" && !openWsId) {
+            history.replaceState(null, "", "#welcome");
+            h = "welcome";
+            announce("No workspace is open. Open a folder to continue.");
+          }
+          if (!SCREEN_TITLES[h]) h = "not-found";
+          if (h === "workspace") renderWorkspace();
+          showScreen(h);
+        }
 
-  document.addEventListener('keydown', function (e) {
-    if (!dialog) return;
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      if (dialog.name === 'save-failed') pendingAction = null;
-      closeDialog(true);
-      return;
-    }
-    if (e.key === 'Tab') {
-      var items = dialog.overlay.querySelectorAll('input, button:not(:disabled)');
-      var first = items[0];
-      var last = items[items.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    }
-  });
+        function goTo(hash) {
+          if (location.hash === hash) route();
+          else location.hash = hash;
+        }
 
-  el.reset.addEventListener('click', function () {
-    closeDialog(false);
-    resetData();
-    el.nnName.value = '';
-    el.nnError.textContent = '';
-    el.sfMsg.textContent = '';
-    goTo('#welcome');
-    announce('Simulation reset. You are back at the Welcome screen.');
-  });
+        function renderFolderChoices() {
+          el.folderChoices.textContent = "";
+          store.forEach(function (ws) {
+            var li = document.createElement("li");
+            var b = document.createElement("button");
+            b.type = "button";
+            b.setAttribute("data-ws", ws.id);
+            b.appendChild(document.createTextNode(ws.name));
+            var small = document.createElement("small");
+            small.textContent =
+              ws.notes.length === 0
+                ? "No files"
+                : ws.notes.length +
+                  (ws.notes.length === 1
+                    ? " Markdown note"
+                    : " Markdown notes");
+            b.appendChild(small);
+            li.appendChild(b);
+            el.folderChoices.appendChild(li);
+          });
+        }
 
-  window.addEventListener('hashchange', route);
+        el.openFolder.addEventListener("click", function () {
+          renderFolderChoices();
+          goTo("#picker");
+        });
+        el.pickerCancel.addEventListener("click", function () {
+          goTo("#welcome");
+          announce("No folder was chosen. Nothing changed.");
+        });
+        el.folderChoices.addEventListener("click", function (e) {
+          var b = e.target.closest("[data-ws]");
+          if (!b) return;
+          openWsId = b.getAttribute("data-ws");
+          tabs = [];
+          activeId = null;
+          renderedFor = null;
+          var ws = currentWs();
+          goTo("#workspace");
+          announce(
+            "Opened workspace " +
+              ws.name +
+              ". " +
+              (ws.notes.length === 0
+                ? "No notes yet."
+                : ws.notes.length +
+                  (ws.notes.length === 1 ? " note." : " notes.")),
+          );
+        });
 
-  resetData();
-  route();
-})();
-</script>
-</body>
+        el.closeWs.addEventListener("click", closeWorkspace);
+        el.newNote.addEventListener("click", function () {
+          openNewNote(el.newNote);
+        });
+        el.createFirst.addEventListener("click", function () {
+          openNewNote(el.createFirst);
+        });
+
+        el.noteList.addEventListener("click", function (e) {
+          var b = e.target.closest("[data-open]");
+          if (b) openNote(b.getAttribute("data-open"), false);
+        });
+        el.tabs.addEventListener("click", function (e) {
+          var close = e.target.closest("[data-close]");
+          if (close) {
+            closeTab(close.getAttribute("data-close"));
+            return;
+          }
+          var tab = e.target.closest("[data-note]");
+          if (tab && tab.getAttribute("data-note") !== activeId) {
+            activate(tab.getAttribute("data-note"), false);
+            el.tabs.querySelector('[data-note="' + activeId + '"]').focus();
+            announce("Showing " + findNote(activeId).name + ".");
+          }
+        });
+
+        el.noteText.addEventListener("input", function () {
+          var note = findNote(activeId);
+          note.text = el.noteText.value;
+          if (!isDirty(note)) {
+            clearTimeout(note.timer);
+            note.saving = false;
+            note.error = false;
+          } else if (!note.error) {
+            scheduleAutosave(note);
+          } else {
+            clearTimeout(note.timer);
+            note.saving = false;
+          }
+          updateSaveUI();
+        });
+        el.bannerRetry.addEventListener("click", function () {
+          var note = findNote(activeId);
+          if (trySave(note)) {
+            announce("Saved " + note.name + ".");
+            updateSaveUI();
+            el.noteText.focus();
+          } else {
+            announce(
+              "Still could not save " + note.name + ". Your text is kept.",
+            );
+            updateSaveUI();
+          }
+        });
+
+        el.nnName.addEventListener("input", refreshNameValidation);
+        el.nnCancel.addEventListener("click", function () {
+          closeDialog(true);
+        });
+        el.nnForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+          refreshNameValidation();
+          if (el.nnCreate.disabled) {
+            el.nnName.focus();
+            return;
+          }
+          var ws = currentWs();
+          var note = makeNote(el.nnName.value.trim(), "");
+          ws.notes.push(note);
+          closeDialog(false);
+          openNote(note.id, true);
+          announce(
+            "Created note " + note.name + ". File " + note.name + ".md.",
+          );
+        });
+
+        el.sfCancel.addEventListener("click", function () {
+          pendingAction = null;
+          closeDialog(true);
+        });
+        el.sfDiscard.addEventListener("click", function () {
+          var note = pendingNote;
+          var proceed = pendingAction;
+          note.text = note.savedText;
+          note.error = false;
+          note.saving = false;
+          if (note.id === activeId) renderedFor = null;
+          closeDialog(false);
+          renderEditor();
+          updateSaveUI();
+          announcePrefix = "Discarded unsaved changes in " + note.name + ". ";
+          pendingAction = null;
+          proceed();
+          if (announcePrefix) announce("");
+        });
+        el.sfRetry.addEventListener("click", function () {
+          var note = pendingNote;
+          var proceed = pendingAction;
+          if (trySave(note)) {
+            closeDialog(false);
+            updateSaveUI();
+            pendingAction = null;
+            proceed();
+          } else {
+            el.sfMsg.textContent =
+              "Retry failed. The folder is still not writable.";
+            updateSaveUI();
+          }
+        });
+
+        document.addEventListener("keydown", function (e) {
+          if (!dialog) return;
+          if (e.key === "Escape") {
+            e.preventDefault();
+            if (dialog.name === "save-failed") pendingAction = null;
+            closeDialog(true);
+            return;
+          }
+          if (e.key === "Tab") {
+            var items = dialog.overlay.querySelectorAll(
+              "input, button:not(:disabled)",
+            );
+            var first = items[0];
+            var last = items[items.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        });
+
+        el.reset.addEventListener("click", function () {
+          closeDialog(false);
+          resetData();
+          el.nnName.value = "";
+          el.nnError.textContent = "";
+          el.sfMsg.textContent = "";
+          goTo("#welcome");
+          announce("Simulation reset. You are back at the Welcome screen.");
+        });
+
+        window.addEventListener("hashchange", route);
+
+        resetData();
+        route();
+      })();
+    </script>
+  </body>
 </html>

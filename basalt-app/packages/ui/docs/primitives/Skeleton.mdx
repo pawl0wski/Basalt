@@ -20,12 +20,12 @@ A skeleton holds the place of content that is still loading, so the layout does 
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| The load failed. | [Alert](?path=/docs/primitives-alert--docs) or an error state (Batch 3). |
-| There is nothing to show. | An empty state (Batch 3). |
-| A button waits for a result. | Disable the button and change its label ("Saving..."). |
-| Decoration. | Nothing. |
+| Situation                    | Use instead                                                              |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| The load failed.             | [Alert](?path=/docs/primitives-alert--docs) or an error state (Batch 3). |
+| There is nothing to show.    | An empty state (Batch 3).                                                |
+| A button waits for a result. | Disable the button and change its label ("Saving...").                   |
+| Decoration.                  | Nothing.                                                                 |
 
 ## 4. Anatomy
 
@@ -62,9 +62,9 @@ Blocks are full width by default and shrink with the container. Keep the same he
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `className` | `string` | | Size and layout with token classes. |
+| Prop        | Type     | Default | Description                         |
+| ----------- | -------- | ------- | ----------------------------------- |
+| `className` | `string` |         | Size and layout with token classes. |
 
 ## 11. Code
 
@@ -75,7 +75,7 @@ import { Skeleton } from "@basalt/ui";
     <span className="sr-only">Loading note</span>
     <Skeleton />
     <Skeleton className="w-sidebar" />
-</div>
+</div>;
 ```
 
 ## 12. Do and don't

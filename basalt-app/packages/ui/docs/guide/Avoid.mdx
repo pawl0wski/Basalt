@@ -60,36 +60,38 @@ toast({ title: "Synced" });
 
 ## Part 2. The generic AI look (visual)
 
-| Looks like | Recognize it in code | Why it is a problem | Instead |
-|---|---|---|---|
-| Gradients | `bg-gradient-*`, `bg-clip-text` | Decoration without meaning (A01) | Flat token colors |
-| Frosted glass | `backdrop-blur-*`, translucent white backgrounds | Contrast depends on what is behind | `bg-surface-raised` with a divider outline |
-| Glow | `blur-3xl`, colored shadows | Noise around functions | Nothing |
-| Emoji instead of icons | Emoji characters in labels | Inconsistent, not themeable | Lucide outline icons, one stroke width |
-| AI sparkles | A sparkle icon on every AI feature | Marketing, not information | A plain word ("Summarize") |
-| Three identical cards | A grid of equal cards each with an icon, a title and a line | Hides what matters | One list, one card with divided rows |
-| Everything in pills | `rounded-full` on buttons and labels | Childish (A02) | `rounded-control` (4 px) |
-| A card in a card | Nested bordered containers | Visual clutter | One card with divided rows (R01.5) |
-| A shadow as the only separator | `shadow-*` with no border | Not visible on dark surfaces | Shade and a 1 px divider |
-| Everything centered | `text-center` on every block | Hard to scan; hides structure | Left-aligned columns |
+| Looks like                     | Recognize it in code                                        | Why it is a problem                | Instead                                    |
+| ------------------------------ | ----------------------------------------------------------- | ---------------------------------- | ------------------------------------------ |
+| Gradients                      | `bg-gradient-*`, `bg-clip-text`                             | Decoration without meaning (A01)   | Flat token colors                          |
+| Frosted glass                  | `backdrop-blur-*`, translucent white backgrounds            | Contrast depends on what is behind | `bg-surface-raised` with a divider outline |
+| Glow                           | `blur-3xl`, colored shadows                                 | Noise around functions             | Nothing                                    |
+| Emoji instead of icons         | Emoji characters in labels                                  | Inconsistent, not themeable        | Lucide outline icons, one stroke width     |
+| AI sparkles                    | A sparkle icon on every AI feature                          | Marketing, not information         | A plain word ("Summarize")                 |
+| Three identical cards          | A grid of equal cards each with an icon, a title and a line | Hides what matters                 | One list, one card with divided rows       |
+| Everything in pills            | `rounded-full` on buttons and labels                        | Childish (A02)                     | `rounded-control` (4 px)                   |
+| A card in a card               | Nested bordered containers                                  | Visual clutter                     | One card with divided rows (R01.5)         |
+| A shadow as the only separator | `shadow-*` with no border                                   | Not visible on dark surfaces       | Shade and a 1 px divider                   |
+| Everything centered            | `text-center` on every block                                | Hard to scan; hides structure      | Left-aligned columns                       |
 
 ## Part 3. Implementation mistakes
 
-| Mistake | Recognize it | Why | Instead |
-|---|---|---|---|
-| A value outside the tokens | Hex colors, `bg-zinc-900`, `p-[13px]`; `npm run check:tokens` fails | The system cannot change and contrast is not measured | A token class |
-| A variant added in passing | A new `variant` prop for one screen | Two ways to do one thing | Use an existing variant, or follow Contributing |
-| A `div` instead of a button | `div` with `onClick` | No keyboard, no role, no focus | [Button](?path=/docs/primitives-button--docs) or [IconButton](?path=/docs/primitives-iconbutton--docs) |
-| A placeholder instead of a label | An input with only `placeholder` | The label disappears while typing | [Field](?path=/docs/primitives-field--docs) |
-| Status by color only | A red dot with no text | Invisible to some users | A word and an icon ([StatusIndicator](?path=/docs/primitives-statusindicator--docs)) |
-| A disabled button with no explanation | `disabled` and nothing near it | The user cannot tell why | A hint, or keep it enabled and explain |
-| A toast for an error that needs action | `toast({ variant: "error" })` | It disappears | [Alert](?path=/docs/primitives-alert--docs) or a banner |
-| A tooltip with needed information | A tooltip explaining a rule | Not shown on touch or to keyboard users who never open it | Visible text or a hint |
-| A danger background on a button | `bg-status-danger` | tokens.md forbids it | A destructive-colored text button |
-| A text color via `title` only | `title` as the only name | Unreliable for assistive technology | `aria-label` and visible text |
+| Mistake                                | Recognize it                                                        | Why                                                       | Instead                                                                                                |
+| -------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| A value outside the tokens             | Hex colors, `bg-zinc-900`, `p-[13px]`; `npm run check:tokens` fails | The system cannot change and contrast is not measured     | A token class                                                                                          |
+| A variant added in passing             | A new `variant` prop for one screen                                 | Two ways to do one thing                                  | Use an existing variant, or follow Contributing                                                        |
+| A `div` instead of a button            | `div` with `onClick`                                                | No keyboard, no role, no focus                            | [Button](?path=/docs/primitives-button--docs) or [IconButton](?path=/docs/primitives-iconbutton--docs) |
+| A placeholder instead of a label       | An input with only `placeholder`                                    | The label disappears while typing                         | [Field](?path=/docs/primitives-field--docs)                                                            |
+| Status by color only                   | A red dot with no text                                              | Invisible to some users                                   | A word and an icon ([StatusIndicator](?path=/docs/primitives-statusindicator--docs))                   |
+| A disabled button with no explanation  | `disabled` and nothing near it                                      | The user cannot tell why                                  | A hint, or keep it enabled and explain                                                                 |
+| A toast for an error that needs action | `toast({ variant: "error" })`                                       | It disappears                                             | [Alert](?path=/docs/primitives-alert--docs) or a banner                                                |
+| A tooltip with needed information      | A tooltip explaining a rule                                         | Not shown on touch or to keyboard users who never open it | Visible text or a hint                                                                                 |
+| A danger background on a button        | `bg-status-danger`                                                  | tokens.md forbids it                                      | A destructive-colored text button                                                                      |
+| A text color via `title` only          | `title` as the only name                                            | Unreliable for assistive technology                       | `aria-label` and visible text                                                                          |
 
 ```tsx bad
-<div onClick={save} className="bg-zinc-900 p-[13px] text-white">Save</div>
+<div onClick={save} className="bg-zinc-900 p-[13px] text-white">
+    Save
+</div>
 ```
 
 ```tsx

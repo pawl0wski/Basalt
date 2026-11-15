@@ -21,12 +21,12 @@ A label tells the user what a control is for, and a field joins the label, the c
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| A [Checkbox](?path=/docs/primitives-checkbox--docs) or switch. | The control has its own label on its right. |
-| A group of radios or checkboxes. | A `fieldset` with a `legend` (RadioGroup, Batch 3). |
-| A message about the whole form. | Alert (Batch 2). |
-| A message that is not about one control. | Alert or Toast, not a field error. |
+| Situation                                                      | Use instead                                         |
+| -------------------------------------------------------------- | --------------------------------------------------- |
+| A [Checkbox](?path=/docs/primitives-checkbox--docs) or switch. | The control has its own label on its right.         |
+| A group of radios or checkboxes.                               | A `fieldset` with a `legend` (RadioGroup, Batch 3). |
+| A message about the whole form.                                | Alert (Batch 2).                                    |
+| A message that is not about one control.                       | Alert or Toast, not a field error.                  |
 
 ## 4. Anatomy
 
@@ -43,10 +43,10 @@ One layout (label above). A label beside the control is not needed yet.
 
 Requirement marking (proposal, no source defines one):
 
-| Case | Marking |
-|---|---|
+| Case           | Marking                                                                                                  |
+| -------------- | -------------------------------------------------------------------------------------------------------- |
 | Required field | No visible mark. `aria-required` is set. Most fields in a form are required, so marking them adds noise. |
-| Optional field | The text "(optional)" after the label. Text is read by every screen reader and needs no legend. |
+| Optional field | The text "(optional)" after the label. Text is read by every screen reader and needs no legend.          |
 
 Do not use an asterisk without explaining it (WCAG 3.3.2).
 
@@ -57,13 +57,13 @@ Do not use an asterisk without explaining it (WCAG 3.3.2).
 
 ## 6. States
 
-| State | What the user sees | Notes |
-|---|---|---|
-| Default | Label, control, optional hint. | |
-| Focus | The control shows the focus ring. The label does not change. | |
-| Invalid | The control gets a `status-danger` border and the error message appears below. The control has `aria-invalid="true"`. | |
-| Disabled | Comes from the control. Use the hint to say why. | |
-| Loading, selected | Not applicable: the field only arranges its parts. | |
+| State             | What the user sees                                                                                                    | Notes |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- | ----- |
+| Default           | Label, control, optional hint.                                                                                        |       |
+| Focus             | The control shows the focus ring. The label does not change.                                                          |       |
+| Invalid           | The control gets a `status-danger` border and the error message appears below. The control has `aria-invalid="true"`. |       |
+| Disabled          | Comes from the control. Use the hint to say why.                                                                      |       |
+| Loading, selected | Not applicable: the field only arranges its parts.                                                                    |       |
 
 <Canvas of={FieldStories.WithError} />
 
@@ -99,15 +99,15 @@ The field fills its container. At 320 px the label, hint and error wrap and the 
 
 `Field`:
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `label` | `ReactNode` | required | Visible label. |
-| `children` | `ReactNode` | required | The control. |
-| `hint` | `ReactNode` | | Help text. |
-| `error` | `ReactNode` | | Error text. Setting it also marks the control invalid. |
-| `required` | `boolean` | `false` | Sets `aria-required` on the control. |
-| `optional` | `boolean` | `false` | Adds "(optional)" to the label. |
-| `className` | `string` | | Layout only. |
+| Prop        | Type        | Default  | Description                                            |
+| ----------- | ----------- | -------- | ------------------------------------------------------ |
+| `label`     | `ReactNode` | required | Visible label.                                         |
+| `children`  | `ReactNode` | required | The control.                                           |
+| `hint`      | `ReactNode` |          | Help text.                                             |
+| `error`     | `ReactNode` |          | Error text. Setting it also marks the control invalid. |
+| `required`  | `boolean`   | `false`  | Sets `aria-required` on the control.                   |
+| `optional`  | `boolean`   | `false`  | Adds "(optional)" to the label.                        |
+| `className` | `string`    |          | Layout only.                                           |
 
 `Label`: a styled `label` element, accepts all `label` props.
 
@@ -118,7 +118,7 @@ import { Field, Input } from "@basalt/ui";
 
 <Field label="Workspace name" required error={errors.name}>
     <Input value={name} onChange={onNameChange} onBlur={onNameBlur} />
-</Field>
+</Field>;
 ```
 
 ```tsx
@@ -134,7 +134,10 @@ import { Field, Input } from "@basalt/ui";
         good={{
             children: (
                 <div className="w-full">
-                    <Field label="Workspace name" error="Enter a name for the workspace.">
+                    <Field
+                        label="Workspace name"
+                        error="Enter a name for the workspace."
+                    >
                         <Input />
                     </Field>
                 </div>

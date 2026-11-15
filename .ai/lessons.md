@@ -31,3 +31,4 @@ Long-term memory index for AI agents. Each entry links to a full lesson file in 
 - 2026-11-08 — Editor: `setText` resets undo; `markdown()` continues list markers on Enter so saved text differs from literal keystrokes — [detail](lessons/2026-11-08-editor-findings.md)
 - 2026-11-08 — Title bar must match the prototype: no title text, + button right after the last tab; compare screenshots in every state — [detail](lessons/2026-11-08-match-prototype-title-bar.md)
 - 2026-11-15 — Live preview hides markers off the cursor line and list/quote continuation survives Enter: e2e must assert rendered text and type such lines last — [detail](lessons/2026-11-15-live-preview-e2e-typing.md)
+- 2026-11-16 — Image display: StrictMode dispose/activate, single-brace i18n interpolation, widgetBuffer imgs, jsdom has no createObjectURL — [detail](lessons/2026-11-16-images-display-gotchas.md)

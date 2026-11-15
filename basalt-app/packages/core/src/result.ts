@@ -7,6 +7,7 @@ export const APP_ERROR_CODES = [
     "conflict",
     "too-large",
     "not-utf8",
+    "unsupported",
     "unavailable",
     "unknown",
 ] as const;

@@ -21,13 +21,13 @@ A card groups related settings under one heading, as one container with divided 
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| A single control. | The control in a Field, without a container. |
-| A card inside a card. | One card with divided rows (R01.5, A01). |
-| A message to the user. | [Alert](?path=/docs/primitives-alert--docs). |
-| A list of notes. | The tree or list row, not a card. |
-| Decoration or to make a screen look fuller. | Nothing. |
+| Situation                                   | Use instead                                  |
+| ------------------------------------------- | -------------------------------------------- |
+| A single control.                           | The control in a Field, without a container. |
+| A card inside a card.                       | One card with divided rows (R01.5, A01).     |
+| A message to the user.                      | [Alert](?path=/docs/primitives-alert--docs). |
+| A list of notes.                            | The tree or list row, not a card.            |
+| Decoration or to make a screen look fuller. | Nothing.                                     |
 
 ## 4. Anatomy
 
@@ -50,9 +50,9 @@ One variant. `headingAs` sets the heading level (`h2` default, `h3`, `h4`) so th
 
 A card has no interactive state of its own; its controls do. Rows are not clickable. If a whole row must open something, use a [TextLink](?path=/docs/primitives-textlink--docs) or [Button](?path=/docs/primitives-button--docs) inside it.
 
-| State | Notes |
-|---|---|
-| Default | The only state. |
+| State                                                     | Notes                                                                           |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Default                                                   | The only state.                                                                 |
 | Hover, focus, pressed, selected, disabled, error, loading | Not applicable to the container. Show errors and loading in the rows' controls. |
 
 ## 7. Behavior and accessibility
@@ -83,20 +83,20 @@ A card has no interactive state of its own; its controls do. Rows are not clicka
 
 `Card`:
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `heading` | `ReactNode` | | Group heading. |
-| `headingAs` | `"h2" \| "h3" \| "h4"` | `"h2"` | Heading level. |
-| `children` | `ReactNode` | required | `CardRow` elements. |
-| `className` | `string` | | Layout only. |
+| Prop        | Type                   | Default  | Description         |
+| ----------- | ---------------------- | -------- | ------------------- |
+| `heading`   | `ReactNode`            |          | Group heading.      |
+| `headingAs` | `"h2" \| "h3" \| "h4"` | `"h2"`   | Heading level.      |
+| `children`  | `ReactNode`            | required | `CardRow` elements. |
+| `className` | `string`               |          | Layout only.        |
 
 `CardRow`:
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `title` | `ReactNode` | required | What the row controls. |
-| `description` | `ReactNode` | | Effect or help. |
-| `children` | `ReactNode` | | The control. |
+| Prop          | Type        | Default  | Description            |
+| ------------- | ----------- | -------- | ---------------------- |
+| `title`       | `ReactNode` | required | What the row controls. |
+| `description` | `ReactNode` |          | Effect or help.        |
+| `children`    | `ReactNode` |          | The control.           |
 
 ## 11. Code
 
@@ -104,13 +104,16 @@ A card has no interactive state of its own; its controls do. Rows are not clicka
 import { Card, CardRow, Switch } from "@basalt/ui";
 
 <Card heading="Status bar">
-    <CardRow title="Word and character count" description="Shown at the right of the status bar.">
+    <CardRow
+        title="Word and character count"
+        description="Shown at the right of the status bar."
+    >
         <Switch aria-label="Word and character count" defaultChecked />
     </CardRow>
     <CardRow title="Sync status">
         <Switch aria-label="Sync status" defaultChecked />
     </CardRow>
-</Card>
+</Card>;
 ```
 
 ## 12. Do and don't
@@ -121,8 +124,12 @@ import { Card, CardRow, Switch } from "@basalt/ui";
             children: (
                 <div className="w-full">
                     <Card heading="Status bar">
-                        <CardRow title="Word count"><Switch aria-label="Word count" defaultChecked /></CardRow>
-                        <CardRow title="Sync status"><Switch aria-label="Sync status" defaultChecked /></CardRow>
+                        <CardRow title="Word count">
+                            <Switch aria-label="Word count" defaultChecked />
+                        </CardRow>
+                        <CardRow title="Sync status">
+                            <Switch aria-label="Sync status" defaultChecked />
+                        </CardRow>
                     </Card>
                 </div>
             ),
@@ -132,10 +139,14 @@ import { Card, CardRow, Switch } from "@basalt/ui";
             children: (
                 <div className="w-full">
                     <Card>
-                        <CardRow title="Word count"><Switch aria-label="Word count" defaultChecked /></CardRow>
+                        <CardRow title="Word count">
+                            <Switch aria-label="Word count" defaultChecked />
+                        </CardRow>
                     </Card>
                     <Card>
-                        <CardRow title="Sync status"><Switch aria-label="Sync status" defaultChecked /></CardRow>
+                        <CardRow title="Sync status">
+                            <Switch aria-label="Sync status" defaultChecked />
+                        </CardRow>
                     </Card>
                 </div>
             ),

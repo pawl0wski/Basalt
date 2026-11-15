@@ -21,12 +21,12 @@ An input lets the user type a short piece of text, such as a workspace name or a
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| The user picks from a short fixed list. | Select or RadioGroup (Batches 2 and 3). |
-| The user turns something on or off. | Switch or [Checkbox](?path=/docs/primitives-checkbox--docs). |
-| The text has many lines. | A multi-line text area. It is not part of the current plan; see "What is missing". |
-| The user edits a note. | The note editor, not a form control. |
+| Situation                               | Use instead                                                                        |
+| --------------------------------------- | ---------------------------------------------------------------------------------- |
+| The user picks from a short fixed list. | Select or RadioGroup (Batches 2 and 3).                                            |
+| The user turns something on or off.     | Switch or [Checkbox](?path=/docs/primitives-checkbox--docs).                       |
+| The text has many lines.                | A multi-line text area. It is not part of the current plan; see "What is missing". |
+| The user edits a note.                  | The note editor, not a form control.                                               |
 
 ## 4. Anatomy
 
@@ -47,15 +47,15 @@ One variant. Type is set with the native `type` prop (`text` by default). Other 
 
 <Canvas of={InputStories.States} />
 
-| State | What the user sees | Notes |
-|---|---|---|
-| Default | `border-control` outline, `text-ui` text. | |
-| Hover | No change. The text cursor already shows it is editable. | Proposal. |
-| Focus | 2 px `focus-ring` outline, 2 px offset (also on mouse focus, as the user is about to type). | |
-| Filled | Same as default. | |
-| Invalid | `status-danger` border, plus an error message in the Field. Color is never the only signal: the message carries the meaning (WCAG 1.4.1). | Set `aria-invalid`. |
-| Disabled | `text-muted` text on `state-hover`. | Proposal (open question 3). Explain why in the hint. |
-| Loading | Not supported. | |
+| State    | What the user sees                                                                                                                        | Notes                                                |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Default  | `border-control` outline, `text-ui` text.                                                                                                 |                                                      |
+| Hover    | No change. The text cursor already shows it is editable.                                                                                  | Proposal.                                            |
+| Focus    | 2 px `focus-ring` outline, 2 px offset (also on mouse focus, as the user is about to type).                                               |                                                      |
+| Filled   | Same as default.                                                                                                                          |                                                      |
+| Invalid  | `status-danger` border, plus an error message in the Field. Color is never the only signal: the message carries the meaning (WCAG 1.4.1). | Set `aria-invalid`.                                  |
+| Disabled | `text-muted` text on `state-hover`.                                                                                                       | Proposal (open question 3). Explain why in the hint. |
+| Loading  | Not supported.                                                                                                                            |                                                      |
 
 ## 7. Behavior and accessibility
 
@@ -79,13 +79,13 @@ The input fills the width of its container (`w-full`). Limit the container, not 
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `type` | `string` | `"text"` | Native input type. |
-| `aria-invalid` | `boolean` | set by Field | Switches on the error style. |
-| `disabled` | `boolean` | `false` | Blocks input. |
-| `ref` | `Ref<HTMLInputElement>` | | Forwarded to the element (React 19). |
-| ...rest | `InputHTMLAttributes` | | Passed to the element, including `value`, `onChange`, `placeholder`. |
+| Prop           | Type                    | Default      | Description                                                          |
+| -------------- | ----------------------- | ------------ | -------------------------------------------------------------------- |
+| `type`         | `string`                | `"text"`     | Native input type.                                                   |
+| `aria-invalid` | `boolean`               | set by Field | Switches on the error style.                                         |
+| `disabled`     | `boolean`               | `false`      | Blocks input.                                                        |
+| `ref`          | `Ref<HTMLInputElement>` |              | Forwarded to the element (React 19).                                 |
+| ...rest        | `InputHTMLAttributes`   |              | Passed to the element, including `value`, `onChange`, `placeholder`. |
 
 ## 11. Code
 
@@ -94,7 +94,7 @@ import { Field, Input } from "@basalt/ui";
 
 <Field label="Workspace name" hint="Shown in the window title.">
     <Input placeholder="Personal notes" />
-</Field>
+</Field>;
 ```
 
 ```tsx
@@ -118,7 +118,10 @@ import { Field, Input } from "@basalt/ui";
         bad={{
             children: (
                 <div className="w-full">
-                    <Input aria-label="Workspace name" placeholder="Workspace name" />
+                    <Input
+                        aria-label="Workspace name"
+                        placeholder="Workspace name"
+                    />
                 </div>
             ),
             reason: "The placeholder is the only label and vanishes on the first keystroke.",

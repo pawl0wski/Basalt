@@ -2,6 +2,7 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { EditorState, type Extension } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
+import { createImagePreview, type ImageOptions } from "./imagePreview";
 import { livePreview } from "./livePreview";
 import { basaltTheme } from "./theme";
 
@@ -11,12 +12,14 @@ export type MarkdownEditorOptions = {
     extensions?: Extension[];
     readOnly?: boolean;
     ariaLabel?: string;
+    images?: ImageOptions;
 };
 
 export type MarkdownEditor = {
     getText: () => string;
     setText: (text: string) => void;
     focus: () => void;
+    refreshImages: () => void;
     destroy: () => void;
 };
 
@@ -28,8 +31,10 @@ export function createMarkdownEditor(
         extensions = [],
         readOnly = false,
         ariaLabel,
+        images,
     }: MarkdownEditorOptions,
 ): MarkdownEditor {
+    const imagePreview = images ? createImagePreview(images) : null;
     const baseExtensions: Extension[] = [
         markdown({ base: markdownLanguage }),
         history(),
@@ -37,6 +42,7 @@ export function createMarkdownEditor(
         EditorView.lineWrapping,
         basaltTheme,
         livePreview,
+        ...(imagePreview ? [imagePreview.extension] : []),
         EditorView.updateListener.of((update) => {
             if (update.docChanged) onChange(update.state.doc.toString());
         }),
@@ -72,6 +78,7 @@ export function createMarkdownEditor(
             );
         },
         focus: () => view.focus(),
+        refreshImages: () => imagePreview?.refresh(),
         destroy: () => view.destroy(),
     };
 }

@@ -18,12 +18,12 @@ An error state replaces a view that could not be shown, says what went wrong in 
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| A problem with one field. | The error message of a [Field](?path=/docs/primitives-field--docs). |
-| A problem that leaves the view usable. | [Alert](?path=/docs/primitives-alert--docs). |
-| An empty list. | [EmptyState](?path=/docs/primitives-emptystate--docs). |
-| Only the sync state. | [StatusIndicator](?path=/docs/primitives-statusindicator--docs). |
+| Situation                              | Use instead                                                         |
+| -------------------------------------- | ------------------------------------------------------------------- |
+| A problem with one field.              | The error message of a [Field](?path=/docs/primitives-field--docs). |
+| A problem that leaves the view usable. | [Alert](?path=/docs/primitives-alert--docs).                        |
+| An empty list.                         | [EmptyState](?path=/docs/primitives-emptystate--docs).              |
+| Only the sync state.                   | [StatusIndicator](?path=/docs/primitives-statusindicator--docs).    |
 
 ## 4. Anatomy
 
@@ -66,12 +66,12 @@ Text wraps at 320 px. The details block scrolls horizontally inside its own box.
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `title` | `ReactNode` | required | What failed. |
-| `description` | `ReactNode` | required | Why and what to do. |
-| `action` | `ReactNode` | | Retry or alternative. |
-| `details` | `string` | | Technical text. |
+| Prop          | Type        | Default  | Description           |
+| ------------- | ----------- | -------- | --------------------- |
+| `title`       | `ReactNode` | required | What failed.          |
+| `description` | `ReactNode` | required | Why and what to do.   |
+| `action`      | `ReactNode` |          | Retry or alternative. |
+| `details`     | `string`    |          | Technical text.       |
 
 ## 11. Code
 
@@ -82,7 +82,7 @@ import { Button, ErrorState } from "@basalt/ui";
     title="Could not open the workspace"
     description="The folder is not available. Reconnect the drive or choose another folder."
     action={<Button>Choose a workspace</Button>}
-/>
+/>;
 ```
 
 ## 12. Do and don't

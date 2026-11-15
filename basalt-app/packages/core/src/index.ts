@@ -60,3 +60,22 @@ export {
     parseAppSettings,
     parseAppSettingsText,
 } from "./settings";
+export { FILE_KINDS, fileKindOf } from "./file-kinds";
+export type { FileKindDefinition, FileKindId } from "./file-kinds";
+export {
+    IMAGE_FORMATS,
+    MAX_IMAGE_BYTES,
+    MAX_IMAGE_PIXELS,
+    detectImage,
+    exceedsImageLimits,
+} from "./images";
+export type {
+    ImageDimensions,
+    ImageFormat,
+    ImageFormatDefinition,
+    ImageInfo,
+} from "./images";
+export { resolveLinkTarget } from "./links";
+export type { LinkTarget } from "./links";
+export { createAttachments } from "./attachments";
+export type { Attachments, ReadImageResult } from "./attachments";

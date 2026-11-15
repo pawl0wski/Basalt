@@ -113,6 +113,11 @@ export function createTauriWorkspaceFileSystem(
             }
         },
 
+        async readBytes(path) {
+            const bytes = await attempt(() => readFile(paths.toNative(path)));
+            return bytes.ok ? ok(bytes.value) : bytes;
+        },
+
         async writeTextAtomic(path, text) {
             const parent = await ensureParent(path);
             if (!parent.ok) return parent;

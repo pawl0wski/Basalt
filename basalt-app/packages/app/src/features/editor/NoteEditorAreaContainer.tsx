@@ -11,7 +11,7 @@ import {
     DeletedBanner,
     WorkspaceUnavailableBanner,
 } from "./NoteBanners";
-import { NoteEditor } from "./NoteEditor";
+import { NoteSessionEditor } from "./NoteSessionEditor";
 import { NoteOpenError } from "./NoteOpenError";
 import { noteTitle } from "./note-title";
 import { openErrorMessage } from "./open-error-message";
@@ -178,7 +178,8 @@ export function NoteEditorAreaContainer() {
                         ) : (
                             <>
                                 {unavailable ? null : noteBanner(session)}
-                                <NoteEditor
+                                <NoteSessionEditor
+                                    notePath={session.path}
                                     label={title}
                                     text={session.text}
                                     focusRequest={
