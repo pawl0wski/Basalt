@@ -25,17 +25,17 @@ Users of Obsidian-style note-taking apps keep running into the same barriers:
 
 ## 3. Target users
 
-| # | Persona | Core need |
-|---|---------|-----------|
-| 1 | Obsidian alternative seekers | A familiar workflow (Markdown, local files) without the current tool's limitations |
-| 2 | Open-source advocates | A fully open-source solution |
-| 3 | Self-hosters | Sync they can run on their own server |
-| 4 | Price-sensitive users | An app like Obsidian, but cheaper |
-| 5 | Privacy-conscious AI users | LLM power in their notes without sending data out into the world |
-| 6 | Handwritten note-takers | An Obsidian-like tool for handwritten notes |
-| 7 | Visual thinkers | Diagrams, boards, sticky notes, icons |
-| 8 | PDF-heavy users | Annotations, key PDFs in one place, linking to notes |
-| 9 | Flexible AI users | LLMs both locally and through providers such as OpenRouter |
+| #   | Persona                      | Core need                                                                          |
+| --- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| 1   | Obsidian alternative seekers | A familiar workflow (Markdown, local files) without the current tool's limitations |
+| 2   | Open-source advocates        | A fully open-source solution                                                       |
+| 3   | Self-hosters                 | Sync they can run on their own server                                              |
+| 4   | Price-sensitive users        | An app like Obsidian, but cheaper                                                  |
+| 5   | Privacy-conscious AI users   | LLM power in their notes without sending data out into the world                   |
+| 6   | Handwritten note-takers      | An Obsidian-like tool for handwritten notes                                        |
+| 7   | Visual thinkers              | Diagrams, boards, sticky notes, icons                                              |
+| 8   | PDF-heavy users              | Annotations, key PDFs in one place, linking to notes                               |
+| 9   | Flexible AI users            | LLMs both locally and through providers such as OpenRouter                         |
 
 ## 4. Feature scope
 
@@ -64,14 +64,14 @@ Users of Obsidian-style note-taking apps keep running into the same barriers:
 
 ## 5. Persona-to-feature mapping
 
-| Persona | Features that serve it |
-|---------|------------------------|
-| Obsidian alternative / cheaper option | Markdown, command palette, icons, free self-hosting |
-| Open source / self-hosters | Self-hosted sync, E2EE |
-| Privacy-conscious AI users | Local LLM, AI chatbot |
-| Handwritten note-takers / visual thinkers | Whiteboards with stylus, images, SVG icons |
-| PDF-heavy users | *no feature in current scope* |
-| Flexible AI users | Local LLM (*no integration with external providers*) |
+| Persona                                   | Features that serve it                               |
+| ----------------------------------------- | ---------------------------------------------------- |
+| Obsidian alternative / cheaper option     | Markdown, command palette, icons, free self-hosting  |
+| Open source / self-hosters                | Self-hosted sync, E2EE                               |
+| Privacy-conscious AI users                | Local LLM, AI chatbot                                |
+| Handwritten note-takers / visual thinkers | Whiteboards with stylus, images, SVG icons           |
+| PDF-heavy users                           | _no feature in current scope_                        |
+| Flexible AI users                         | Local LLM (_no integration with external providers_) |
 
 ## 6. Key differentiators
 
