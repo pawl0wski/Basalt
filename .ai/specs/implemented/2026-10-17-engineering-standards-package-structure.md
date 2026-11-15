@@ -12,7 +12,7 @@ tags: [architecture, engineering-standards, packages, tauri, ci]
 
 ## Status
 
-**Current and implemented.** This is the authoritative engineering standards specification for Basalt. Package quality scripts and CI workflows are implemented. Linux CI runs in an Alpine container; Windows Tauri builds use a native runner. macOS is not currently a supported target. CI checks are advisory workflow results; repository branch protection and required status checks are not part of this project's workflow.
+**Current and implemented.** This is the authoritative engineering standards specification for Basalt. Package quality scripts and CI workflows are implemented. Linux CI runs in an Alpine container; Windows Tauri builds use a native runner. macOS is not currently a supported target. CI checks are required status checks: they gate every merge.
 
 ## Goal
 
@@ -429,7 +429,7 @@ The CI workflow should run on every PR and on changes to the default branch. Req
 7. **Rust checks:** `cargo fmt --check` and `cargo clippy` with warnings treated as failures. `cargo test` runs only when custom Rust code with tests exists.
 8. **Tauri validation:** validate Tauri configuration/capability files and build at least one representative desktop target. Platform matrix builds should run on relevant branches/releases where runner availability permits.
 
-CI reports check results for pull requests and default-branch changes. Merge enforcement through repository branch protection or required status checks is intentionally not used by this project.
+CI reports check results for pull requests and default-branch changes. Required status checks gate every merge.
 
 ### CI behavior
 
