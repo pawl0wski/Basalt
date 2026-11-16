@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { ContextMenu, type MenuEntry } from "@basalt/ui";
@@ -28,17 +28,27 @@ export function TreeOverlaysContainer() {
     const { treeStore, notesStore, treeActions } = useServices();
     const { menu, dialog, focusedId } = useStore(treeStore);
     const tree = useStore(notesStore, (state) => state.tree);
+    const chosen = useRef(false);
+    const opened = menu?.point;
+
+    useEffect(() => {
+        if (opened) chosen.current = false;
+    }, [opened]);
 
     const items = useMemo((): MenuEntry[] => {
         if (!menu) return [];
         const { target } = menu;
+        const choose = (run: () => void) => () => {
+            chosen.current = true;
+            run();
+        };
         if (target.kind === "note") {
             return [
                 {
                     label: t("tree.menu.rename"),
-                    onSelect: () => {
+                    onSelect: choose(() => {
                         treeActions.startRename(target.path);
-                    },
+                    }),
                 },
             ];
         }
@@ -46,15 +56,15 @@ export function TreeOverlaysContainer() {
         return [
             {
                 label: t("tree.menu.newNote"),
-                onSelect: () => {
+                onSelect: choose(() => {
                     void treeActions.newNote(parent);
-                },
+                }),
             },
             {
                 label: t("tree.menu.newFolder"),
-                onSelect: () => {
+                onSelect: choose(() => {
                     treeActions.startNewFolder(parent);
-                },
+                }),
             },
         ];
     }, [menu, t, treeActions]);
@@ -95,7 +105,10 @@ export function TreeOverlaysContainer() {
                 }}
                 onCloseAutoFocus={(event) => {
                     event.preventDefault();
-                    if (treeStore.getState().dialog !== null) return;
+                    const wasChosen = chosen.current;
+                    chosen.current = false;
+                    if (wasChosen || treeStore.getState().dialog !== null)
+                        return;
                     focusRow(
                         menu ? targetRowId(menu.target, focusedId) : focusedId,
                     );
