@@ -3,30 +3,28 @@
 **Last updated:** 2026-11-16
 **Branch:** feat/manage-notes-and-folders
 **PR:** #28 (draft → ready)
-**Current phase/step:** Phases A–D complete (Steps 4.1–4.4 done)
-**Last commit:** 9349df0 `test(e2e): cover moving notes by drag, multi-selection and bulk move`
+**Current phase/step:** All Steps done (phases A–E)
+**Last commit:** `test(e2e): expect Rename and Delete on the note context menu` (3e3502b)
 
 ## What just happened
 
-- Steps 4.1 (drag to move) and 4.2 (multi-selection and bulk move) landed in 126e277 and db31a2f.
-- Step 4.3: `e2e/move-notes.spec.ts` (30 tests) committed in 9349df0.
-- Step 4.4: PLAN, HANDOFF, run log and lesson updated; spec status noted.
-- Validation gate green (see the run log). `rust:fmt`/`rust:lint` unavailable in the sandbox; no Rust changed.
+- Resumed the interrupted run. Phases A–D were already done; Steps 4.3/4.4 were committed and the docs updated.
+- The owner confirmed C-1/C-8/C-9, so Phase E (delete) was implemented: Steps 5.1–5.5 (core + platform, Rust command, app UI, e2e, docs).
+- Full validation gate green (see `final-gate-checks.md`). `rust:fmt`/`rust:lint`, `cargo test` and `tauri build` are unavailable in this sandbox; the Step 5.2 Rust is UNVERIFIED beyond a parse check.
 
 ## Next concrete action
 
-- None for phases A–D. Phase E (delete) needs the owner's yes on C-1 before any code.
+- None. All Steps are done. The Rust gate must run in CI; verify `trash = "5"` resolves and `tauri-plugin-fs`'s `app.fs_scope()` / `Scope::is_allowed` compile on a Rust 1.85+ toolchain.
 
 ## Blockers / open questions
 
-- Phase E blocked on C-1 (custom Rust `move_to_trash`), C-8 (partial-failure rules) and C-9 (no folder operations). `deleteNotes`/`WorkspaceTrash` are not implemented.
-- C-5: per-folder read errors are not surfaced (flat `list()`); documented, out of scope for A–D.
+- None open. C-5 (per-folder read errors) stays out of scope by owner decision.
 
 ## Environment caveats
 
 - Dev runtime runnable: yes (memory platform via Playwright)
-- Browser / UI checks: Playwright e2e (memory platform); 162 tests green
-- Rust toolchain: `rustfmt`/`clippy` not installed in this sandbox
+- Browser / UI checks: Playwright e2e (memory platform); 169 tests green
+- Rust toolchain: 1.63 only; no `rustfmt`/`clippy`; edition 2024 needs 1.85+
 
 ## Worktree
 

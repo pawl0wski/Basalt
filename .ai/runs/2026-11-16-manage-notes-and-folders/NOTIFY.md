@@ -20,3 +20,10 @@
 - Resume point: 5.1 (source: Tasks table; Phase 5 appended after the owner confirmed C-1/C-8/C-9)
 - PR head SHA: 7a4485b
 - Owner decision: implement Phase E (delete) with the custom Rust `move_to_trash` (C-1), C-8 partial-failure rules and C-9 (no folder operations) confirmed. C-5 per-folder read errors stay documented as out of scope.
+
+## 2026-11-16T21:30:00Z — Phase E complete (all Steps done)
+
+- Steps 5.1–5.5 landed: `WorkspaceTrash` port + `deleteNotes` + adapters (16fb48b), the Rust `move_to_trash` command (d13ee20), the app UI delete flow (de9fc14), the delete e2e (f4a8ea3 + 3e3502b), and these docs.
+- Final gate green: format, lint, typecheck, 1491 unit tests, build, 169 e2e, 237 story tests, tokens. `rust:fmt`/`rust:lint`/`cargo test`/`tauri build` unavailable in the sandbox; Step 5.2 Rust UNVERIFIED beyond a parse check.
+- C-5 per-folder read errors remain out of scope by owner decision.
+- PR #28 is `Status: complete`; lock released.

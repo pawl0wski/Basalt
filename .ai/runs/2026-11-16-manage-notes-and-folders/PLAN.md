@@ -33,11 +33,11 @@ Refs: #16 (issue), #27 (spec PR, merged). Branch: `feat/manage-notes-and-folders
 | 4     | 4.2  | Multi-selection (AC-04.10) and bulk move (AC-04.13)                                   | dispatch | done   | db31a2f |
 | 4     | 4.3  | Playwright e2e for phase 4 criteria                                                   | dispatch | done   | 9349df0 |
 | 4     | 4.4  | Docs: spec status and blocked items, lesson, run log                                  | inline   | done   |         |
-| 5     | 5.1  | core + platform: `WorkspaceTrash` port, `deleteNotes`, in-memory trash, adapters, tests | dispatch | done   |         |
-| 5     | 5.2  | rust: `move_to_trash` command, `trash` dependency, Rust tests                          | dispatch | done   |         |
-| 5     | 5.3  | app UI: `deleteNotes` action, confirm dialog, context menu, i18n, unit tests           | dispatch | done   |         |
-| 5     | 5.4  | Playwright e2e for delete (AC-04.2, AC-04.12) and the selection menu (AC-04.11)        | dispatch | done   |         |
-| 5     | 5.5  | Docs: spec status, lesson, run log                                                     | inline   | todo   |         |
+| 5     | 5.1  | core + platform: `WorkspaceTrash` port, `deleteNotes`, in-memory trash, adapters, tests | dispatch | done   | 16fb48b |
+| 5     | 5.2  | rust: `move_to_trash` command, `trash` dependency, Rust tests                          | dispatch | done   | d13ee20 |
+| 5     | 5.3  | app UI: `deleteNotes` action, confirm dialog, context menu, i18n, unit tests           | dispatch | done   | de9fc14 |
+| 5     | 5.4  | Playwright e2e for delete (AC-04.2, AC-04.12) and the selection menu (AC-04.11)        | dispatch | done   | f4a8ea3 |
+| 5     | 5.5  | Docs: spec status, lesson, run log                                                     | inline   | done   |         |
 
 ## Goal
 
@@ -71,13 +71,21 @@ Spec phases A–D. Core use cases and port `rename`; ui Tree, ContextMenu, dialo
 
 ## Phase 4 notes
 
-- The context menu is not shown for a selection of 2 or more notes. Its only entry (AC-04.11 "Delete N notes") is blocked on C-1. Right-clicking a selected note of a multi-selection does nothing; right-clicking an unselected note clears the selection and shows that note's menu (covered by unit tests). A selection of one note shows the normal note menu.
 - `AppError` gained an optional structured `detail` (`move-collision`, `move-stopped`) so the C-8 messages are localised (`tree.move.*`); the English `message` stays for logs.
 - Move failures reuse the sidebar `createError` alert (cleared by the next successful move or create).
 
+## Phase 5 notes (E — delete)
+
+- The owner confirmed C-1 (custom Rust `move_to_trash`), C-8 (partial-failure rules) and C-9 (no folder operations) on 2026-11-16, so Phase E was implemented in this resume.
+- `AppErrorDetail` gained `delete-failed` (`{ failed, total }`) so a partial bulk delete names how many were not deleted (`tree.delete.partial`).
+- C-8 mechanics: `deleteNotes` calls the trash per path, so a failure midway leaves the notes already trashed trashed and reports the count; a read-only workspace fails every path, so nothing changes and the sidebar shows the R-4 message.
+- The menu now opens for a multi-selection: a selected note of a selection of 2+ offers only "Delete N notes" (AC-04.11); an unselected note clears the selection and shows Rename + Delete.
+- The delete confirm reuses the existing ui `ConfirmDialog` (Cancel focused, destructive); the dialog closes on confirm while the async delete runs, and any error lands in the sidebar alert (same pattern as the editor's confirm dialogs).
+- Rust: `trash = "5"`, a `move_to_trash` command that validates every path against the runtime fs scope parent, and `#[cfg(test)]` tests for the scope check. App commands need no capability entry.
+
 ## Completion (2026-11-16)
 
-- Phases A–D implemented and committed. Validation gate green: `format:check`, `lint`, `typecheck`, `npm test` (1473 unit tests), `npm run build`, `npm run test:e2e` (162 tests, 30 of them in `e2e/move-notes.spec.ts`). `rust:fmt` and `rust:lint` could not run in this sandbox (no `rustfmt`/`clippy` components installed); no Rust changed in this run.
-- Phase E (delete, AC-04.2, AC-04.12 and the "Delete N notes" entry of AC-04.11) stays blocked on C-1 (custom Rust `move_to_trash`), C-8 and C-9 owner confirmation. `deleteNotes` and `WorkspaceTrash` are not implemented. The PR uses `Refs #16`, never `Closes #16`.
-- C-5 gap unchanged: per-folder read errors are not surfaced because `WorkspaceFileSystem.list()` is a flat recursive listing that fails as a whole; the ui `Tree` renders a folder `error` but the adapter never sets it. Supporting it needs a port change (partial results with per-directory errors) and is out of scope for A–D.
-- Real Tauri `rename` and native drag-and-drop remain UNVERIFIED on this Linux sandbox (fakes and the memory platform only); listed in the PR.
+- Phases A–E implemented and committed. Validation gate green: `format:check`, `lint`, `typecheck`, `npm test` (1491 unit tests), `npm run build`, `npm run test:e2e` (169 tests, incl. `manage-notes.spec.ts`, `move-notes.spec.ts`, `delete-notes.spec.ts`), `test:stories` (237), `check:tokens`.
+- `rust:fmt` and `rust:lint` could not run in this sandbox (no `rustfmt`/`clippy` components; the installed rustc is 1.63, too old for edition 2024). The Rust changed in Step 5.2 is therefore UNVERIFIED beyond a parse check; CI must run the Rust gate. `cargo test` for the Rust tests, and `npm run tauri build -- --no-bundle` for the Cargo.toml change, also remain unrun here.
+- C-5 gap unchanged by owner decision: per-folder read errors are not surfaced because `WorkspaceFileSystem.list()` is a flat recursive listing that fails as a whole; the ui `Tree` renders a folder `error` but the adapter never sets it. Out of scope.
+- Real Tauri `rename`, the `move_to_trash` command and native drag-and-drop remain UNVERIFIED on this Linux sandbox (fakes and the memory platform only); listed in the PR.
