@@ -2,7 +2,7 @@
 date: 2026-11-16
 slug: manage-notes-and-folders
 type: run
-status: interrupted
+status: completed
 tags: [notes, folders, tree, rename, move, e01]
 ---
 
@@ -29,10 +29,10 @@ Refs: #16 (issue), #27 (spec PR, merged). Branch: `feat/manage-notes-and-folders
 | 3     | 3.3  | Context menu and keyboard open (AC-04.9), new folder (AC-04.3)                        | dispatch | done   | 68d0f30 |
 | 3     | 3.4  | Rename flow (AC-04.1) and read-only message (AC-04.7)                                 | dispatch | done   | 68d0f30 |
 | 3     | 3.5  | Playwright e2e for phase 3 criteria                                                   | dispatch | done   | d88cd80 |
-| 4     | 4.1  | Drag a note onto a folder or root: move, tabs follow, hover-open, link rewrite (04.5) | dispatch | todo   |         |
-| 4     | 4.2  | Multi-selection (AC-04.10) and bulk move (AC-04.13)                                   | dispatch | todo   |         |
-| 4     | 4.3  | Playwright e2e for phase 4 criteria                                                   | dispatch | todo   |         |
-| 4     | 4.4  | Docs: spec status and blocked items, lesson, run log                                  | inline   | todo   |         |
+| 4     | 4.1  | Drag a note onto a folder or root: move, tabs follow, hover-open, link rewrite (04.5) | dispatch | done   | 126e277 |
+| 4     | 4.2  | Multi-selection (AC-04.10) and bulk move (AC-04.13)                                   | dispatch | done   | db31a2f |
+| 4     | 4.3  | Playwright e2e for phase 4 criteria                                                   | dispatch | done   | 9349df0 |
+| 4     | 4.4  | Docs: spec status and blocked items, lesson, run log                                  | inline   | done   |         |
 
 ## Goal
 
@@ -69,3 +69,10 @@ Spec phases A–D. Core use cases and port `rename`; ui Tree, ContextMenu, dialo
 - The context menu is not shown for a selection of 2 or more notes. Its only entry (AC-04.11 "Delete N notes") is blocked on C-1. Right-clicking a selected note of a multi-selection does nothing; right-clicking an unselected note clears the selection and shows that note's menu (covered by unit tests). A selection of one note shows the normal note menu.
 - `AppError` gained an optional structured `detail` (`move-collision`, `move-stopped`) so the C-8 messages are localised (`tree.move.*`); the English `message` stays for logs.
 - Move failures reuse the sidebar `createError` alert (cleared by the next successful move or create).
+
+## Completion (2026-11-16)
+
+- Phases A–D implemented and committed. Validation gate green: `format:check`, `lint`, `typecheck`, `npm test` (1473 unit tests), `npm run build`, `npm run test:e2e` (162 tests, 30 of them in `e2e/move-notes.spec.ts`). `rust:fmt` and `rust:lint` could not run in this sandbox (no `rustfmt`/`clippy` components installed); no Rust changed in this run.
+- Phase E (delete, AC-04.2, AC-04.12 and the "Delete N notes" entry of AC-04.11) stays blocked on C-1 (custom Rust `move_to_trash`), C-8 and C-9 owner confirmation. `deleteNotes` and `WorkspaceTrash` are not implemented. The PR uses `Refs #16`, never `Closes #16`.
+- C-5 gap unchanged: per-folder read errors are not surfaced because `WorkspaceFileSystem.list()` is a flat recursive listing that fails as a whole; the ui `Tree` renders a folder `error` but the adapter never sets it. Supporting it needs a port change (partial results with per-directory errors) and is out of scope for A–D.
+- Real Tauri `rename` and native drag-and-drop remain UNVERIFIED on this Linux sandbox (fakes and the memory platform only); listed in the PR.
