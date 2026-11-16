@@ -33,7 +33,7 @@ Manual test checkpoint: in an empty note, drop an image far below the first line
 
 ## Phase 3: Wrap-up
 
-- [ ] 3.1 Validation is partial: format, lint, typecheck, unit (94 files / 1,128 tests), build, e2e (100 tests), `check:tokens`, `check:bundle`, and `check-agent-routes` passed. Rust fmt/lint could not run because this environment's Cargo has neither the `fmt` nor `clippy` subcommand. Manual Windows/Linux verification is still UNVERIFIED. Spec remains draft; finish the Rust checks and desktop verification before moving it to `implemented`. Run log: `.ai/runs/2026-11-16-fix-workspace-scope-and-image-drop.md`.
+- [x] 3.1 Full validation passed in CI run 43937490961: format, lint, typecheck, unit (94 files / 1,128 tests), build, e2e (100 tests), `check:tokens`, `check:bundle`, `check-agent-routes`, Rust fmt/lint, and Windows/Linux Tauri builds. Local Rust fmt/lint were unavailable because the local Cargo lacks those subcommands, but CI installed and ran them. Manual desktop verification remains UNVERIFIED; it is not a condition for moving the spec under this task's rule. Spec moved to `implemented/`. Run log: `.ai/runs/2026-11-16-fix-workspace-scope-and-image-drop.md`.
 
 ## Notes
 

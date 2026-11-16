@@ -18,9 +18,9 @@ Completed implementation phases 1 and 2 as recorded in `.ai/track.md`. Kept the 
 
 - Passed: format check, lint, typecheck, unit tests (94 files, 1,128 tests), production build, Playwright (100 tests), token check, bundle check, and agent route check.
 - Build reports the existing large JavaScript chunk warning.
-- Blocked by environment: `rust:fmt` and `rust:lint`; installed Cargo has neither the `fmt` nor `clippy` subcommand.
+- CI run 43937490961 passed the Rust formatting and lint jobs, plus the Windows and Linux Tauri build jobs. The local Cargo installation lacks the `fmt` and `clippy` subcommands, so those two checks could not run locally.
 - Manual Windows/Linux app verification remains UNVERIFIED.
 
 # Open issues
 
-Install/provision the Rust formatting and lint components, rerun those two checks, and complete the desktop verification. Keep the spec in draft until those checks are resolved.
+Manual Windows/Linux desktop verification remains for the owner. The spec is implemented because all automated validation and both desktop builds passed.

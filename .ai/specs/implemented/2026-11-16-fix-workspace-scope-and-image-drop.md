@@ -2,7 +2,7 @@
 date: 2026-11-16
 slug: fix-workspace-scope-and-image-drop
 type: spec
-status: draft
+status: implemented
 tags: [bug, images, tauri, fs-scope, editor, windows]
 ---
 
