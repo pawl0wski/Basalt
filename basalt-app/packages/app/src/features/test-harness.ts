@@ -29,12 +29,17 @@ export function root(value: string): WorkspaceRoot {
 }
 
 export function seedFs(
-    files: Readonly<Record<string, string>>,
+    files: Readonly<Record<string, string | Uint8Array>>,
     options: InMemoryWorkspaceFileSystemOptions = {},
 ): InMemoryWorkspaceFileSystem {
     const seeded = createInMemoryWorkspaceFileSystem();
-    for (const [name, text] of Object.entries(files)) {
-        seeded.externalWrite(wsPath(name), new TextEncoder().encode(text));
+    for (const [name, content] of Object.entries(files)) {
+        seeded.externalWrite(
+            wsPath(name),
+            typeof content === "string"
+                ? new TextEncoder().encode(content)
+                : content,
+        );
     }
     return createInMemoryWorkspaceFileSystem({
         ...options,

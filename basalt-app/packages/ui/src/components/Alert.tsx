@@ -1,6 +1,7 @@
-import { CircleAlert, Info, TriangleAlert } from "lucide-react";
+import { CircleAlert, Info, TriangleAlert, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "../lib/utils";
+import { IconButton } from "./IconButton";
 
 const variants = {
     info: { Icon: Info, icon: "text-icon-default", role: "status" },
@@ -19,6 +20,8 @@ type AlertProps = {
     children: ReactNode;
     action?: ReactNode;
     className?: string;
+    onDismiss?: () => void;
+    dismissLabel?: string;
 };
 
 function Alert({
@@ -28,6 +31,8 @@ function Alert({
     children,
     action,
     className,
+    onDismiss,
+    dismissLabel,
 }: AlertProps) {
     const { Icon, icon, role: defaultRole } = variants[variant];
 
@@ -44,11 +49,21 @@ function Alert({
                 aria-hidden="true"
                 className={cn("size-icon shrink-0", icon)}
             />
-            <div className="flex flex-col gap-in-group">
+            <div className="flex flex-1 flex-col gap-in-group">
                 {title ? <p className="font-ui-strong">{title}</p> : null}
                 <div>{children}</div>
                 {action ? <div className="pt-in-group">{action}</div> : null}
             </div>
+            {onDismiss && dismissLabel ? (
+                <IconButton
+                    aria-label={dismissLabel}
+                    tooltip={false}
+                    onClick={onDismiss}
+                    className="shrink-0"
+                >
+                    <X aria-hidden="true" />
+                </IconButton>
+            ) : null}
         </div>
     );
 }

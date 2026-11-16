@@ -17,11 +17,11 @@ The right panel of the window: a titled frame with a search and a close action, 
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
+| Situation                           | Use instead                                           |
+| ----------------------------------- | ----------------------------------------------------- |
 | The left column with the note list. | [NoteSidebar](?path=/docs/product-notesidebar--docs). |
-| A short task that blocks the rest. | [Dialog](?path=/docs/primitives-dialog--docs). |
-| A few controls next to a button. | [Popover](?path=/docs/primitives-popover--docs). |
+| A short task that blocks the rest.  | [Dialog](?path=/docs/primitives-dialog--docs).        |
+| A few controls next to a button.    | [Popover](?path=/docs/primitives-popover--docs).      |
 
 ## 4. Anatomy
 
@@ -31,10 +31,10 @@ The right panel of the window: a titled frame with a search and a close action, 
 
 ## 5. Variants
 
-| Variant | Use it for |
-|---|---|
+| Variant                                        | Use it for                             |
+| ---------------------------------------------- | -------------------------------------- |
 | With search (default when `onSearch` is given) | A panel whose content can be searched. |
-| Without search | A panel with nothing to search. |
+| Without search                                 | A panel with nothing to search.        |
 
 <Canvas of={SidePanelStories.WithoutSearch} />
 
@@ -62,19 +62,21 @@ Fixed 300 px. Below 1440 px the application starts with the panel closed; see [A
 
 ## 10. API
 
-| Prop | Type | Description |
-|---|---|---|
-| `title` | `string` | Visible title and landmark name. |
-| `onClose` | `() => void` | Close action. |
-| `onSearch` | `() => void` | Optional. Without it there is no search button. |
-| `children` | `ReactNode` | The content. |
-| `className` | `string` | |
+| Prop        | Type         | Description                                     |
+| ----------- | ------------ | ----------------------------------------------- |
+| `title`     | `string`     | Visible title and landmark name.                |
+| `onClose`   | `() => void` | Close action.                                   |
+| `onSearch`  | `() => void` | Optional. Without it there is no search button. |
+| `children`  | `ReactNode`  | The content.                                    |
+| `className` | `string`     |                                                 |
 
 ## 11. Code
 
 ```tsx
 <SidePanel title="Outline" onClose={closePanel} onSearch={searchOutline}>
-    <p className="p-panel text-size-ui-small text-text-muted">No headings found.</p>
+    <p className="p-panel text-size-ui-small text-text-muted">
+        No headings found.
+    </p>
 </SidePanel>
 ```
 

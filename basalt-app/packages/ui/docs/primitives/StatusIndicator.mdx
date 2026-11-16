@@ -20,12 +20,12 @@ A status indicator tells the user whether their notes are in step with the other
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| A one-off result of an action ("Note saved"). | Toast (Batch 3). |
-| An error that blocks the user and needs action. | [Alert](?path=/docs/primitives-alert--docs) with an action. |
-| A switch for sync. | [Switch](?path=/docs/primitives-switch--docs). |
-| Progress of a long task. | A progress element. It is not in the current plan; see "What is missing". |
+| Situation                                       | Use instead                                                               |
+| ----------------------------------------------- | ------------------------------------------------------------------------- |
+| A one-off result of an action ("Note saved").   | Toast (Batch 3).                                                          |
+| An error that blocks the user and needs action. | [Alert](?path=/docs/primitives-alert--docs) with an action.               |
+| A switch for sync.                              | [Switch](?path=/docs/primitives-switch--docs).                            |
+| Progress of a long task.                        | A progress element. It is not in the current plan; see "What is missing". |
 
 ## 4. Anatomy
 
@@ -34,12 +34,12 @@ A status indicator tells the user whether their notes are in step with the other
 
 ## 5. Variants (statuses)
 
-| Status | Word | Color | Source |
-|---|---|---|---|
-| `synced` | Synced | `text-muted` | tokens.md status bar, R01.6, R02.6 |
-| `syncing` | Syncing | `text-muted` | tokens.md status bar |
+| Status     | Word          | Color            | Source                                                     |
+| ---------- | ------------- | ---------------- | ---------------------------------------------------------- |
+| `synced`   | Synced        | `text-muted`     | tokens.md status bar, R01.6, R02.6                         |
+| `syncing`  | Syncing       | `text-muted`     | tokens.md status bar                                       |
 | `conflict` | Sync conflict | `status-warning` | tokens.md `status-warning` ("conflict of synchronization") |
-| `error` | Sync error | `status-danger` | tokens.md status bar, AB3 |
+| `error`    | Sync error    | `status-danger`  | tokens.md status bar, AB3                                  |
 
 Words and icons for `conflict` and `error` are proposals; the sources name "Synced", "Syncing" and "an error". The component has no animation (the `syncing` icon is static) because the sources define no spinner motion; this is a proposal.
 
@@ -73,17 +73,17 @@ The indicator is as wide as its text and stays on one line. In the 24 px status 
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `status` | `"synced" \| "syncing" \| "conflict" \| "error"` | required | Which state to show. |
-| `className` | `string` | | Layout only. |
+| Prop        | Type                                             | Default  | Description          |
+| ----------- | ------------------------------------------------ | -------- | -------------------- |
+| `status`    | `"synced" \| "syncing" \| "conflict" \| "error"` | required | Which state to show. |
+| `className` | `string`                                         |          | Layout only.         |
 
 ## 11. Code
 
 ```tsx
 import { StatusIndicator } from "@basalt/ui";
 
-<StatusIndicator status={syncStatus} />
+<StatusIndicator status={syncStatus} />;
 ```
 
 ## 12. Do and don't
@@ -95,7 +95,12 @@ import { StatusIndicator } from "@basalt/ui";
             reason: "A word and an icon name the problem; color supports them.",
         }}
         bad={{
-            children: <span className="size-icon rounded-switch bg-status-danger" aria-hidden="true" />,
+            children: (
+                <span
+                    className="size-icon rounded-switch bg-status-danger"
+                    aria-hidden="true"
+                />
+            ),
             reason: "A colored dot alone is invisible to some users and says nothing.",
         }}
     />

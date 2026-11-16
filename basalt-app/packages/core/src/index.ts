@@ -60,3 +60,44 @@ export {
     parseAppSettings,
     parseAppSettingsText,
 } from "./settings";
+export { FILE_KINDS, fileKindOf } from "./file-kinds";
+export type { FileKindDefinition, FileKindId } from "./file-kinds";
+export {
+    IMAGE_FORMATS,
+    MAX_IMAGE_BYTES,
+    MAX_IMAGE_PIXELS,
+    detectImage,
+    exceedsImageLimits,
+} from "./images";
+export type {
+    ImageDimensions,
+    ImageFormat,
+    ImageFormatDefinition,
+    ImageInfo,
+} from "./images";
+export {
+    buildRelativeLink,
+    encodeLinkSegment,
+    formatImageLink,
+    resolveLinkTarget,
+} from "./links";
+export {
+    attachmentExtension,
+    pastedImageBaseName,
+    planAttachmentName,
+    sanitizeFileName,
+    splitFileName,
+} from "./attachment-names";
+export {
+    DEFAULT_ATTACHMENT_LOCATION,
+    attachmentFolderFor,
+} from "./attachment-location";
+export type { AttachmentLocation } from "./attachment-location";
+export type { LinkTarget } from "./links";
+export { createAttachments } from "./attachments";
+export type {
+    AddImageInput,
+    AddImageResult,
+    Attachments,
+    ReadImageResult,
+} from "./attachments";

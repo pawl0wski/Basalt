@@ -21,11 +21,11 @@ A confirm dialog makes sure the user means an action that is hard to undo, such 
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| The action can be undone right after. | Do it and show a Toast with "Undo". |
-| The user needs to fill in something. | [Dialog](?path=/docs/primitives-dialog--docs). |
-| A harmless choice. | Do not ask. |
+| Situation                             | Use instead                                    |
+| ------------------------------------- | ---------------------------------------------- |
+| The action can be undone right after. | Do it and show a Toast with "Undo".            |
+| The user needs to fill in something.  | [Dialog](?path=/docs/primitives-dialog--docs). |
+| A harmless choice.                    | Do not ask.                                    |
 
 ## 4. Anatomy
 
@@ -38,10 +38,10 @@ Same container as [Dialog](?path=/docs/primitives-dialog--docs), with:
 
 ## 5. Variants
 
-| `destructive` | Confirm button | Use it for |
-|---|---|---|
-| `true` | `destructive` (danger text, no danger fill) | Deleting data. |
-| `false` | `primary` | Discarding changes, leaving a view. |
+| `destructive` | Confirm button                              | Use it for                          |
+| ------------- | ------------------------------------------- | ----------------------------------- |
+| `true`        | `destructive` (danger text, no danger fill) | Deleting data.                      |
+| `false`       | `primary`                                   | Discarding changes, leaving a view. |
 
 <Controls of={ConfirmDialogStories.Playground} />
 
@@ -49,11 +49,11 @@ Same container as [Dialog](?path=/docs/primitives-dialog--docs), with:
 
 ## 6. States
 
-| State | Notes |
-|---|---|
-| Closed / Open | Controlled with `open` and `onOpenChange`. |
-| Confirming | If the action takes time, keep the dialog open and disable both buttons; this is not built in yet. |
-| Hover, focus, pressed, disabled | Belong to the two buttons. |
+| State                           | Notes                                                                                              |
+| ------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Closed / Open                   | Controlled with `open` and `onOpenChange`.                                                         |
+| Confirming                      | If the action takes time, keep the dialog open and disable both buttons; this is not built in yet. |
+| Hover, focus, pressed, disabled | Belong to the two buttons.                                                                         |
 
 ## 7. Behavior and accessibility
 
@@ -80,16 +80,16 @@ Same as Dialog: stacked buttons at 320 px, the main action on top.
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `open` | `boolean` | required | Whether it is shown. |
-| `onOpenChange` | `(open: boolean) => void` | required | Called when it should open or close. |
-| `title` | `ReactNode` | required | The question. |
-| `description` | `ReactNode` | | Consequence. |
-| `confirmLabel` | `string` | required | Verb button label. |
-| `cancelLabel` | `string` | `"Cancel"` | Cancel label. |
-| `onConfirm` | `() => void` | required | Run when the user confirms. |
-| `destructive` | `boolean` | `false` | Use the destructive style for the confirm button. |
+| Prop           | Type                      | Default    | Description                                       |
+| -------------- | ------------------------- | ---------- | ------------------------------------------------- |
+| `open`         | `boolean`                 | required   | Whether it is shown.                              |
+| `onOpenChange` | `(open: boolean) => void` | required   | Called when it should open or close.              |
+| `title`        | `ReactNode`               | required   | The question.                                     |
+| `description`  | `ReactNode`               |            | Consequence.                                      |
+| `confirmLabel` | `string`                  | required   | Verb button label.                                |
+| `cancelLabel`  | `string`                  | `"Cancel"` | Cancel label.                                     |
+| `onConfirm`    | `() => void`              | required   | Run when the user confirms.                       |
+| `destructive`  | `boolean`                 | `false`    | Use the destructive style for the confirm button. |
 
 ## 11. Code
 
@@ -104,7 +104,7 @@ import { ConfirmDialog } from "@basalt/ui";
     confirmLabel="Delete note"
     destructive
     onConfirm={() => deleteNote(note)}
-/>
+/>;
 ```
 
 ## 12. Do and don't

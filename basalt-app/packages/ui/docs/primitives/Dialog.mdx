@@ -18,13 +18,13 @@ A dialog asks the user to finish one short, focused task before returning to the
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| A yes/no confirmation. | [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs). |
-| A small option panel next to its trigger. | [Popover](?path=/docs/primitives-popover--docs). |
-| A list of actions. | [Menu](?path=/docs/primitives-menu--docs). |
-| A long form or a task with many steps. | A separate page or view. |
-| A message about the state of the app. | [Alert](?path=/docs/primitives-alert--docs) or a Toast. |
+| Situation                                 | Use instead                                                  |
+| ----------------------------------------- | ------------------------------------------------------------ |
+| A yes/no confirmation.                    | [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs). |
+| A small option panel next to its trigger. | [Popover](?path=/docs/primitives-popover--docs).             |
+| A list of actions.                        | [Menu](?path=/docs/primitives-menu--docs).                   |
+| A long form or a task with many steps.    | A separate page or view.                                     |
+| A message about the state of the app.     | [Alert](?path=/docs/primitives-alert--docs) or a Toast.      |
 
 ## 4. Anatomy
 
@@ -44,13 +44,13 @@ One variant. `role="alertdialog"` is used only by ConfirmDialog.
 
 ## 6. States
 
-| State | Notes |
-|---|---|
-| Closed | Nothing is rendered. |
-| Open | Focus moves into the dialog; the app behind is inert. |
-| Loading | Disable the main action and change its label ("Saving..."). The dialog stays open. |
-| Error | Show the message in the body (field error or Alert); do not close. |
-| Hover, pressed, disabled, selected | Belong to the controls inside. |
+| State                              | Notes                                                                              |
+| ---------------------------------- | ---------------------------------------------------------------------------------- |
+| Closed                             | Nothing is rendered.                                                               |
+| Open                               | Focus moves into the dialog; the app behind is inert.                              |
+| Loading                            | Disable the main action and change its label ("Saving..."). The dialog stays open. |
+| Error                              | Show the message in the body (field error or Alert); do not close.                 |
+| Hover, pressed, disabled, selected | Belong to the controls inside.                                                     |
 
 Switches and checkboxes do not stand on `surface-raised` (2.80:1, tokens.md rule 15). A labelled primary button is fine there.
 
@@ -81,16 +81,16 @@ Switches and checkboxes do not stand on `surface-raised` (2.80:1, tokens.md rule
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `title` | `ReactNode` | required | Heading and accessible name. |
-| `description` | `ReactNode` | | Short explanation. |
-| `children` | `ReactNode` | | Body. |
-| `footer` | `ReactNode` | | Actions. |
-| `trigger` | `ReactNode` | | Element that opens it (rendered with `asChild`). |
-| `open`, `defaultOpen`, `onOpenChange` | | | Controlled or uncontrolled state. |
-| `role` | `"dialog" \| "alertdialog"` | `"dialog"` | Use `alertdialog` through ConfirmDialog. |
-| `onOpenAutoFocus` | `(event) => void` | | Choose the initially focused element. |
+| Prop                                  | Type                        | Default    | Description                                      |
+| ------------------------------------- | --------------------------- | ---------- | ------------------------------------------------ |
+| `title`                               | `ReactNode`                 | required   | Heading and accessible name.                     |
+| `description`                         | `ReactNode`                 |            | Short explanation.                               |
+| `children`                            | `ReactNode`                 |            | Body.                                            |
+| `footer`                              | `ReactNode`                 |            | Actions.                                         |
+| `trigger`                             | `ReactNode`                 |            | Element that opens it (rendered with `asChild`). |
+| `open`, `defaultOpen`, `onOpenChange` |                             |            | Controlled or uncontrolled state.                |
+| `role`                                | `"dialog" \| "alertdialog"` | `"dialog"` | Use `alertdialog` through ConfirmDialog.         |
+| `onOpenAutoFocus`                     | `(event) => void`           |            | Choose the initially focused element.            |
 
 ## 11. Code
 
@@ -108,8 +108,10 @@ import { Button, Dialog, Field, Input } from "@basalt/ui";
         </>
     }
 >
-    <Field label="Note title"><Input defaultValue="Weekly plan" /></Field>
-</Dialog>
+    <Field label="Note title">
+        <Input defaultValue="Weekly plan" />
+    </Field>
+</Dialog>;
 ```
 
 ## 12. Do and don't

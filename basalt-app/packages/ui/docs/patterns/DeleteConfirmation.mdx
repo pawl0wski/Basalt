@@ -15,22 +15,22 @@ Asking once before a note is deleted, and offering "Undo" right after, so a mist
 
 ## Rules
 
-| Rule | Source |
-|---|---|
-| The question names the note: `Delete "Weekly plan"?` | Proposal (design brief) |
-| The confirm button is a verb and an object ("Delete note"), never "OK". | Proposal |
-| Cancel is explicit and has the initial focus; Escape cancels. | Proposal |
-| The description says the file goes to the trash and can be restored. | Proposal; the trash behavior itself is not specified |
-| After confirming, a [Toast](?path=/docs/primitives-toast--docs) offers "Undo". | Proposal |
-| The destructive button uses the danger text color, not a danger fill. | tokens.md `status-danger` |
+| Rule                                                                           | Source                                               |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| The question names the note: `Delete "Weekly plan"?`                           | Proposal (design brief)                              |
+| The confirm button is a verb and an object ("Delete note"), never "OK".        | Proposal                                             |
+| Cancel is explicit and has the initial focus; Escape cancels.                  | Proposal                                             |
+| The description says the file goes to the trash and can be restored.           | Proposal; the trash behavior itself is not specified |
+| After confirming, a [Toast](?path=/docs/primitives-toast--docs) offers "Undo". | Proposal                                             |
+| The destructive button uses the danger text color, not a danger fill.          | tokens.md `status-danger`                            |
 
 ## States (each is a story)
 
-| State | Story |
-|---|---|
-| Confirm, then undo | Confirm then undo |
-| Cancel keeps the note | Cancel keeps the note |
-| A long note name in the question | Name in the question |
+| State                            | Story                 |
+| -------------------------------- | --------------------- |
+| Confirm, then undo               | Confirm then undo     |
+| Cancel keeps the note            | Cancel keeps the note |
+| A long note name in the question | Name in the question  |
 
 <Canvas of={DeleteStories.CancelKeepsTheNote} />
 <Canvas of={DeleteStories.NameInTheQuestion} />

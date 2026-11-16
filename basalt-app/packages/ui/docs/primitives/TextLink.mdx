@@ -22,11 +22,11 @@ A text link takes the user to another place: a settings page, a note, or documen
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| The action changes data or starts a task. | [Button](?path=/docs/primitives-button--docs). |
-| The control has only an icon. | [IconButton](?path=/docs/primitives-iconbutton--docs). |
-| The target is a button-like call to action. | Button with `asChild` around the link. |
+| Situation                                   | Use instead                                            |
+| ------------------------------------------- | ------------------------------------------------------ |
+| The action changes data or starts a task.   | [Button](?path=/docs/primitives-button--docs).         |
+| The control has only an icon.               | [IconButton](?path=/docs/primitives-iconbutton--docs). |
+| The target is a button-like call to action. | Button with `asChild` around the link.                 |
 
 ## 4. Anatomy
 
@@ -36,10 +36,10 @@ A text link takes the user to another place: a settings page, a note, or documen
 
 ## 5. Variants
 
-| Variant | Use it for | Why |
-|---|---|---|
-| `inline` (default) | Links inside a sentence or paragraph. | Always underlined: color alone is not enough to see a link inside text (WCAG 1.4.1). |
-| `standalone` | Links on their own line or in a group of links. | Position makes them recognizable, so the underline appears on hover only. Proposal. |
+| Variant            | Use it for                                      | Why                                                                                  |
+| ------------------ | ----------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `inline` (default) | Links inside a sentence or paragraph.           | Always underlined: color alone is not enough to see a link inside text (WCAG 1.4.1). |
+| `standalone`       | Links on their own line or in a group of links. | Position makes them recognizable, so the underline appears on hover only. Proposal.  |
 
 The accent is used on links (R01.2). It is never a background (tokens.md `text-link`).
 
@@ -51,14 +51,14 @@ The accent is used on links (R01.2). It is never a background (tokens.md `text-l
 
 <Canvas of={TextLinkStories.States} />
 
-| State | What the user sees | Notes |
-|---|---|---|
-| Default | `text-link`. | |
-| Hover | Text changes to `text-note`; `standalone` also gets the underline. | Proposal: no source defines link hover. |
-| Focus | 2 px `focus-ring` outline. | |
-| Visited | Not styled. | Notes are local files, the browser history is not meaningful. Proposal. |
-| Disabled | Not supported. A link that is not available is plain text. | |
-| Selected text | Inside an editor selection the link takes `text-note` (4:1 fails otherwise). | tokens.md rule 16 |
+| State         | What the user sees                                                           | Notes                                                                   |
+| ------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Default       | `text-link`.                                                                 |                                                                         |
+| Hover         | Text changes to `text-note`; `standalone` also gets the underline.           | Proposal: no source defines link hover.                                 |
+| Focus         | 2 px `focus-ring` outline.                                                   |                                                                         |
+| Visited       | Not styled.                                                                  | Notes are local files, the browser history is not meaningful. Proposal. |
+| Disabled      | Not supported. A link that is not available is plain text.                   |                                                                         |
+| Selected text | Inside an editor selection the link takes `text-note` (4:1 fails otherwise). | tokens.md rule 16                                                       |
 
 ## 7. Behavior and accessibility
 
@@ -84,12 +84,12 @@ Links wrap with the text. At 320 px a long standalone link wraps on several line
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `variant` | `"inline" \| "standalone"` | `"inline"` | Underline behavior. |
-| `asChild` | `boolean` | `false` | Render the child element with the link styles. |
-| `href` | `string` | | Destination. |
-| ...rest | `AnchorHTMLAttributes` | | Passed to the element. |
+| Prop      | Type                       | Default    | Description                                    |
+| --------- | -------------------------- | ---------- | ---------------------------------------------- |
+| `variant` | `"inline" \| "standalone"` | `"inline"` | Underline behavior.                            |
+| `asChild` | `boolean`                  | `false`    | Render the child element with the link styles. |
+| `href`    | `string`                   |            | Destination.                                   |
+| ...rest   | `AnchorHTMLAttributes`     |            | Passed to the element.                         |
 
 ## 11. Code
 
@@ -99,11 +99,13 @@ import { TextLink } from "@basalt/ui";
 <p>
     Notes are plain Markdown files. Change the folder in{" "}
     <TextLink href="#settings">Settings</TextLink>.
-</p>
+</p>;
 ```
 
 ```tsx
-<TextLink variant="standalone" href="#storage">Learn how notes are stored</TextLink>
+<TextLink variant="standalone" href="#storage">
+    Learn how notes are stored
+</TextLink>
 ```
 
 ## 12. Do and don't
@@ -113,7 +115,8 @@ import { TextLink } from "@basalt/ui";
         good={{
             children: (
                 <p className="m-none text-text-ui">
-                    Change the folder in <TextLink href="#settings">Settings</TextLink>.
+                    Change the folder in{" "}
+                    <TextLink href="#settings">Settings</TextLink>.
                 </p>
             ),
             reason: "The link text names the destination.",
@@ -121,7 +124,8 @@ import { TextLink } from "@basalt/ui";
         bad={{
             children: (
                 <p className="m-none text-text-ui">
-                    To change the folder <TextLink href="#settings">click here</TextLink>.
+                    To change the folder{" "}
+                    <TextLink href="#settings">click here</TextLink>.
                 </p>
             ),
             reason: "'Click here' means nothing out of context.",
@@ -132,7 +136,11 @@ import { TextLink } from "@basalt/ui";
 <Unstyled>
     <DoDont
         good={{
-            children: <TextLink asChild><a href="#notes">Open notes</a></TextLink>,
+            children: (
+                <TextLink asChild>
+                    <a href="#notes">Open notes</a>
+                </TextLink>
+            ),
             reason: "Navigation is a link.",
         }}
         bad={{

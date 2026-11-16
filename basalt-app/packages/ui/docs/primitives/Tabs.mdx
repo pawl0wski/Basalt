@@ -18,12 +18,12 @@ Tabs switch between sibling views of the same object, such as the sections of th
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| The sections are different pages with their own address. | [TextLink](?path=/docs/primitives-textlink--docs) navigation. |
-| Steps in a flow. | Sequential screens with a Button. |
-| Choosing a value. | [RadioGroup](?path=/docs/primitives-radiogroup--docs) or [Select](?path=/docs/primitives-select--docs). |
-| Open notes in the editor. | The note tabs of the [TitleBar](?path=/docs/product-titlebar--docs), which are a different pattern. |
+| Situation                                                | Use instead                                                                                             |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| The sections are different pages with their own address. | [TextLink](?path=/docs/primitives-textlink--docs) navigation.                                           |
+| Steps in a flow.                                         | Sequential screens with a Button.                                                                       |
+| Choosing a value.                                        | [RadioGroup](?path=/docs/primitives-radiogroup--docs) or [Select](?path=/docs/primitives-select--docs). |
+| Open notes in the editor.                                | The note tabs of the [TitleBar](?path=/docs/product-titlebar--docs), which are a different pattern.     |
 
 ## 4. Anatomy
 
@@ -40,13 +40,13 @@ One variant (horizontal). Vertical tabs are not needed yet.
 
 ## 6. States
 
-| State | What the user sees |
-|---|---|
-| Inactive | `text-muted`. |
-| Hover | `text-ui`. |
-| Active | `text-note` and the accent indicator. The indicator is the second signal next to text color (WCAG 1.4.1). |
-| Focus | 2 px `focus-ring` outline. |
-| Disabled, loading, error | Not supported. |
+| State                    | What the user sees                                                                                        |
+| ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Inactive                 | `text-muted`.                                                                                             |
+| Hover                    | `text-ui`.                                                                                                |
+| Active                   | `text-note` and the accent indicator. The indicator is the second signal next to text color (WCAG 1.4.1). |
+| Focus                    | 2 px `focus-ring` outline.                                                                                |
+| Disabled, loading, error | Not supported.                                                                                            |
 
 <Canvas of={TabsStories.States} />
 
@@ -70,11 +70,11 @@ At 320 px the list scrolls horizontally instead of wrapping. Keep the most used 
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `tabs` | `{ value, label, content }[]` | required | Tabs and panels. |
-| `label` | `string` | required | Accessible name of the tab list. |
-| `value`, `defaultValue`, `onValueChange` | | first tab | Controlled or uncontrolled selection. |
+| Prop                                     | Type                          | Default   | Description                           |
+| ---------------------------------------- | ----------------------------- | --------- | ------------------------------------- |
+| `tabs`                                   | `{ value, label, content }[]` | required  | Tabs and panels.                      |
+| `label`                                  | `string`                      | required  | Accessible name of the tab list.      |
+| `value`, `defaultValue`, `onValueChange` |                               | first tab | Controlled or uncontrolled selection. |
 
 ## 11. Code
 
@@ -85,9 +85,13 @@ import { Tabs } from "@basalt/ui";
     label="Settings sections"
     tabs={[
         { value: "general", label: "General", content: <GeneralSettings /> },
-        { value: "appearance", label: "Appearance", content: <AppearanceSettings /> },
+        {
+            value: "appearance",
+            label: "Appearance",
+            content: <AppearanceSettings />,
+        },
     ]}
-/>
+/>;
 ```
 
 ## 12. Do and don't

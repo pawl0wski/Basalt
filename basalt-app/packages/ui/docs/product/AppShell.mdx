@@ -18,9 +18,9 @@ The frame of the application window. It places the regions of an open workspace 
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| The welcome screen (no workspace yet). | [WelcomeScreen](?path=/docs/product-welcomescreen--docs). |
+| Situation                                | Use instead                                                                               |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------- |
+| The welcome screen (no workspace yet).   | [WelcomeScreen](?path=/docs/product-welcomescreen--docs).                                 |
 | A dialog or a menu on top of the window. | [Dialog](?path=/docs/primitives-dialog--docs), [Menu](?path=/docs/primitives-menu--docs). |
 
 ## 4. Anatomy
@@ -47,11 +47,11 @@ One layout. A region that is not passed is not drawn, together with its line.
 
 The shell has no states of its own. What the regions show in a state is described on their pages.
 
-| Situation | Shell |
-|---|---|
-| A note is open | All regions. The right panel is open on a wide window. |
-| No note is open | Title bar without tabs, no right panel. |
-| Window narrower than 1440 px | The right panel starts closed (see section 9). |
+| Situation                    | Shell                                                  |
+| ---------------------------- | ------------------------------------------------------ |
+| A note is open               | All regions. The right panel is open on a wide window. |
+| No note is open              | Title bar without tabs, no right panel.                |
+| Window narrower than 1440 px | The right panel starts closed (see section 9).         |
 
 ## 7. Behavior and accessibility
 
@@ -67,24 +67,24 @@ The shell has no text of its own.
 
 Desktop only (open question Q6). The shell fills the window (`h-screen`).
 
-| Window width | Rule |
-|---|---|
+| Window width     | Rule                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | 1440 px and more | Activity bar, left panel, note and right panel fit side by side. The right panel is open by default when a note is open. |
-| 768 to 1439 px | The right panel starts closed. The user can open it with the title bar toggle and it takes width from the note. |
-| Below 768 px | Not designed. |
+| 768 to 1439 px   | The right panel starts closed. The user can open it with the title bar toggle and it takes width from the note.          |
+| Below 768 px     | Not designed.                                                                                                            |
 
 This is state of the application, not CSS: the application passes `sidePanel` only while the panel is open, so the shell does not hide anything by itself.
 
 ## 10. API
 
-| Prop | Type | Description |
-|---|---|---|
-| `titleBar` | `ReactNode` | Usually [TitleBar](?path=/docs/product-titlebar--docs). |
-| `activityBar` | `ReactNode` | Usually [ActivityBar](?path=/docs/product-activitybar--docs). |
-| `sidebar` | `ReactNode` | Usually [NoteSidebar](?path=/docs/product-notesidebar--docs). |
-| `sidePanel` | `ReactNode` | Usually [SidePanel](?path=/docs/product-sidepanel--docs). Leave it out when the panel is closed. |
-| `statusBar` | `ReactNode` | Usually StatusBar. |
-| `children` | `ReactNode` | The note, or an empty state. |
+| Prop          | Type        | Description                                                                                      |
+| ------------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| `titleBar`    | `ReactNode` | Usually [TitleBar](?path=/docs/product-titlebar--docs).                                          |
+| `activityBar` | `ReactNode` | Usually [ActivityBar](?path=/docs/product-activitybar--docs).                                    |
+| `sidebar`     | `ReactNode` | Usually [NoteSidebar](?path=/docs/product-notesidebar--docs).                                    |
+| `sidePanel`   | `ReactNode` | Usually [SidePanel](?path=/docs/product-sidepanel--docs). Leave it out when the panel is closed. |
+| `statusBar`   | `ReactNode` | Usually StatusBar.                                                                               |
+| `children`    | `ReactNode` | The note, or an empty state.                                                                     |
 
 ## 11. Code
 
@@ -93,7 +93,13 @@ This is state of the application, not CSS: the application passes `sidePanel` on
     titleBar={<TitleBar {...titleBar} />}
     activityBar={<ActivityBar {...activityBar} />}
     sidebar={<NoteSidebar {...sidebar}>{list}</NoteSidebar>}
-    sidePanel={panelOpen ? <SidePanel title="Outline" onClose={closePanel}>{outline}</SidePanel> : undefined}
+    sidePanel={
+        panelOpen ? (
+            <SidePanel title="Outline" onClose={closePanel}>
+                {outline}
+            </SidePanel>
+        ) : undefined
+    }
     statusBar={<StatusBar {...status} />}
 >
     {note}

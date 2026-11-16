@@ -18,12 +18,12 @@ A toast confirms a short result that does not need a decision, such as "Note mov
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| An error that needs action. **Never a toast.** | [Alert](?path=/docs/primitives-alert--docs) or a field error. |
-| The state of sync. | [StatusIndicator](?path=/docs/primitives-statusindicator--docs). |
-| A decision. | [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs). |
-| Information the user must read. | Text on the screen. |
+| Situation                                      | Use instead                                                      |
+| ---------------------------------------------- | ---------------------------------------------------------------- |
+| An error that needs action. **Never a toast.** | [Alert](?path=/docs/primitives-alert--docs) or a field error.    |
+| The state of sync.                             | [StatusIndicator](?path=/docs/primitives-statusindicator--docs). |
+| A decision.                                    | [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs).     |
+| Information the user must read.                | Text on the screen.                                              |
 
 ## 4. Anatomy
 
@@ -43,13 +43,13 @@ One variant. Danger and warning toasts are not provided, on purpose: an error wo
 
 ## 6. States
 
-| State | Notes |
-|---|---|
-| Visible | For 5 seconds by default (`duration` in ms to change). |
-| Paused | The timer pauses while the pointer is over the toast or focus is inside it (WCAG 2.2.1). |
-| Dismissed | By the close button, by Escape when focused, by swiping right, or by timeout. |
-| Hover, focus, pressed | Belong to the buttons inside. |
-| Loading, error | Not applicable. |
+| State                 | Notes                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------- |
+| Visible               | For 5 seconds by default (`duration` in ms to change).                                   |
+| Paused                | The timer pauses while the pointer is over the toast or focus is inside it (WCAG 2.2.1). |
+| Dismissed             | By the close button, by Escape when focused, by swiping right, or by timeout.            |
+| Hover, focus, pressed | Belong to the buttons inside.                                                            |
+| Loading, error        | Not applicable.                                                                          |
 
 ## 7. Behavior and accessibility
 
@@ -76,12 +76,12 @@ One variant. Danger and warning toasts are not provided, on purpose: an error wo
 
 `useToast()` returns a function `toast(options)`:
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `title` | `ReactNode` | required | Result. |
-| `description` | `ReactNode` | | Object name. |
-| `action` | `{ label, onClick }` | | One action. |
-| `duration` | `number` | `5000` | Milliseconds before it closes. |
+| Option        | Type                 | Default  | Description                    |
+| ------------- | -------------------- | -------- | ------------------------------ |
+| `title`       | `ReactNode`          | required | Result.                        |
+| `description` | `ReactNode`          |          | Object name.                   |
+| `action`      | `{ label, onClick }` |          | One action.                    |
+| `duration`    | `number`             | `5000`   | Milliseconds before it closes. |
 
 `useToast` throws outside `ToastProvider`.
 
@@ -96,7 +96,11 @@ function DeleteButton({ note }) {
         <Button
             onClick={() => {
                 trashNote(note);
-                toast({ title: "Note moved to trash", description: note.title, action: { label: "Undo", onClick: () => restoreNote(note) } });
+                toast({
+                    title: "Note moved to trash",
+                    description: note.title,
+                    action: { label: "Undo", onClick: () => restoreNote(note) },
+                });
             }}
         >
             Delete note

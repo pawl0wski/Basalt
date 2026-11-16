@@ -22,12 +22,12 @@ An icon button gives the user a frequent, well-known action in the small space o
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| The action is rare or the icon is not obvious. | [Button](?path=/docs/primitives-button--docs) with a text label. |
-| The action is the main action of a view. | Button, variant `primary`. |
-| The control opens a page. | [TextLink](?path=/docs/primitives-textlink--docs). |
-| The meaning depends on the icon only. | A text label. Icons alone are not enough for unfamiliar actions (proposal). |
+| Situation                                      | Use instead                                                                 |
+| ---------------------------------------------- | --------------------------------------------------------------------------- |
+| The action is rare or the icon is not obvious. | [Button](?path=/docs/primitives-button--docs) with a text label.            |
+| The action is the main action of a view.       | Button, variant `primary`.                                                  |
+| The control opens a page.                      | [TextLink](?path=/docs/primitives-textlink--docs).                          |
+| The meaning depends on the icon only.          | A text label. Icons alone are not enough for unfamiliar actions (proposal). |
 
 ## 4. Anatomy
 
@@ -37,14 +37,14 @@ An icon button gives the user a frequent, well-known action in the small space o
 
 ## 5. Variants
 
-| Variant | Use it for | Look |
-|---|---|---|
-| `ghost` (default) | Toolbars, title bar, list rows. | No fill, `state-hover` on hover. |
-| `secondary` | An icon action that must stand out from the surface, for example next to an input. | `button-secondary-bg` with a 1 px `border-divider`. |
+| Variant           | Use it for                                                                         | Look                                                |
+| ----------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `ghost` (default) | Toolbars, title bar, list rows.                                                    | No fill, `state-hover` on hover.                    |
+| `secondary`       | An icon action that must stand out from the surface, for example next to an input. | `button-secondary-bg` with a 1 px `border-divider`. |
 
-| Size | Use it for | Look |
-|---|---|---|
-| `default` | Toolbars, the title bar, list rows. | 28 px button, 16 px icon. |
+| Size       | Use it for                                                     | Look                      |
+| ---------- | -------------------------------------------------------------- | ------------------------- |
+| `default`  | Toolbars, the title bar, list rows.                            | 28 px button, 16 px icon. |
 | `activity` | The [ActivityBar](?path=/docs/product-activitybar--docs) only. | 36 px button, 20 px icon. |
 
 <Canvas of={IconButtonStories.ActivitySize} />
@@ -59,15 +59,15 @@ There is no `primary` or `destructive` icon button. A destructive action needs a
 
 <Canvas of={IconButtonStories.States} />
 
-| State | What the user sees | Notes |
-|---|---|---|
-| Default | `icon-default` icon. | |
-| Hover | `icon-active` icon on `state-hover` (ghost) or `state-selected` (secondary). | R01.12 |
-| Focus | 2 px `focus-ring` outline, 2 px offset. | Focus appearance accepted in the token specification. |
-| Active | `icon-active` icon, no fill (`active` prop, `data-active`). For the open section of the activity bar and for the toggle of an open panel. | The prop only styles. The consumer sets `aria-current` or `aria-expanded`. |
-| Pressed | Same as hover. | Proposal. |
-| Disabled | `text-muted` icon, `not-allowed` cursor. | Proposal (open question 3). Say why in nearby text if the user could expect the action. |
-| Loading | Not supported. | Proposal. |
+| State    | What the user sees                                                                                                                        | Notes                                                                                   |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Default  | `icon-default` icon.                                                                                                                      |                                                                                         |
+| Hover    | `icon-active` icon on `state-hover` (ghost) or `state-selected` (secondary).                                                              | R01.12                                                                                  |
+| Focus    | 2 px `focus-ring` outline, 2 px offset.                                                                                                   | Focus appearance accepted in the token specification.                                   |
+| Active   | `icon-active` icon, no fill (`active` prop, `data-active`). For the open section of the activity bar and for the toggle of an open panel. | The prop only styles. The consumer sets `aria-current` or `aria-expanded`.              |
+| Pressed  | Same as hover.                                                                                                                            | Proposal.                                                                               |
+| Disabled | `text-muted` icon, `not-allowed` cursor.                                                                                                  | Proposal (open question 3). Say why in nearby text if the user could expect the action. |
+| Loading  | Not supported.                                                                                                                            | Proposal.                                                                               |
 
 ## 7. Behavior and accessibility
 
@@ -92,17 +92,17 @@ The control is the same size at every width. In a toolbar, keep at most the icon
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `aria-label` | `string` | required | Accessible name. |
-| `children` | `ReactNode` | required | The icon. |
-| `variant` | `"ghost" \| "secondary"` | `"ghost"` | Look. |
-| `size` | `"default" \| "activity"` | `"default"` | Button and icon size. |
-| `active` | `boolean` | `false` | Shows the `icon-active` colour for an open section or panel. Set the ARIA attribute yourself. |
-| `tooltip` | `ReactNode \| false` | the `aria-label` | Tooltip text, or `false` for no tooltip. |
-| `type` | `"button" \| "submit" \| "reset"` | `"button"` | Button type. |
-| `disabled` | `boolean` | `false` | Blocks interaction. |
-| ...rest | `ButtonHTMLAttributes` | | Passed to the element. |
+| Prop         | Type                              | Default          | Description                                                                                   |
+| ------------ | --------------------------------- | ---------------- | --------------------------------------------------------------------------------------------- |
+| `aria-label` | `string`                          | required         | Accessible name.                                                                              |
+| `children`   | `ReactNode`                       | required         | The icon.                                                                                     |
+| `variant`    | `"ghost" \| "secondary"`          | `"ghost"`        | Look.                                                                                         |
+| `size`       | `"default" \| "activity"`         | `"default"`      | Button and icon size.                                                                         |
+| `active`     | `boolean`                         | `false`          | Shows the `icon-active` colour for an open section or panel. Set the ARIA attribute yourself. |
+| `tooltip`    | `ReactNode \| false`              | the `aria-label` | Tooltip text, or `false` for no tooltip.                                                      |
+| `type`       | `"button" \| "submit" \| "reset"` | `"button"`       | Button type.                                                                                  |
+| `disabled`   | `boolean`                         | `false`          | Blocks interaction.                                                                           |
+| ...rest      | `ButtonHTMLAttributes`            |                  | Passed to the element.                                                                        |
 
 ## 11. Code
 
@@ -112,7 +112,7 @@ import { FilePlus } from "lucide-react";
 
 <IconButton aria-label="New note" onClick={createNote}>
     <FilePlus aria-hidden="true" />
-</IconButton>
+</IconButton>;
 ```
 
 ```tsx
@@ -145,7 +145,9 @@ import { FilePlus } from "lucide-react";
 </Unstyled>
 
 ```tsx bad
-<button><FilePlus /></button>
+<button>
+    <FilePlus />
+</button>
 ```
 
 Don't build an icon-only control from a bare `button` or a `div`: it has no name, no focus style and no hit area.

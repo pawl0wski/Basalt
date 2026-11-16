@@ -10,7 +10,7 @@ tags: [notes, folders, tree, rename, delete, move, drag-and-drop, trash, e01]
 
 Prototype: `prototypes/workspace-basic/` (screen map: `prototypes/e01-screen-map.md`; review notes: `prototypes/feedback/prototype-feedback-consolidated.md`). Screen ids (s09, s10, …) refer to that map.
 
-Source issue: #16 (E01-S04, epic #5). Builds on `.ai/specs/2026-10-24-markdown-notes-and-app-foundations.md` (the "S01 spec") and `.ai/specs/2026-10-25-images-in-notes.md` (the "S03 spec"). Design authority: `.ai/specs/product-brief.md`. Engineering law: `AGENTS.md` and the standards spec.
+Source issue: #16 (E01-S04, epic #5). Builds on `.ai/specs/2026-10-24-markdown-notes-and-app-foundations.md` (the "S01 spec") and `.ai/specs/implemented/2026-10-25-images-in-notes.md` (the "S03 spec"). Design authority: `.ai/specs/product-brief.md`. Engineering law: `AGENTS.md` and the standards spec.
 
 ## 📝 TLDR
 

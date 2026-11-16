@@ -8,45 +8,45 @@ What is ready, what is not, and how it covers the backlog. Priorities are propos
 
 ## Coverage of the backlog
 
-| Item | Component or screen | State | Priority |
-|---|---|---|---|
-| E01-S01 notes (create, edit, list, save, conflicts) | Product components and 18 screen stories | Ready (presentational). The editor itself is `@basalt/editor`, not part of this package | Done |
-| E01-S03 images in notes | `NoteImage`, `ImagePlaceholder`, 3 screen stories | Ready. Drop caret and paste feedback belong to the editor | Done |
-| E01-S04 rename, delete, move, folders, folder tree | Pattern "Delete confirmation" only (proposal) | Story has no specification yet | High: next story after S03 |
-| E02-S01 connect to a self-hosted server | None | No specification (E02-S01-T01 writes it) | High: blocks E02 |
-| E02-S02 client-side encryption | None | No specification | High: blocks E02 |
-| E02-S03 sync between devices | `StatusIndicator` words only | No screens: conflicts between devices, last sync time, errors per note | High |
-| E03 later (whiteboards with stylus) | None | Parked by the owner | Not planned |
+| Item                                                | Component or screen                               | State                                                                                   | Priority                   |
+| --------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------- |
+| E01-S01 notes (create, edit, list, save, conflicts) | Product components and 18 screen stories          | Ready (presentational). The editor itself is `@basalt/editor`, not part of this package | Done                       |
+| E01-S03 images in notes                             | `NoteImage`, `ImagePlaceholder`, 3 screen stories | Ready. Drop caret and paste feedback belong to the editor                               | Done                       |
+| E01-S04 rename, delete, move, folders, folder tree  | Pattern "Delete confirmation" only (proposal)     | Story has no specification yet                                                          | High: next story after S03 |
+| E02-S01 connect to a self-hosted server             | None                                              | No specification (E02-S01-T01 writes it)                                                | High: blocks E02           |
+| E02-S02 client-side encryption                      | None                                              | No specification                                                                        | High: blocks E02           |
+| E02-S03 sync between devices                        | `StatusIndicator` words only                      | No screens: conflicts between devices, last sync time, errors per note                  | High                       |
+| E03 later (whiteboards with stylus)                 | None                                              | Parked by the owner                                                                     | Not planned                |
 
 ## Components not built
 
-| Needed for | Missing part | Why not built | Priority |
-|---|---|---|---|
-| Context (right-click) menu | `ContextMenu` | Needs a second use, such as the file tree (YAGNI) | Medium, with E01-S04 |
-| Folder tree | `Tree` | E01-S04. Direction chosen by the owner (2026-10-30): click a folder to expand it, a chevron that turns, a thin guide line under the chevron of an open folder, selected rows as in `NoteList` (option C). Visual prototype in Storybook under "Proposals / Folder tree"; it has no `tree` semantics or arrow-key navigation yet | High, with E01-S04 |
-| Searching notes | Search field with results | Out of scope of E01-S01 | Medium |
-| Command palette | `CommandPalette` | "Should have" in the brief | Low |
-| Several lines of text | `Textarea` | No story needs it yet | Low |
-| Comparing data in columns | `Table` | No story needs it yet | Low |
-| Long tasks | Progress bar | Moving a workspace is not specified | Low |
-| Select-all | Indeterminate checkbox | No use yet | Low |
-| Dismissing alerts | Close button on `Alert` | No use yet | Low |
-| Count badge on an activity bar icon | `Badge` | R02.1 mentions it. No feature needs a count yet, and there is no token for its size. Owner decision 2026-10-30: none for now | Not planned |
-| Outline content of the right panel | Headings list, loading and error states | `SidePanel` is a frame with a header and a slot. What the outline shows while a note loads or when headings cannot be read is not designed | Low, with the editor |
-| Note file icons, PDF annotation | None | "Should have" in the brief | Low |
+| Needed for                          | Missing part                            | Why not built                                                                                                                                                                                                                                                                                                                   | Priority             |
+| ----------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| Context (right-click) menu          | `ContextMenu`                           | Needs a second use, such as the file tree (YAGNI)                                                                                                                                                                                                                                                                               | Medium, with E01-S04 |
+| Folder tree                         | `Tree`                                  | E01-S04. Direction chosen by the owner (2026-10-30): click a folder to expand it, a chevron that turns, a thin guide line under the chevron of an open folder, selected rows as in `NoteList` (option C). Visual prototype in Storybook under "Proposals / Folder tree"; it has no `tree` semantics or arrow-key navigation yet | High, with E01-S04   |
+| Searching notes                     | Search field with results               | Out of scope of E01-S01                                                                                                                                                                                                                                                                                                         | Medium               |
+| Command palette                     | `CommandPalette`                        | "Should have" in the brief                                                                                                                                                                                                                                                                                                      | Low                  |
+| Several lines of text               | `Textarea`                              | No story needs it yet                                                                                                                                                                                                                                                                                                           | Low                  |
+| Comparing data in columns           | `Table`                                 | No story needs it yet                                                                                                                                                                                                                                                                                                           | Low                  |
+| Long tasks                          | Progress bar                            | Moving a workspace is not specified                                                                                                                                                                                                                                                                                             | Low                  |
+| Select-all                          | Indeterminate checkbox                  | No use yet                                                                                                                                                                                                                                                                                                                      | Low                  |
+| Dismissing alerts                   | Close button on `Alert`                 | No use yet                                                                                                                                                                                                                                                                                                                      | Low                  |
+| Count badge on an activity bar icon | `Badge`                                 | R02.1 mentions it. No feature needs a count yet, and there is no token for its size. Owner decision 2026-10-30: none for now                                                                                                                                                                                                    | Not planned          |
+| Outline content of the right panel  | Headings list, loading and error states | `SidePanel` is a frame with a header and a slot. What the outline shows while a note loads or when headings cannot be read is not designed                                                                                                                                                                                      | Low, with the editor |
+| Note file icons, PDF annotation     | None                                    | "Should have" in the brief                                                                                                                                                                                                                                                                                                      | Low                  |
 
 ## Behavior not built
 
-| Gap | Note |
-|---|---|
-| Light theme | Only the dark theme exists, by the owner's decision. A light theme would be a separate epic later. |
-| Accent switching in the app | The Storybook toolbar switches the accent; the settings screen for it is not designed. Accent warning in `status-warning` (tokens.md rule 5) is not built. |
-| Narrow windows | Screens are desktop only (Q6). The sidebar has no collapsed or stacked layout below 768 px. Between 768 and 1439 px the right panel starts closed. |
-| Dialog taller than the screen | The dialog does not scroll its content yet. |
-| Spinner or pulse motion | Neither exists: no motion is defined for loading (proposal). |
-| Virtualized long lists | E01-S01 dropped the entry cap (G9); 400 to 500 notes were checked, not thousands. |
-| Real translations | Components take text through props; no language other than English exists (G10). |
-| Pairs "do and don't" for overlays | Dialog, Menu, Popover, Tabs, Toast and ErrorState list rules instead of side-by-side pairs, because a pair needs an open overlay. |
+| Gap                               | Note                                                                                                                                                       |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Light theme                       | Only the dark theme exists, by the owner's decision. A light theme would be a separate epic later.                                                         |
+| Accent switching in the app       | The Storybook toolbar switches the accent; the settings screen for it is not designed. Accent warning in `status-warning` (tokens.md rule 5) is not built. |
+| Narrow windows                    | Screens are desktop only (Q6). The sidebar has no collapsed or stacked layout below 768 px. Between 768 and 1439 px the right panel starts closed.         |
+| Dialog taller than the screen     | The dialog does not scroll its content yet.                                                                                                                |
+| Spinner or pulse motion           | Neither exists: no motion is defined for loading (proposal).                                                                                               |
+| Virtualized long lists            | E01-S01 dropped the entry cap (G9); 400 to 500 notes were checked, not thousands.                                                                          |
+| Real translations                 | Components take text through props; no language other than English exists (G10).                                                                           |
+| Pairs "do and don't" for overlays | Dialog, Menu, Popover, Tabs, Toast and ErrorState list rules instead of side-by-side pairs, because a pair needs an open overlay.                          |
 
 ## Not checked
 

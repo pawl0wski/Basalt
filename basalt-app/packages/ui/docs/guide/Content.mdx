@@ -46,35 +46,35 @@ How Basalt writes. The tone comes from the references: no exclamation marks, emo
 
 One action has one name everywhere: in the `aria-label`, in the tooltip and in the tests. A name is a verb and an object, in sentence case, with no "button" in it. A name that repeats on one screen carries the object.
 
-| Action | Name | Where |
-|---|---|---|
-| Show or hide the left panel | Toggle sidebar | [TitleBar](?path=/docs/product-titlebar--docs) |
-| Show or hide the right panel | Toggle right panel | TitleBar |
-| Create a note | New note | TitleBar, [NoteSidebar](?path=/docs/product-notesidebar--docs) |
-| Close an open note | `Close {note name}` | TitleBar |
-| List all open notes | Show all open notes | TitleBar |
-| Window controls | Minimize window, Maximize window, Close window | TitleBar |
-| Switch app section | Notes, Search, Bookmarks, Settings | [ActivityBar](?path=/docs/product-activitybar--docs) |
-| Search a side panel | `Search {panel title}` | [SidePanel](?path=/docs/product-sidepanel--docs) |
-| Close a side panel | `Close {panel title}` | SidePanel |
+| Action                       | Name                                           | Where                                                          |
+| ---------------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
+| Show or hide the left panel  | Toggle sidebar                                 | [TitleBar](?path=/docs/product-titlebar--docs)                 |
+| Show or hide the right panel | Toggle right panel                             | TitleBar                                                       |
+| Create a note                | New note                                       | TitleBar, [NoteSidebar](?path=/docs/product-notesidebar--docs) |
+| Close an open note           | `Close {note name}`                            | TitleBar                                                       |
+| List all open notes          | Show all open notes                            | TitleBar                                                       |
+| Window controls              | Minimize window, Maximize window, Close window | TitleBar                                                       |
+| Switch app section           | Notes, Search, Bookmarks, Settings             | [ActivityBar](?path=/docs/product-activitybar--docs)           |
+| Search a side panel          | `Search {panel title}`                         | [SidePanel](?path=/docs/product-sidepanel--docs)               |
+| Close a side panel           | `Close {panel title}`                          | SidePanel                                                      |
 
-| Landmark | Name |
-|---|---|
-| Title bar | Window title bar |
-| Open notes list | Open notes |
-| Activity bar | Sections |
-| Left panel | Workspace |
-| Right panel | The panel title |
+| Landmark        | Name             |
+| --------------- | ---------------- |
+| Title bar       | Window title bar |
+| Open notes list | Open notes       |
+| Activity bar    | Sections         |
+| Left panel      | Workspace        |
+| Right panel     | The panel title  |
 
 ## Formats
 
-| Thing | Rule | Source |
-|---|---|---|
-| Numbers | Thousands separator, English style: 1,204 words. | `StatusBar`; proposal for other numbers |
-| Dates | Year-month-day (2026-10-18), as in the file names of the journal examples. | Proposal; no source defines it |
-| Times | 24-hour clock. | Proposal; no source defines it |
-| Currency | Not used: there is no payment in the product (AB1, N02). | Brief |
-| File sizes | Binary units: 5 MiB, 20 MiB. | E01-S01, E01-S03 |
-| Language | English only; no language switcher yet. | E01-S01 G10 |
+| Thing      | Rule                                                                       | Source                                  |
+| ---------- | -------------------------------------------------------------------------- | --------------------------------------- |
+| Numbers    | Thousands separator, English style: 1,204 words.                           | `StatusBar`; proposal for other numbers |
+| Dates      | Year-month-day (2026-10-18), as in the file names of the journal examples. | Proposal; no source defines it          |
+| Times      | 24-hour clock.                                                             | Proposal; no source defines it          |
+| Currency   | Not used: there is no payment in the product (AB1, N02).                   | Brief                                   |
+| File sizes | Binary units: 5 MiB, 20 MiB.                                               | E01-S01, E01-S03                        |
+| Language   | English only; no language switcher yet.                                    | E01-S01 G10                             |
 
 Text goes in through props or the translation layer, so components never contain text that cannot be translated later.

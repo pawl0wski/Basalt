@@ -20,21 +20,22 @@ Implement E01-S01 (Markdown notes + foundations). The diff is 188 files, +16 389
 
 ## Validation gate
 
-| # | Command | Result |
-|---|---------|--------|
-| 1 | `cd basalt-app && npm run format:check` | ✅ pass |
-| 2 | `cd basalt-app && npm run lint` | ✅ pass (0 warnings) |
-| 3 | `cd basalt-app && npm run typecheck` | ✅ pass (all workspaces + `e2e` tsconfig) |
-| 4 | `cd basalt-app && npm test` | ✅ pass — 77 files, 841 tests |
-| 5 | `cd basalt-app && npm run build` | ✅ pass — 983 kB chunk (gzip 326 kB), >500 kB warning |
-| 6 | `cd basalt-app && npm run rust:fmt` | ⛔ **NOT RUN** — sandbox cargo 1.65 has no `rustfmt` subcommand |
-| 7 | `cd basalt-app && npm run rust:lint` | ⛔ **NOT RUN** — sandbox cargo 1.65 has no `clippy` subcommand |
+| #   | Command                                 | Result                                                          |
+| --- | --------------------------------------- | --------------------------------------------------------------- |
+| 1   | `cd basalt-app && npm run format:check` | ✅ pass                                                         |
+| 2   | `cd basalt-app && npm run lint`         | ✅ pass (0 warnings)                                            |
+| 3   | `cd basalt-app && npm run typecheck`    | ✅ pass (all workspaces + `e2e` tsconfig)                       |
+| 4   | `cd basalt-app && npm test`             | ✅ pass — 77 files, 841 tests                                   |
+| 5   | `cd basalt-app && npm run build`        | ✅ pass — 983 kB chunk (gzip 326 kB), >500 kB warning           |
+| 6   | `cd basalt-app && npm run rust:fmt`     | ⛔ **NOT RUN** — sandbox cargo 1.65 has no `rustfmt` subcommand |
+| 7   | `cd basalt-app && npm run rust:lint`    | ⛔ **NOT RUN** — sandbox cargo 1.65 has no `clippy` subcommand  |
 
 Commands 6–7 cannot run in this environment (toolchain lacks rustfmt/clippy); CI runs the same commands on a proper toolchain, so they must be green in CI before merge. An incomplete local gate means this review cannot approve regardless of other findings. Extra evidence: `npm run test:e2e` (not in the gate, run once locally): 78/79 pass, 1 failure — see minor finding m1. `npm run check:bundle` logic was reviewed but not executed.
 
 ## Blockers
 
 ### B1 — `src-tauri/Cargo.lock` was not updated for the three new Rust dependencies
+
 **File:** `basalt-app/src-tauri/Cargo.toml` (+19-21), `basalt-app/src-tauri/Cargo.lock` (unchanged)
 `tauri-plugin-fs` (feature `watch`), `tauri-plugin-dialog` and `tauri-plugin-persisted-scope` are added to `[dependencies]`, but `Cargo.lock` (last touched `41dab3f`) contains none of them. The committed lockfile no longer matches the manifest, so every local build silently rewrites it and reviewers can't see the resolved versions. `.ai/lessons/2026-11-08-tauri-fs-plugins-spike-setup.md` explicitly says "Cargo.lock was NOT updated … run `cargo update …` and commit the lock".
 **Fix:** on a machine with a current Rust toolchain (CI's `node:22-alpine3.24` + rust or any local ≥1.65 with the crates), run `cargo check --manifest-path basalt-app/src-tauri/Cargo.toml` and commit the updated `Cargo.lock`. Also paste any `cargo clippy` output into the PR.
@@ -42,12 +43,14 @@ Commands 6–7 cannot run in this environment (toolchain lacks rustfmt/clippy); 
 ## Majors (MUST fix before merge unless a maintainer documents a waiver)
 
 ### M1 — fs scope is too narrow for the actual settings write path: app settings will not persist on desktop
+
 **Files:** `basalt-app/src-tauri/capabilities/default.json:22-27`, `basalt-app/packages/app/src/platform/tauri/tauri-app-settings-store.ts:68-78`
 The capability grants `fs:scope` allowing exactly one path: `{ "identifier": "fs:scope", "allow": [{ "path": "$APPCONFIG/basalt.json" }] }`. But `save()` calls `mkdir($APPCONFIG, { recursive: true })` and `writeFileAtomic(file, `${file}.tmp`, …)`. `basalt.json.tmp` and the `$APPCONFIG` directory are outside the scope, so on a real desktop both are denied; the whole `SettingsWriter.update` path (`settings-writer.ts:27-34`) swallows save failures (no `err`), so restoring the last workspace and per-workspace tabs would silently never persist. The lesson (`tauri-fs-plugins-spike-setup.md`, "Gotchas") flags exactly this and defers to a device spike — but the diff is what ships the capability.
 Because Tauri can't be executed in this environment, this is filed as **major pending runtime confirmation**; treat as blocker if the first `tauri dev` confirms the refusal.
 **Fix:** widen the allow list to the config directory and the temp pattern (e.g. `$APPCONFIG/*` or `$APPCONFIG/basalt.json*` plus the directory for `mkdir`), keep everything else out, and add a desktop step (or unit test with the generated permission schema) that asserts `settings.save` succeeds. Also decide whether `update()` should surface save failures instead of caching unsaved state (see m4).
 
 ### M2 — Save-mode ("Keep my version"/"Save again here") can be stolen by a concurrent autosave save
+
 **File:** `basalt-app/packages/app/src/features/notes/notes-actions.ts:134-146, 288-298`
 `saveWithMode()` publishes the `SaveMode` through the shared `nextSaveModes` map and any running/next save consumes it:
 
@@ -60,16 +63,19 @@ Race: while a debounced/leaving-tab `flush()` save is in flight (or launched con
 **Fix:** bind the mode to the specific save call instead of module-level mutable state (e.g. store `{ mode }` with the queued next save inside `Autosave`, or add a `forceSave({ mode })` parameter to the core autosave), and make each autosave single-flight (return the running promise from `flush`/`forceSave` instead of launching a second chain). Add a regression test: conflict → "Keep my version" while a debounced save is in flight → file ends with the editor text and no conflict error.
 
 ### M3 — Autosave writes the file even when the note is clean
+
 **File:** `basalt-app/packages/core/src/autosave.ts:119-128` (`forceSave`), `61-79` (`saveLatest`)
 `forceSave()` calls `saveLatest()` unconditionally without checking `latestText === baseText`. Every Ctrl+S on an unedited note rewrites the file (same bytes, new mtime, fires a watcher event, and on disk would appear as externally modified). That contradicts the spec's autosave rule "Writes only when the note is dirty; opening or viewing a note never writes" (spec §Autosave, accepted rule; e2e only covers the dirty case).
 **Fix:** in `forceSave()`, return early when `latestText === baseText` and no error is set; keep the error-then-retry behavior.
 
 ### M4 — `leaveActions.retry()` for `close-tab` ignores the second failure
+
 **File:** `basalt-app/packages/app/src/features/leave/leave-actions.ts:49-58`
 After a successful `notes.saveNow(pending.path)`, the code runs `await notes.closeTab(pending.path)` and discards the result, then `clear()`. If that second flush fails again (disk still read-only, folder gone), the Save-failed dialog closes while the tab stays open, dirty, with nothing visibly wrong except the in-editor banner.
 **Fix:** capture the `closeTab` result; on failure re-`block(pending, error)` instead of `clear()` (or flush inside `closeTab` and report). Mirrors the `savings.spec.ts` expectation "Retry saves and closes the tab once the cause is fixed".
 
 ### M5 — Tauri-host behavior of the whole feature is unverified (fake-only evidence), manual desktop smoke test outstanding
+
 **Files:** `basalt-app/packages/app/src/platform/tauri/**` (adapters verified only against `testing/fake-plugin-fs.ts`), `src-tauri/**`
 Per the run log's own audit: no `cargo check`/`tauri build` ran anywhere yet (`Cargo.lock` not even updated), the capability JSON is unvalidated against a generated permission schema, and these runtime assumptions are unconfirmed: dialog `open` extending the fs scope, persisted-scope durability, symlink refusal via `lstat`, atomic rename semantics, recursive `watch` + the root-deletion event shape (root-lost detection depends on it), `onCloseRequested` async handler + `preventDefault` + `destroy`, the five derived `core:window:allow-*` identifiers, undecorated-window dragging/resizing on each OS. The spec's G6 decision (Playwright against the memory platform) covers e2e, but `BACKWARD_COMPATIBILITY.md`'s "Tauri host configuration" section requires permission changes to be spec/documented and validated, and the spec itself defers implementation status (`draft`) because of this.
 **Fix (either):** run the manual desktop smoke test (Linux at minimum, Windows per CI matrix) on this branch and record results in the run log before merging to `master`; or obtain an explicit maintainer waiver noting the desktop path ships unverified.
@@ -109,4 +115,4 @@ Per the run log's own audit: no `cargo check`/`tauri build` ran anywhere yet (`C
 5. **M5** (desktop smoke test or documented waiver).
 6. Minors m1–m9 (m2/m3/m4 are small core/store changes; m1 touches only e2e).
 
-*Report generated by the `om-code-review` skill on 2026-11-08; validation tables and findings reflect the branch at commit `5166757`.*
+_Report generated by the `om-code-review` skill on 2026-11-08; validation tables and findings reflect the branch at commit `5166757`._

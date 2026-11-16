@@ -161,4 +161,31 @@ describe("in-memory workspace file system", () => {
             if (!result.ok) expect(result.error.code).toBe("invalid-path");
         }
     });
+
+    it("refuses mkdir and byte creation in a read-only workspace and creates nothing", async () => {
+        const memory = createInMemoryWorkspaceFileSystem({ readOnly: true });
+
+        const made = await memory.mkdir(path("attachments"));
+        const written = await memory.createExclusive(
+            path("x.png"),
+            Uint8Array.of(1),
+        );
+
+        expect(!made.ok && made.error.code).toBe("permission-denied");
+        expect(!written.ok && written.error.code).toBe("permission-denied");
+        const list = await memory.list();
+        expect(list.ok && list.value).toEqual([]);
+    });
+
+    it("rejects mkdir below a file and readDir of a symlink without following it", async () => {
+        const memory = createInMemoryWorkspaceFileSystem();
+        memory.externalWrite(path("f"), encode("x"));
+        memory.addSymlink(path("link"));
+
+        const below = await memory.mkdir(path("f/sub"));
+        const link = await memory.readDir(path("link"));
+
+        expect(!below.ok && below.error.code).toBe("invalid-path");
+        expect(!link.ok && link.error.code).toBe("invalid-path");
+    });
 });

@@ -11,6 +11,7 @@ import {
     type WorkspacePicker,
     type WorkspaceRoot,
 } from "@basalt/core";
+import type { ImageHub } from "../attachments/image-hub";
 import type { NotesActions } from "../notes/notes-actions";
 import type { SettingsWriter } from "../settings/settings-writer";
 import type { WorkspaceStatus, WorkspaceStore } from "./workspace-store";
@@ -23,6 +24,7 @@ export type WorkspaceActionsOptions = {
     readonly settings: SettingsWriter;
     readonly watchSchedule: AutosaveScheduler;
     readonly watchDebounceMs: number;
+    readonly images?: ImageHub;
     readonly onFlushBlocked?: (error: AppError) => void;
     readonly onWorkspaceLost?: (error: AppError) => void;
 };
@@ -63,6 +65,7 @@ export function createWorkspaceActions(
         watcher = current;
         const watchMode = await current.start({
             onBatch(paths) {
+                if (watcher === current) options.images?.notifyChanged(paths);
                 void notes.handleExternalChanges(paths);
                 void batchAffectsNoteList(fs, paths).then((affects) => {
                     if (affects && watcher === current) {
@@ -81,6 +84,7 @@ export function createWorkspaceActions(
         await stopWatching();
         notes.leaveWorkspace();
         currentFs = null;
+        options.images?.setFs(null);
         store.setState({
             root: null,
             status: "welcome",
@@ -141,6 +145,7 @@ export function createWorkspaceActions(
         await stopWatching();
         notes.leaveWorkspace();
         currentFs = fs;
+        options.images?.setFs(fs);
         await notes.enterWorkspace(root, fs);
         store.setState({
             root,
@@ -217,6 +222,7 @@ export function createWorkspaceActions(
             const { status, watchMode } = store.getState();
             if (status !== "open" || watchMode !== "focus-fallback") return;
             await notes.refreshNotes();
+            await options.images?.notifyFocus();
         },
         async restoreWorkspace() {
             if (store.getState().status !== "welcome") return;

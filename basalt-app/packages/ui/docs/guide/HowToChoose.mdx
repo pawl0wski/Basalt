@@ -8,79 +8,79 @@ Tables of "if ... then use ...", each with an example from the product. Sources 
 
 ## Button, link, icon button or menu
 
-| If the user ... | Use | Example from Basalt |
-|---|---|---|
-| Starts an action that changes data or begins a task | [Button](?path=/docs/primitives-button--docs) | "Save note", "Create note" |
-| Goes to another place | [TextLink](?path=/docs/primitives-textlink--docs) | "Change the folder in Settings" |
-| Triggers a frequent action in a toolbar | [IconButton](?path=/docs/primitives-iconbutton--docs) | "New note" in the sidebar header |
-| Chooses among three or more actions on one object | [Menu](?path=/docs/primitives-menu--docs) | Rename, Delete note |
+| If the user ...                                     | Use                                                   | Example from Basalt              |
+| --------------------------------------------------- | ----------------------------------------------------- | -------------------------------- |
+| Starts an action that changes data or begins a task | [Button](?path=/docs/primitives-button--docs)         | "Save note", "Create note"       |
+| Goes to another place                               | [TextLink](?path=/docs/primitives-textlink--docs)     | "Change the folder in Settings"  |
+| Triggers a frequent action in a toolbar             | [IconButton](?path=/docs/primitives-iconbutton--docs) | "New note" in the sidebar header |
+| Chooses among three or more actions on one object   | [Menu](?path=/docs/primitives-menu--docs)             | Rename, Delete note              |
 
 ## Radio group, select or search
 
-| If the choice is ... | Use | Example |
-|---|---|---|
-| One of two to five options that should be compared | [RadioGroup](?path=/docs/primitives-radiogroup--docs) | Where attachments are stored |
-| One of about 4 to 12 known values | [Select](?path=/docs/primitives-select--docs) | Interface text size |
-| One item found by typing | A search field with results. Not built; see [What is missing](?path=/docs/design-system-what-is-missing--docs) | Find a note (out of scope of E01-S01) |
+| If the choice is ...                               | Use                                                                                                            | Example                               |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| One of two to five options that should be compared | [RadioGroup](?path=/docs/primitives-radiogroup--docs)                                                          | Where attachments are stored          |
+| One of about 4 to 12 known values                  | [Select](?path=/docs/primitives-select--docs)                                                                  | Interface text size                   |
+| One item found by typing                           | A search field with results. Not built; see [What is missing](?path=/docs/design-system-what-is-missing--docs) | Find a note (out of scope of E01-S01) |
 
 ## Switch or checkbox
 
-| If the setting ... | Use | Example |
-|---|---|---|
-| Applies the moment it is changed | [Switch](?path=/docs/primitives-switch--docs) | Show word count in the status bar |
-| Is saved later with a button, or is one of several independent options | [Checkbox](?path=/docs/primitives-checkbox--docs) | Options in a form |
+| If the setting ...                                                     | Use                                               | Example                           |
+| ---------------------------------------------------------------------- | ------------------------------------------------- | --------------------------------- |
+| Applies the moment it is changed                                       | [Switch](?path=/docs/primitives-switch--docs)     | Show word count in the status bar |
+| Is saved later with a button, or is one of several independent options | [Checkbox](?path=/docs/primitives-checkbox--docs) | Options in a form                 |
 
 ## Dialog, confirm dialog, side panel, page, popover or tooltip
 
-| If you need ... | Use | Example |
-|---|---|---|
-| A short task that must finish before going on | [Dialog](?path=/docs/primitives-dialog--docs) | New note name |
-| A yes/no decision on something hard to undo | [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs) | Delete "Weekly plan"? |
-| A few related controls next to a button | [Popover](?path=/docs/primitives-popover--docs) | Accent color |
-| A name for an icon | [Tooltip](?path=/docs/primitives-tooltip--docs) | "Open settings (Ctrl+,)" |
-| Content next to the current view that stays open | A side panel. Not built; see What is missing | The outline of a note (R01.14) |
-| A long form or several steps | A separate page or view | Connect to a sync server (E02-S01, not specified) |
+| If you need ...                                  | Use                                                         | Example                                           |
+| ------------------------------------------------ | ----------------------------------------------------------- | ------------------------------------------------- |
+| A short task that must finish before going on    | [Dialog](?path=/docs/primitives-dialog--docs)               | New note name                                     |
+| A yes/no decision on something hard to undo      | [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs) | Delete "Weekly plan"?                             |
+| A few related controls next to a button          | [Popover](?path=/docs/primitives-popover--docs)             | Accent color                                      |
+| A name for an icon                               | [Tooltip](?path=/docs/primitives-tooltip--docs)             | "Open settings (Ctrl+,)"                          |
+| Content next to the current view that stays open | A side panel. Not built; see What is missing                | The outline of a note (R01.14)                    |
+| A long form or several steps                     | A separate page or view                                     | Connect to a sync server (E02-S01, not specified) |
 
 ## Field error, alert or toast
 
-| If the message is ... | Use | Example |
-|---|---|---|
-| About one input | The error of a [Field](?path=/docs/primitives-field--docs) | "Enter a name for the note." |
-| About the current view and stays until fixed | [Alert](?path=/docs/primitives-alert--docs) or [NoteBanner](?path=/docs/product-notebanner--docs) | "This note changed on disk" |
-| A passing result of an action | [Toast](?path=/docs/primitives-toast--docs) | "Note moved to trash" with Undo |
-| About sync | [StatusIndicator](?path=/docs/primitives-statusindicator--docs) | "Synced" in the status bar |
+| If the message is ...                        | Use                                                                                               | Example                         |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------- |
+| About one input                              | The error of a [Field](?path=/docs/primitives-field--docs)                                        | "Enter a name for the note."    |
+| About the current view and stays until fixed | [Alert](?path=/docs/primitives-alert--docs) or [NoteBanner](?path=/docs/product-notebanner--docs) | "This note changed on disk"     |
+| A passing result of an action                | [Toast](?path=/docs/primitives-toast--docs)                                                       | "Note moved to trash" with Undo |
+| About sync                                   | [StatusIndicator](?path=/docs/primitives-statusindicator--docs)                                   | "Synced" in the status bar      |
 
 **An error that needs the user to act is never a toast.** It disappears before it is read and cannot be found again.
 
 ## Skeleton or loading indicator
 
-| If ... | Use | Example |
-|---|---|---|
-| The shape of the content is known | [Skeleton](?path=/docs/primitives-skeleton--docs) | The note list while it loads |
-| The task has steps or a measurable progress | A progress element. Not built; see What is missing | Moving a workspace |
+| If ...                                      | Use                                                | Example                      |
+| ------------------------------------------- | -------------------------------------------------- | ---------------------------- |
+| The shape of the content is known           | [Skeleton](?path=/docs/primitives-skeleton--docs)  | The note list while it loads |
+| The task has steps or a measurable progress | A progress element. Not built; see What is missing | Moving a workspace           |
 
 ## Table, list or cards
 
-| If the data is ... | Use | Example |
-|---|---|---|
-| One line per item, chosen one at a time | [NoteList](?path=/docs/product-notelist--docs) | Notes in the workspace |
-| Several settings under one heading | [Card](?path=/docs/primitives-card--docs) with rows | Status bar settings |
-| Compared across columns | A table. Not built; see What is missing | Not needed by any story yet |
+| If the data is ...                      | Use                                                 | Example                     |
+| --------------------------------------- | --------------------------------------------------- | --------------------------- |
+| One line per item, chosen one at a time | [NoteList](?path=/docs/product-notelist--docs)      | Notes in the workspace      |
+| Several settings under one heading      | [Card](?path=/docs/primitives-card--docs) with rows | Status bar settings         |
+| Compared across columns                 | A table. Not built; see What is missing             | Not needed by any story yet |
 
 Cards are not a layout for lists of content. Do not make one card per item.
 
 ## Tabs or separate pages
 
-| If the sections are ... | Use | Example |
-|---|---|---|
-| Siblings of one object, switched often | [Tabs](?path=/docs/primitives-tabs--docs) | Settings sections |
-| Different places with their own address or a sequence | Separate pages | Welcome, then workspace |
+| If the sections are ...                               | Use                                       | Example                 |
+| ----------------------------------------------------- | ----------------------------------------- | ----------------------- |
+| Siblings of one object, switched often                | [Tabs](?path=/docs/primitives-tabs--docs) | Settings sections       |
+| Different places with their own address or a sequence | Separate pages                            | Welcome, then workspace |
 
 ## Empty, error or loading
 
-| If the place ... | Use | Example |
-|---|---|---|
-| Has nothing yet | [EmptyState](?path=/docs/primitives-emptystate--docs) | "Create your first note" |
-| Has nothing for the filter | EmptyState with a "Clear filter" action | [List with filters](?path=/docs/patterns-list-with-filters--docs) |
-| Failed to load | [ErrorState](?path=/docs/primitives-errorstate--docs) | "Could not open the workspace" |
-| Is loading | [Skeleton](?path=/docs/primitives-skeleton--docs) | "Loading notes" |
+| If the place ...           | Use                                                   | Example                                                           |
+| -------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------- |
+| Has nothing yet            | [EmptyState](?path=/docs/primitives-emptystate--docs) | "Create your first note"                                          |
+| Has nothing for the filter | EmptyState with a "Clear filter" action               | [List with filters](?path=/docs/patterns-list-with-filters--docs) |
+| Failed to load             | [ErrorState](?path=/docs/primitives-errorstate--docs) | "Could not open the workspace"                                    |
+| Is loading                 | [Skeleton](?path=/docs/primitives-skeleton--docs)     | "Loading notes"                                                   |

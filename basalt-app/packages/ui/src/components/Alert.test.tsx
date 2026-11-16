@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 import { Alert } from "./Alert";
 
 describe("Alert", () => {
@@ -53,5 +54,28 @@ describe("Alert role override", () => {
                 .getAttribute("data-variant"),
         ).toBe("warning");
         expect(screen.queryByRole("status")).toBeNull();
+    });
+});
+
+describe("Alert dismissal", () => {
+    it("shows no close button unless onDismiss is given", () => {
+        render(<Alert>Plain.</Alert>);
+
+        expect(screen.queryByRole("button")).toBeNull();
+    });
+
+    it("calls onDismiss from a labelled close button", async () => {
+        const onDismiss = vi.fn();
+        render(
+            <Alert onDismiss={onDismiss} dismissLabel="Dismiss notice">
+                2 files were not added.
+            </Alert>,
+        );
+
+        await userEvent.click(
+            screen.getByRole("button", { name: "Dismiss notice" }),
+        );
+
+        expect(onDismiss).toHaveBeenCalledTimes(1);
     });
 });

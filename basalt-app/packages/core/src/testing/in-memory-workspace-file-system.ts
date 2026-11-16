@@ -211,6 +211,22 @@ export function createInMemoryWorkspaceFileSystem(
             }
         },
 
+        async readBytes(path) {
+            const removed = rootGuard();
+            if (removed) return removed;
+            const entry = entries.get(path);
+            if (!entry) {
+                return err({ code: "not-found", message: "No such file." });
+            }
+            if (entry.kind !== "file") {
+                return err({
+                    code: "invalid-path",
+                    message: "The entry is not a regular file.",
+                });
+            }
+            return ok(entry.bytes.slice());
+        },
+
         async writeTextAtomic(path, text) {
             const blocked = writeGuard(path);
             if (blocked) return blocked;
@@ -219,7 +235,7 @@ export function createInMemoryWorkspaceFileSystem(
             return ok(undefined);
         },
 
-        async createExclusive(path, text) {
+        async createExclusive(path, content) {
             const removed = rootGuard();
             if (removed) return removed;
             if (!options.readOnly && entries.has(path)) {
@@ -230,7 +246,73 @@ export function createInMemoryWorkspaceFileSystem(
             }
             const blocked = writeGuard(path);
             if (blocked) return blocked;
-            store(path, new TextEncoder().encode(text));
+            store(
+                path,
+                typeof content === "string"
+                    ? new TextEncoder().encode(content)
+                    : content.slice(),
+            );
+            emit({ kind: "changed", paths: [path] });
+            return ok(undefined);
+        },
+
+        async readDir(path) {
+            const removed = rootGuard();
+            if (removed) return removed;
+            const entry = entries.get(path);
+            if (!entry) {
+                return err({ code: "not-found", message: "No such folder." });
+            }
+            if (entry.kind !== "directory") {
+                return err({
+                    code: "invalid-path",
+                    message: "The entry is not a folder.",
+                });
+            }
+            const children: FileEntry[] = [...entries.entries()]
+                .filter(
+                    ([key]) =>
+                        key.startsWith(`${path}/`) &&
+                        !key.slice(path.length + 1).includes("/"),
+                )
+                .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+                .map(([key, child]) => ({
+                    path: asPath(key),
+                    kind: child.kind,
+                }));
+            return ok(children);
+        },
+
+        async mkdir(path) {
+            const removed = rootGuard();
+            if (removed) return removed;
+            if (options.readOnly) {
+                return err({
+                    code: "permission-denied",
+                    message: "The workspace is read-only.",
+                });
+            }
+            const existing = entries.get(path);
+            if (existing?.kind === "directory") return ok(undefined);
+            if (existing) {
+                return err({
+                    code: "already-exists",
+                    message: "A file is in the way.",
+                });
+            }
+            const blocked = ancestors(path).find(
+                (ancestor) =>
+                    entries.has(ancestor) &&
+                    entries.get(ancestor)?.kind !== "directory",
+            );
+            if (blocked) {
+                return err({
+                    code: "invalid-path",
+                    message: "The path is blocked by a non-folder entry.",
+                });
+            }
+            ensureParents(path);
+            entries.set(path, { kind: "directory" });
             emit({ kind: "changed", paths: [path] });
             return ok(undefined);
         },
