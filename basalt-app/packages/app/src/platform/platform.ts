@@ -2,6 +2,8 @@ import type {
     AppSettingsStore,
     WorkspaceAccess,
     WorkspacePicker,
+    WorkspaceRoot,
+    WorkspaceTrash,
 } from "@basalt/core";
 
 export interface WindowChrome {
@@ -17,5 +19,6 @@ export interface Platform {
     readonly access: WorkspaceAccess;
     readonly picker: WorkspacePicker;
     readonly settings: AppSettingsStore;
+    readonly trash: (root: WorkspaceRoot) => WorkspaceTrash;
     readonly windowChrome: WindowChrome;
 }

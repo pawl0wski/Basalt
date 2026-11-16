@@ -88,6 +88,55 @@ describe("memory platform", () => {
         ]);
     });
 
+    it("persists a rename and a new folder across a reload and lists directories", async () => {
+        const first = createMemoryPlatform(localStorage);
+        first.testFs.seedWorkspace(ROOT, { "a.md": "# A", "d/b.md": "# B" });
+        const fs = await openRoot(first.platform);
+        await fs.mkdir("empty" as never);
+        const renamed = await fs.rename("a.md" as never, "d/c.md" as never);
+
+        const second = createMemoryPlatform(localStorage);
+        await openRoot(second.platform);
+
+        expect(renamed.ok).toBe(true);
+        expect(second.testFs.listFiles()).toEqual(["d/b.md", "d/c.md"]);
+        expect(second.testFs.listDirectories()).toEqual(["d", "empty"]);
+    });
+
+    it("refuses a rename in a read-only workspace and keeps the file", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        testFs.seedWorkspace(ROOT, { "a.md": "x" });
+        const fs = await openRoot(platform);
+        testFs.setReadOnly(true);
+
+        const result = await fs.rename("a.md" as never, "b.md" as never);
+
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.error.code).toBe("permission-denied");
+        expect(testFs.listFiles()).toEqual(["a.md"]);
+    });
+
+    it("moves a note to the trash and persists the removal, and refuses in a read-only workspace", async () => {
+        const first = createMemoryPlatform(localStorage);
+        first.testFs.seedWorkspace(ROOT, { "a.md": "x", "b.md": "y" });
+        await openRoot(first.platform);
+        const trash = first.platform.trash(ROOT);
+
+        const deleted = await trash.moveToTrash(["a.md" as never]);
+
+        expect(deleted.ok).toBe(true);
+        expect(first.testFs.listFiles()).toEqual(["b.md"]);
+        const reloaded = createMemoryPlatform(localStorage);
+        await openRoot(reloaded.platform);
+        expect(reloaded.testFs.listFiles()).toEqual(["b.md"]);
+
+        first.testFs.setReadOnly(true);
+        const refused = await trash.moveToTrash(["b.md" as never]);
+        expect(refused.ok).toBe(false);
+        if (!refused.ok) expect(refused.error.code).toBe("permission-denied");
+        expect(first.testFs.listFiles()).toEqual(["b.md"]);
+    });
+
     it("exposes the exact saved bytes", async () => {
         const { platform, testFs } = createMemoryPlatform(localStorage);
         testFs.seedWorkspace(ROOT, {});

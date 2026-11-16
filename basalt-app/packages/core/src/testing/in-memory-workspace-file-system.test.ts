@@ -27,6 +27,52 @@ describeWorkspaceFileSystemContract(() => {
 });
 
 describe("in-memory workspace file system", () => {
+    it("rejects rename with permission-denied in read-only mode and keeps the file", async () => {
+        const memory = createInMemoryWorkspaceFileSystem({ readOnly: true });
+        memory.externalWrite(path("a.md"), encode("original"));
+
+        const result = await memory.rename(path("a.md"), path("b.md"));
+
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.error.code).toBe("permission-denied");
+        expect((await memory.stat(path("a.md"))).ok).toBe(true);
+        expect((await memory.stat(path("b.md"))).ok).toBe(false);
+    });
+
+    it("refuses to move a folder into itself and keeps it", async () => {
+        const memory = createInMemoryWorkspaceFileSystem();
+        memory.externalWrite(path("d/a.md"), encode("x"));
+
+        const result = await memory.rename(path("d"), path("d/inner"));
+
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.error.code).toBe("invalid-path");
+        expect((await memory.stat(path("d/a.md"))).ok).toBe(true);
+    });
+
+    it("reports not-found when the destination folder does not exist", async () => {
+        const memory = createInMemoryWorkspaceFileSystem();
+        memory.externalWrite(path("a.md"), encode("x"));
+
+        const result = await memory.rename(path("a.md"), path("nope/a.md"));
+
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.error.code).toBe("not-found");
+        expect((await memory.stat(path("a.md"))).ok).toBe(true);
+    });
+
+    it("fails rename once after failNextWrite and then recovers", async () => {
+        const memory = createInMemoryWorkspaceFileSystem();
+        memory.externalWrite(path("a.md"), encode("x"));
+        memory.failNextWrite();
+
+        const failed = await memory.rename(path("a.md"), path("b.md"));
+        const retried = await memory.rename(path("a.md"), path("b.md"));
+
+        expect(failed.ok).toBe(false);
+        expect(retried.ok).toBe(true);
+    });
+
     it("rejects writes with permission-denied in read-only mode and keeps content", async () => {
         const memory = createInMemoryWorkspaceFileSystem({ readOnly: true });
         memory.externalWrite(path("a.md"), encode("original"));

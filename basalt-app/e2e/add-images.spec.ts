@@ -24,8 +24,8 @@ const pdf = (name: string): Item => ({
 
 function option(page: Page, name: string | RegExp) {
     return page
-        .getByRole("listbox", { name: "Notes" })
-        .getByRole("option", { name, exact: typeof name === "string" });
+        .getByRole("tree", { name: "Notes" })
+        .getByRole("treeitem", { name, exact: typeof name === "string" });
 }
 
 function editor(page: Page, name: string) {
@@ -148,7 +148,8 @@ test.describe("adding images by paste and drop", () => {
         page,
     }) => {
         await openWorkspaceWith(page, "/work/W", { "Projects/Plan.md": "" });
-        await option(page, /Plan/).click();
+        await option(page, "Projects").click();
+        await option(page, "Plan").click();
 
         await pasteFiles(page, [png("shot.png")]);
 

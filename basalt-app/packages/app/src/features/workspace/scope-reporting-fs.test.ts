@@ -22,6 +22,7 @@ function fsReturning(result: Result<unknown>): WorkspaceFileSystem {
         createExclusive: call,
         readDir: call,
         mkdir: call,
+        rename: call,
         watch: call,
     } as WorkspaceFileSystem;
 }
@@ -36,6 +37,7 @@ function calls(fs: WorkspaceFileSystem): Promise<Result<unknown>>[] {
         fs.createExclusive(path, "x"),
         fs.readDir(path),
         fs.mkdir(path),
+        fs.rename(path, path),
         fs.watch(() => {}),
     ];
 }
@@ -47,7 +49,7 @@ describe("withScopeReporting", () => {
         const results = await Promise.all(
             calls(withScopeReporting(fsReturning(denied), onDenied)),
         );
-        expect(onDenied).toHaveBeenCalledTimes(9);
+        expect(onDenied).toHaveBeenCalledTimes(10);
         for (const result of results) expect(result).toBe(denied);
     });
 

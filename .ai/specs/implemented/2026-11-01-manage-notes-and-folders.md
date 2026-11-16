@@ -2,7 +2,7 @@
 date: 2026-11-01
 slug: manage-notes-and-folders
 type: spec
-status: draft
+status: implemented
 tags: [notes, folders, tree, rename, delete, move, drag-and-drop, trash, e01]
 ---
 
@@ -129,3 +129,11 @@ Per phase: Vitest next to the code (contract suite for `rename`; property test t
 
 - C-1 (custom Rust for the trash), C-8 (partial failure), C-9 (no folder operations in E01).
 - Whether `attachments` should be visible in the tree (C-5 hides it).
+
+## 📝 Implementation status (2026-11-16)
+
+- **Phases A–E implemented** (PR #28, branch `feat/manage-notes-and-folders`): AC-04.1, 04.2, 04.3, 04.4, 04.5, 04.6, 04.7, 04.8, 04.9, 04.10, 04.11, 04.12, 04.13. Run log: `.ai/runs/2026-11-16-manage-notes-and-folders/`.
+- Phase E (delete) landed after the owner confirmed C-1 (custom Rust `move_to_trash`), C-8 (partial-failure rules) and C-9 (no folder operations) on 2026-11-16. `WorkspaceTrash` and `deleteNotes` exist; the context menu offers Rename + Delete on a note and "Delete N notes" on a multi-selection.
+- **C-5 per-folder read errors** stay out of scope (owner decision): `WorkspaceFileSystem.list()` is a flat recursive listing that fails as a whole. The ui `Tree` renders a folder `error`; the adapter never sets it.
+- **Unverified on real Tauri** (Linux sandbox, fakes and the memory platform only): `rename`, the `move_to_trash` command, native drag-and-drop. The Rust gate (`rust:fmt`, `rust:lint`, `cargo test`, `tauri build`) runs in CI.
+- The PR closes #16.

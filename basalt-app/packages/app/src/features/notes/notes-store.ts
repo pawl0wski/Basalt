@@ -3,6 +3,7 @@ import type {
     AutosaveStatus,
     Eol,
     Note,
+    TreeNode,
     WorkspacePath,
 } from "@basalt/core";
 import { createStore, type StoreApi } from "zustand/vanilla";
@@ -25,6 +26,7 @@ export type FocusRequest = {
 
 export type NotesState = {
     readonly notes: readonly Note[];
+    readonly tree: readonly TreeNode[];
     readonly listError: AppError | null;
     readonly createError: AppError | null;
     readonly openNotes: readonly NoteSession[];
@@ -41,6 +43,7 @@ export function createNotesStore(): NotesStore {
 export function emptyNotesState(): NotesState {
     return {
         notes: [],
+        tree: [],
         listError: null,
         createError: null,
         openNotes: [],

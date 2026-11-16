@@ -53,8 +53,8 @@ function typeInto(name: string, insert: string) {
 
 function listOption(name: string | RegExp) {
     return within(
-        screen.getByRole("listbox", { name: en.workspace.notesLabel }),
-    ).getByRole("option", { name });
+        screen.getByRole("tree", { name: en.workspace.notesLabel }),
+    ).getByRole("treeitem", { name });
 }
 
 describe("editor area and tabs", () => {
@@ -107,6 +107,7 @@ describe("editor area and tabs", () => {
         await openApp({ "a.md": "1", "projects/Roadmap.md": "2" });
 
         await user.click(listOption("a"));
+        await user.click(listOption("projects"));
         await user.click(listOption(/Roadmap/));
 
         expect(tabs().map((tab) => tab.textContent)).toEqual(["a", "Roadmap"]);

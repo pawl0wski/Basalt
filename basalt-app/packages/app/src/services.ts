@@ -16,6 +16,16 @@ import {
     createImageHub,
     type ImageHub,
 } from "./features/attachments/image-hub";
+import {
+    createTreeStore,
+    emptyTreeState,
+    type TreeStore,
+} from "./features/tree/tree-store";
+import {
+    createTreeActions,
+    type TreeActions,
+} from "./features/tree/tree-actions";
+import { connectTreeStore } from "./features/tree/tree-wiring";
 import { createSettingsWriter } from "./features/settings/settings-writer";
 import { createWorkspaceActions } from "./features/workspace/workspace-actions";
 import {
@@ -32,6 +42,8 @@ export const WATCH_DEBOUNCE_MS = 300;
 export type Services = {
     readonly workspaceStore: WorkspaceStore;
     readonly notesStore: NotesStore;
+    readonly treeStore: TreeStore;
+    readonly treeActions: TreeActions;
     readonly workspaceActions: WorkspaceActions;
     readonly notesActions: NotesActions;
     readonly leaveStore: LeaveStore;
@@ -60,12 +72,20 @@ export function createServices(
     const settings = createSettingsWriter(platform.settings);
     const workspaceStore = createWorkspaceStore();
     const notesStore = createNotesStore();
+    const treeStore = createTreeStore();
+    connectTreeStore({ tree: treeStore, notes: notesStore });
     const notesActions = createNotesActions({
         store: notesStore,
         settings,
         schedule: options.schedule ?? timeoutScheduler,
         autosaveDelayMs: AUTOSAVE_DELAY_MS,
         untitledName: options.untitledName,
+        trash: platform.trash,
+    });
+    const treeActions = createTreeActions({
+        store: treeStore,
+        notesStore,
+        notes: notesActions,
     });
     const leaveStore = createLeaveStore();
     const images = createImageHub();
@@ -78,6 +98,9 @@ export function createServices(
         images,
         watchSchedule: options.watchSchedule ?? timeoutScheduler,
         watchDebounceMs: WATCH_DEBOUNCE_MS,
+        onWorkspaceReset: () => {
+            treeStore.setState(emptyTreeState());
+        },
         onFlushBlocked: (error) => {
             leaveStore.setState({
                 pending: { kind: "change-workspace" },
@@ -98,6 +121,8 @@ export function createServices(
     return {
         workspaceStore,
         notesStore,
+        treeStore,
+        treeActions,
         workspaceActions,
         notesActions,
         leaveStore,

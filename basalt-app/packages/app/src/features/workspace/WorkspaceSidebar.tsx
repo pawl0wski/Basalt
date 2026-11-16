@@ -1,11 +1,14 @@
+import type { ReactNode } from "react";
 import {
     Alert,
     Button,
     EmptyState,
     ErrorState,
-    NoteList,
     NoteSidebar,
-    type NoteListEntry,
+    Tree,
+    type TreeDropTarget,
+    type TreeNode,
+    type TreeSelectionChange,
 } from "@basalt/ui";
 
 export type WorkspaceSidebarTexts = {
@@ -22,27 +25,60 @@ export type WorkspaceSidebarTexts = {
 export type WorkspaceSidebarProps = {
     workspaceName: string;
     texts: WorkspaceSidebarTexts;
-    notes: NoteListEntry[];
-    selectedPath: string | null;
+    nodes: TreeNode[];
+    activeId: string | null;
+    focusedId: string | null;
     listError: string | null;
     createError: string | null;
     notice: string | null;
-    onSelect: (path: string) => void;
+    onOpenNote: (id: string) => void;
+    onToggleFolder: (id: string) => void;
+    onFocusChange: (id: string) => void;
     onNewNote: () => void;
     onRetry: () => void;
+    onContextMenuRequest: (
+        id: string | null,
+        point: { x: number; y: number },
+    ) => void;
+    selectedIds: ReadonlySet<string>;
+    onSelectionChange: (change: TreeSelectionChange) => void;
+    onClearSelection: () => void;
+    draggingIds: ReadonlySet<string>;
+    dropTarget: TreeDropTarget | null;
+    onDragStart: (id: string) => void;
+    onDragEnd: () => void;
+    onDropTargetChange: (target: TreeDropTarget | null) => void;
+    onDrop: (target: TreeDropTarget) => void;
+    onFolderHoverOpen: (id: string) => void;
+    overlays?: ReactNode;
 };
 
 export function WorkspaceSidebar({
     workspaceName,
     texts,
-    notes,
-    selectedPath,
+    nodes,
+    activeId,
+    focusedId,
     listError,
     createError,
     notice,
-    onSelect,
+    onOpenNote,
+    onToggleFolder,
+    onFocusChange,
     onNewNote,
     onRetry,
+    onContextMenuRequest,
+    selectedIds,
+    onSelectionChange,
+    onClearSelection,
+    draggingIds,
+    dropTarget,
+    onDragStart,
+    onDragEnd,
+    onDropTargetChange,
+    onDrop,
+    onFolderHoverOpen,
+    overlays,
 }: WorkspaceSidebarProps) {
     return (
         <NoteSidebar
@@ -57,13 +93,27 @@ export function WorkspaceSidebar({
                     <Alert variant="warning">{createError}</Alert>
                 </div>
             ) : null}
-            <NoteList
-                label={texts.notesLabel}
-                notes={notes}
-                selectedPath={selectedPath}
-                onSelect={onSelect}
-                status={listError === null ? "ready" : "error"}
-                empty={
+            {listError !== null ? (
+                <ErrorState
+                    title={texts.listErrorTitle}
+                    description={listError}
+                    action={
+                        <Button variant="secondary" onClick={onRetry}>
+                            {texts.retry}
+                        </Button>
+                    }
+                />
+            ) : nodes.length === 0 ? (
+                <div
+                    className="min-h-full"
+                    onContextMenu={(event) => {
+                        event.preventDefault();
+                        onContextMenuRequest(null, {
+                            x: event.clientX,
+                            y: event.clientY,
+                        });
+                    }}
+                >
                     <EmptyState
                         title={texts.emptyTitle}
                         description={texts.emptyDescription}
@@ -73,19 +123,31 @@ export function WorkspaceSidebar({
                             </Button>
                         }
                     />
-                }
-                error={
-                    <ErrorState
-                        title={texts.listErrorTitle}
-                        description={listError}
-                        action={
-                            <Button variant="secondary" onClick={onRetry}>
-                                {texts.retry}
-                            </Button>
-                        }
-                    />
-                }
-            />
+                </div>
+            ) : (
+                <Tree
+                    label={texts.notesLabel}
+                    nodes={nodes}
+                    activeId={activeId}
+                    focusedId={focusedId}
+                    selectedIds={selectedIds}
+                    onSelectionChange={onSelectionChange}
+                    onClearSelection={onClearSelection}
+                    draggingIds={draggingIds}
+                    dropTarget={dropTarget}
+                    onDragStart={onDragStart}
+                    onDragEnd={onDragEnd}
+                    onDropTargetChange={onDropTargetChange}
+                    onDrop={onDrop}
+                    onFolderHoverOpen={onFolderHoverOpen}
+                    className="min-h-full"
+                    onContextMenuRequest={onContextMenuRequest}
+                    onFocusChange={onFocusChange}
+                    onToggleFolder={onToggleFolder}
+                    onOpenNote={onOpenNote}
+                />
+            )}
+            {overlays}
         </NoteSidebar>
     );
 }

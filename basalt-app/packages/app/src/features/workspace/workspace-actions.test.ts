@@ -147,6 +147,39 @@ describe("switching workspaces", () => {
         expect(h.workspaceStore.getState().root).toBe(B);
     });
 
+    it("forgets expanded folders and the focused row of the previous workspace", async () => {
+        const h = createHarness({
+            workspaces: {
+                [A]: seedFs({ "docs/a.md": "1" }),
+                [B]: seedFs({ "docs/b.md": "2" }),
+            },
+            picked: A,
+        });
+        await h.workspaceActions.openWorkspace();
+        await h.notesActions.openNote(wsPath("docs/a.md"));
+        h.treeStore.setState({ focusedId: "docs/a.md" });
+        expect(h.treeStore.getState().expanded.has("docs")).toBe(true);
+
+        h.pick(B);
+        await h.workspaceActions.openWorkspace();
+
+        expect(h.treeStore.getState().expanded.size).toBe(0);
+        expect(h.treeStore.getState().focusedId).toBeNull();
+    });
+
+    it("clears the tree state when the workspace is left", async () => {
+        const h = createHarness({
+            workspaces: { [A]: seedFs({ "docs/a.md": "1" }) },
+            picked: A,
+        });
+        await h.workspaceActions.openWorkspace();
+        await h.notesActions.openNote(wsPath("docs/a.md"));
+
+        await h.workspaceActions.leaveWorkspace();
+
+        expect(h.treeStore.getState().expanded.size).toBe(0);
+    });
+
     it("keeps the old workspace and its unsaved text when Discard is chosen but the new folder cannot be opened", async () => {
         const fs = seedFs({ "a.md": "base" });
         const h = createHarness({ workspaces: { [A]: fs }, picked: A });

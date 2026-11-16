@@ -30,12 +30,19 @@ export { Switch } from "./components/Switch";
 export type { SwitchProps } from "./components/Switch";
 export { ConfirmDialog } from "./components/ConfirmDialog";
 export type { ConfirmDialogProps } from "./components/ConfirmDialog";
+export { ContextMenu } from "./components/ContextMenu";
+export type {
+    ContextMenuPoint,
+    ContextMenuProps,
+} from "./components/ContextMenu";
 export { Dialog } from "./components/Dialog";
 export type { DialogProps } from "./components/Dialog";
 export { EmptyState } from "./components/EmptyState";
 export type { EmptyStateProps } from "./components/EmptyState";
 export { ErrorState } from "./components/ErrorState";
 export type { ErrorStateProps } from "./components/ErrorState";
+export { InlineError } from "./components/InlineError";
+export type { InlineErrorProps } from "./components/InlineError";
 export { Menu } from "./components/Menu";
 export type { MenuAction, MenuEntry, MenuProps } from "./components/Menu";
 export { Popover } from "./components/Popover";
@@ -61,6 +68,12 @@ export type {
 } from "./product/ImagePlaceholder";
 export { NewNoteDialog } from "./product/NewNoteDialog";
 export type { NewNoteDialogProps } from "./product/NewNoteDialog";
+export { NameDialog } from "./product/NameDialog";
+export type { NameDialogProps } from "./product/NameDialog";
+export { NewFolderDialog } from "./product/NewFolderDialog";
+export type { NewFolderDialogProps } from "./product/NewFolderDialog";
+export { RenameDialog } from "./product/RenameDialog";
+export type { RenameDialogProps } from "./product/RenameDialog";
 export { NoteBanner } from "./product/NoteBanner";
 export type { NoteBannerProps } from "./product/NoteBanner";
 export { NoteList } from "./product/NoteList";
@@ -82,6 +95,16 @@ export type {
     WindowControlLabels,
     WindowControls,
 } from "./product/TitleBar";
+export { Tree } from "./product/Tree";
+export type {
+    TreeDropTarget,
+    TreeFolderNode,
+    TreeNode,
+    TreeNoteNode,
+    TreePoint,
+    TreeProps,
+    TreeSelectionChange,
+} from "./product/Tree";
 export { WelcomeScreen } from "./product/WelcomeScreen";
 export type { WelcomeScreenProps } from "./product/WelcomeScreen";
 export { cn } from "./lib/utils";

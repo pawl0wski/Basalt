@@ -1,6 +1,7 @@
 import {
     err,
     ok,
+    pathKey,
     type FileEntry,
     type FileKind,
     type Result,
@@ -14,6 +15,7 @@ import {
     readDir,
     readFile,
     remove,
+    rename,
     watch,
     writeFile,
     type FileInfo,
@@ -168,6 +170,40 @@ export function createTauriWorkspaceFileSystem(
         async mkdir(path) {
             return attempt(() =>
                 mkdir(paths.toNative(path), { recursive: true }),
+            );
+        },
+
+        async rename(from, to) {
+            const source = await attempt(() => lstat(paths.toNative(from)));
+            if (!source.ok) return source;
+            const caseOnly = from !== to && pathKey(from) === pathKey(to);
+            if (caseOnly) {
+                const slash = to.lastIndexOf("/");
+                const siblings = await attempt(() =>
+                    readDir(
+                        paths.toNative(slash < 0 ? "" : to.slice(0, slash)),
+                    ),
+                );
+                if (!siblings.ok) return siblings;
+                const name = to.slice(slash + 1);
+                if (siblings.value.some((dirent) => dirent.name === name)) {
+                    return err({
+                        code: "already-exists",
+                        message: "The entry already exists.",
+                    });
+                }
+            } else {
+                const existing = await attempt(() => lstat(paths.toNative(to)));
+                if (existing.ok) {
+                    return err({
+                        code: "already-exists",
+                        message: "The entry already exists.",
+                    });
+                }
+                if (existing.error.code !== "not-found") return existing;
+            }
+            return attempt(() =>
+                rename(paths.toNative(from), paths.toNative(to)),
             );
         },
 

@@ -3,6 +3,7 @@ import {
     createTauriWindowChrome,
     createTauriWorkspaceAccess,
     createTauriWorkspacePicker,
+    createTauriWorkspaceTrash,
 } from "./tauri";
 import type { Platform } from "./platform";
 
@@ -15,6 +16,7 @@ export async function createPlatform(): Promise<Platform> {
         access: createTauriWorkspaceAccess(),
         picker: createTauriWorkspacePicker(),
         settings: createTauriAppSettingsStore(),
+        trash: createTauriWorkspaceTrash,
         windowChrome: createTauriWindowChrome(),
     };
 }
