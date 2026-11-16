@@ -385,6 +385,66 @@ describe("the notes tree", () => {
     });
 });
 
+describe("creating folders", () => {
+    it("creates the folder and shows it in the tree, empty", async () => {
+        const { h, fs } = await openWorkspace({ "a.md": "" });
+
+        const created = await h.notesActions.createFolder(null, "Ideas");
+
+        expect(created.ok && created.value).toBe("Ideas");
+        const listed = await fs.list();
+        expect(listed.ok && listed.value.map((e) => e.path).sort()).toEqual([
+            "Ideas",
+            "a.md",
+        ]);
+        expect(h.notesStore.getState().tree[0]).toMatchObject({
+            kind: "folder",
+            name: "Ideas",
+            children: [],
+        });
+    });
+
+    it("creates a nested folder inside a folder", async () => {
+        const { h } = await openWorkspace({ "docs/a.md": "" });
+
+        const created = await h.notesActions.createFolder(
+            wsPath("docs"),
+            "2026",
+        );
+
+        expect(created.ok && created.value).toBe("docs/2026");
+    });
+
+    it("fails with already-exists for a case-only collision and leaves the tree alone", async () => {
+        const { h, fs } = await openWorkspace({ "docs/a.md": "" });
+        const before = h.notesStore.getState().tree;
+
+        const created = await h.notesActions.createFolder(null, "DOCS");
+
+        expect(!created.ok && created.error.code).toBe("already-exists");
+        expect(h.notesStore.getState().tree).toBe(before);
+        const listed = await fs.list();
+        expect(listed.ok && listed.value.map((e) => e.path).sort()).toEqual([
+            "docs",
+            "docs/a.md",
+        ]);
+    });
+
+    it("fails with permission-denied in a read-only workspace and creates nothing", async () => {
+        const { h, fs } = await openWorkspace(
+            { "a.md": "" },
+            { readOnly: true },
+        );
+
+        const created = await h.notesActions.createFolder(null, "Ideas");
+
+        expect(!created.ok && created.error.code).toBe("permission-denied");
+        const listed = await fs.list();
+        expect(listed.ok && listed.value.map((e) => e.path)).toEqual(["a.md"]);
+        expect(h.notesStore.getState().tree).toHaveLength(1);
+    });
+});
+
 describe("tabs", () => {
     it("closing a dirty tab flushes first and activates a neighbour", async () => {
         const { h, fs } = await openWorkspace({ "n.md": "1", "m.md": "2" });

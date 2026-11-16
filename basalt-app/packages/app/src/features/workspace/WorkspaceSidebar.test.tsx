@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { TreeNode } from "@basalt/ui";
 import { describe, expect, it, vi } from "vitest";
@@ -53,6 +53,7 @@ function props(
         onFocusChange: vi.fn(),
         onNewNote: vi.fn(),
         onRetry: vi.fn(),
+        onContextMenuRequest: vi.fn(),
         ...overrides,
     };
 }
@@ -133,6 +134,52 @@ describe("WorkspaceSidebar", () => {
 
         expect(screen.getByRole("treeitem", { name: "Ideas" })).toHaveFocus();
         expect(p.onFocusChange).toHaveBeenLastCalledWith("Ideas.md");
+    });
+
+    it("requests a context menu with the row id on right-click and on Shift+F10, and with no id outside rows", async () => {
+        const user = userEvent.setup();
+        const p = props();
+        render(<WorkspaceSidebar {...p} />);
+
+        fireEvent.contextMenu(screen.getByRole("treeitem", { name: "Ideas" }), {
+            clientX: 5,
+            clientY: 6,
+        });
+        expect(p.onContextMenuRequest).toHaveBeenLastCalledWith("Ideas.md", {
+            x: 5,
+            y: 6,
+        });
+
+        screen.getByRole("treeitem", { name: "Welcome" }).focus();
+        await user.keyboard("{Shift>}{F10}{/Shift}");
+        expect(p.onContextMenuRequest).toHaveBeenLastCalledWith(
+            "Welcome.md",
+            expect.any(Object),
+        );
+
+        fireEvent.contextMenu(screen.getByRole("tree"), {
+            clientX: 1,
+            clientY: 2,
+        });
+        expect(p.onContextMenuRequest).toHaveBeenLastCalledWith(null, {
+            x: 1,
+            y: 2,
+        });
+    });
+
+    it("requests the root menu from the empty state", () => {
+        const p = props({ nodes: [] });
+        render(<WorkspaceSidebar {...p} />);
+
+        fireEvent.contextMenu(screen.getByText("Nothing here"), {
+            clientX: 7,
+            clientY: 8,
+        });
+
+        expect(p.onContextMenuRequest).toHaveBeenCalledWith(null, {
+            x: 7,
+            y: 8,
+        });
     });
 
     it("shows a folder-only workspace as a tree, not as the empty state", () => {

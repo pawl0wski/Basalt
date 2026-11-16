@@ -552,3 +552,105 @@ describe("moveNotes", () => {
         expect(rename).not.toHaveBeenCalled();
     });
 });
+
+describe("createFolder", () => {
+    it("creates an empty folder in the workspace root", async () => {
+        const { ops, paths } = setup({ "a.md": "x" });
+
+        const result = await ops.createFolder({ parent: null, name: "Ideas" });
+
+        expect(result).toEqual({ ok: true, value: { path: "Ideas" } });
+        expect(await paths()).toEqual(["Ideas", "a.md"]);
+    });
+
+    it("creates a folder inside an existing folder", async () => {
+        const { ops, paths } = setup({ "docs/a.md": "x" });
+
+        const result = await ops.createFolder({
+            parent: p("docs"),
+            name: "2026",
+        });
+
+        expect(result).toEqual({ ok: true, value: { path: "docs/2026" } });
+        expect(await paths()).toEqual(["docs", "docs/2026", "docs/a.md"]);
+    });
+
+    it("allows a name that exists in another folder", async () => {
+        const { ops } = setup({ "other/2026/": "" });
+
+        const result = await ops.createFolder({
+            parent: null,
+            name: "2026",
+        });
+
+        expect(result.ok).toBe(true);
+    });
+
+    it.each([
+        ["a case-only collision with a folder", "docs/", "DOCS"],
+        ["a case-only collision with a note", "Ideas.md", "ideas.md"],
+        ["a Unicode-form-only collision", "Cafe\u0301/", "Caf\u00e9"],
+        ["a collision with a non-Markdown file", "data.txt", "data.txt"],
+        ["a collision with a hidden folder", ".git/", ".git"],
+    ])(
+        "rejects %s without touching the workspace",
+        async (_label, seed, name) => {
+            const files: Record<string, string> = { [seed]: "x" };
+            const { ops, paths } = setup(files);
+            const before = await paths();
+
+            const result = await ops.createFolder({ parent: null, name });
+
+            expect(errorOf(result).code).toBe(
+                name.startsWith(".") ? "invalid-path" : "already-exists",
+            );
+            expect(await paths()).toEqual(before);
+        },
+    );
+
+    it.each([
+        "",
+        "..",
+        "a/b",
+        "a\\b",
+        "a:b",
+        "CON",
+        "trailing.",
+        "trailing ",
+        ".hidden",
+    ])("rejects the invalid name %j", async (name) => {
+        const { ops, paths } = setup();
+
+        const result = await ops.createFolder({ parent: null, name });
+
+        expect(errorOf(result).code).toBe("invalid-path");
+        expect(await paths()).toEqual([]);
+    });
+
+    it("fails with not-found for a missing parent and does not create it", async () => {
+        const { ops, paths } = setup();
+
+        const result = await ops.createFolder({ parent: p("gone"), name: "x" });
+
+        expect(errorOf(result).code).toBe("not-found");
+        expect(await paths()).toEqual([]);
+    });
+
+    it("rejects a note as the parent", async () => {
+        const { ops, paths } = setup({ "a.md": "x" });
+
+        const result = await ops.createFolder({ parent: p("a.md"), name: "x" });
+
+        expect(errorOf(result).code).toBe("invalid-path");
+        expect(await paths()).toEqual(["a.md"]);
+    });
+
+    it("reports permission-denied in a read-only workspace and creates nothing", async () => {
+        const { ops, paths } = setup({ "docs/a.md": "x" }, { readOnly: true });
+
+        const result = await ops.createFolder({ parent: p("docs"), name: "x" });
+
+        expect(errorOf(result).code).toBe("permission-denied");
+        expect(await paths()).toEqual(["docs", "docs/a.md"]);
+    });
+});

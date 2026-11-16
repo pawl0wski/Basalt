@@ -44,3 +44,8 @@ export function childrenOf(
     const folder = findTreeNode(nodes, parent);
     return folder?.kind === "folder" ? folder.children : [];
 }
+
+export function parentFolder(path: WorkspacePath): WorkspacePath | null {
+    const slash = path.lastIndexOf("/");
+    return slash === -1 ? null : (path.slice(0, slash) as WorkspacePath);
+}

@@ -77,6 +77,40 @@
             "changeWorkspace": "Change workspace"
         }
     },
+    "tree": {
+        "menu": {
+            "label": "Actions",
+            "rename": "Rename",
+            "newNote": "New note",
+            "newFolder": "New folder"
+        },
+        "rename": {
+            "title": "Rename note",
+            "nameLabel": "Name",
+            "submit": "Rename",
+            "pending": "Renaming…"
+        },
+        "newFolder": {
+            "title": "New folder",
+            "descriptionRoot": "The folder is created in the workspace folder.",
+            "description": "The folder is created in \"{folder}\".",
+            "nameLabel": "Folder name",
+            "submit": "Create folder",
+            "pending": "Creating…"
+        },
+        "cancel": "Cancel",
+        "nameError": {
+            "empty": "Enter a name.",
+            "traversal": "This name is not valid.",
+            "separator": "A name cannot contain / or \\.",
+            "invalid-character": "A name cannot contain : * ? \" < > | or control characters.",
+            "reserved-name": "This name is reserved by Windows.",
+            "trailing-dot-or-space": "A name cannot end with a dot or a space.",
+            "too-long": "This name is too long.",
+            "leading-dot": "A name cannot start with a dot.",
+            "collision": "A note or folder with this name already exists here."
+        }
+    },
     "notes": {
         "untitled": "Untitled",
         "openError": {

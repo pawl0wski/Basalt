@@ -254,3 +254,40 @@ describe("NewFolderDialog", () => {
         expect(onSubmit).not.toHaveBeenCalled();
     });
 });
+
+describe("onCloseAutoFocus", () => {
+    function Closable({ onCloseAutoFocus }: { onCloseAutoFocus: () => void }) {
+        const [open, setOpen] = useState(true);
+        return (
+            <>
+                <button type="button" data-testid="after" />
+                <NewFolderDialog
+                    open={open}
+                    onOpenChange={setOpen}
+                    title="New folder"
+                    submitLabel="Create folder"
+                    {...texts}
+                    name="x"
+                    onNameChange={() => {}}
+                    onSubmit={() => {}}
+                    onCloseAutoFocus={(event) => {
+                        event.preventDefault();
+                        onCloseAutoFocus();
+                        screen.getByTestId("after").focus();
+                    }}
+                />
+            </>
+        );
+    }
+
+    it("lets the owner of the dialog decide where focus goes when it closes", async () => {
+        const user = userEvent.setup();
+        const spy = vi.fn();
+        render(<Closable onCloseAutoFocus={spy} />);
+
+        await user.keyboard("{Escape}");
+
+        expect(spy).toHaveBeenCalledOnce();
+        expect(document.activeElement).toBe(screen.getByTestId("after"));
+    });
+});

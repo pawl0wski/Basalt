@@ -21,6 +21,7 @@ type NameDialogProps = {
     pending?: boolean;
     submitDisabled?: boolean;
     onSubmit: () => void;
+    onCloseAutoFocus?: (event: Event) => void;
 };
 
 function NameDialog({
@@ -39,6 +40,7 @@ function NameDialog({
     pending = false,
     submitDisabled = false,
     onSubmit,
+    onCloseAutoFocus,
 }: NameDialogProps) {
     const blocked =
         Boolean(error) || pending || submitDisabled || name.trim() === "";
@@ -54,6 +56,7 @@ function NameDialog({
             onOpenChange={onOpenChange}
             title={title}
             description={description}
+            onCloseAutoFocus={onCloseAutoFocus}
         >
             <form
                 onSubmit={handleSubmit}

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
     Alert,
     Button,
@@ -33,6 +34,11 @@ export type WorkspaceSidebarProps = {
     onFocusChange: (id: string) => void;
     onNewNote: () => void;
     onRetry: () => void;
+    onContextMenuRequest: (
+        id: string | null,
+        point: { x: number; y: number },
+    ) => void;
+    overlays?: ReactNode;
 };
 
 export function WorkspaceSidebar({
@@ -49,6 +55,8 @@ export function WorkspaceSidebar({
     onFocusChange,
     onNewNote,
     onRetry,
+    onContextMenuRequest,
+    overlays,
 }: WorkspaceSidebarProps) {
     return (
         <NoteSidebar
@@ -74,13 +82,26 @@ export function WorkspaceSidebar({
                     }
                 />
             ) : nodes.length === 0 ? (
-                <EmptyState
-                    title={texts.emptyTitle}
-                    description={texts.emptyDescription}
-                    action={
-                        <Button onClick={onNewNote}>{texts.emptyAction}</Button>
-                    }
-                />
+                <div
+                    className="min-h-full"
+                    onContextMenu={(event) => {
+                        event.preventDefault();
+                        onContextMenuRequest(null, {
+                            x: event.clientX,
+                            y: event.clientY,
+                        });
+                    }}
+                >
+                    <EmptyState
+                        title={texts.emptyTitle}
+                        description={texts.emptyDescription}
+                        action={
+                            <Button onClick={onNewNote}>
+                                {texts.emptyAction}
+                            </Button>
+                        }
+                    />
+                </div>
             ) : (
                 <Tree
                     label={texts.notesLabel}
@@ -88,11 +109,14 @@ export function WorkspaceSidebar({
                     activeId={activeId}
                     focusedId={focusedId}
                     draggable={false}
+                    className="min-h-full"
+                    onContextMenuRequest={onContextMenuRequest}
                     onFocusChange={onFocusChange}
                     onToggleFolder={onToggleFolder}
                     onOpenNote={onOpenNote}
                 />
             )}
+            {overlays}
         </NoteSidebar>
     );
 }

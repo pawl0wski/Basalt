@@ -109,6 +109,7 @@ export { createNoteOperations } from "./note-operations";
 export type {
     MoveNotesInput,
     NoteMove,
+    CreateFolderInput,
     NoteOperations,
     RenameNoteInput,
 } from "./note-operations";

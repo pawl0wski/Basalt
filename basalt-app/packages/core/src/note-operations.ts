@@ -28,7 +28,15 @@ export interface MoveNotesInput {
     readonly onMoved?: (move: NoteMove) => void;
 }
 
+export interface CreateFolderInput {
+    readonly parent: WorkspacePath | null;
+    readonly name: string;
+}
+
 export interface NoteOperations {
+    createFolder(
+        input: CreateFolderInput,
+    ): Promise<Result<{ path: WorkspacePath }>>;
     renameNote(
         input: RenameNoteInput,
     ): Promise<Result<{ path: WorkspacePath }>>;
@@ -195,7 +203,39 @@ export function createNoteOperations({
         return ok({ moved });
     }
 
-    return { renameNote, moveNotes };
+    async function createFolder(
+        input: CreateFolderInput,
+    ): Promise<Result<{ path: WorkspacePath }>> {
+        const { parent, name } = input;
+        if (!validateNoteName(name).valid || name.startsWith(".")) {
+            return failure("invalid-path", "The folder name is not valid.");
+        }
+        const target = pathOf((parent === null ? "" : `${parent}/`) + name);
+        if (!target.ok) return target;
+        const listing = await fs.list();
+        if (!listing.ok) return listing;
+        if (parent !== null) {
+            const folder = listing.value.find((entry) => entry.path === parent);
+            if (!folder) {
+                return failure("not-found", "The folder was not found.");
+            }
+            if (folder.kind !== "directory" || isDotEntry(parent)) {
+                return failure("invalid-path", "The parent is not a folder.");
+            }
+        }
+        const key = pathKey(target.value);
+        if (listing.value.some((entry) => pathKey(entry.path) === key)) {
+            return failure(
+                "already-exists",
+                "An entry with this name already exists.",
+            );
+        }
+        const created = await fs.mkdir(target.value);
+        if (!created.ok) return created;
+        return ok({ path: target.value });
+    }
+
+    return { renameNote, moveNotes, createFolder };
 }
 
 function stopped(

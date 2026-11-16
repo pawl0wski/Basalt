@@ -53,6 +53,10 @@ export type NotesActions = {
     createNote(options?: {
         readonly folder?: WorkspacePath | null;
     }): Promise<Result<Note>>;
+    createFolder(
+        parent: WorkspacePath | null,
+        name: string,
+    ): Promise<Result<WorkspacePath>>;
     renamePath(from: WorkspacePath, to: WorkspacePath): Promise<void>;
     renameNote(
         path: WorkspacePath,
@@ -507,6 +511,19 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         return run;
     }
 
+    async function createFolder(
+        parent: WorkspacePath | null,
+        name: string,
+    ): Promise<Result<WorkspacePath>> {
+        const active = workspace;
+        if (!active) return err(NO_WORKSPACE);
+        const created = await active.operations.createFolder({ parent, name });
+        if (!created.ok) return created;
+        if (workspace !== active) return err(NO_WORKSPACE);
+        await refreshNotes();
+        return ok(created.value.path);
+    }
+
     return {
         async enterWorkspace(root, fs) {
             const active = {
@@ -558,6 +575,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         refreshNotes,
         openNote,
         createNote,
+        createFolder,
         renamePath,
         renameNote,
         moveNotes,

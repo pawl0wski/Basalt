@@ -3,13 +3,13 @@ import { useStore } from "zustand";
 import { useTranslation } from "react-i18next";
 import { useServices } from "../../useServices";
 import { findTreeNode, toTreeNodes } from "../tree/tree-nodes";
-import { setFocusedRow, toggleFolder } from "../tree/tree-store";
+import { TreeOverlaysContainer } from "../tree/TreeOverlaysContainer";
 import { folderName } from "./folder-name";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
 
 export function WorkspaceSidebarContainer() {
     const { t } = useTranslation();
-    const { workspaceStore, notesStore, treeStore, notesActions } =
+    const { workspaceStore, notesStore, treeStore, notesActions, treeActions } =
         useServices();
     const root = useStore(workspaceStore, (state) => state.root);
     const watchMode = useStore(workspaceStore, (state) => state.watchMode);
@@ -46,12 +46,10 @@ export function WorkspaceSidebarContainer() {
                     void notesActions.openNote(node.path, { focus: true });
                 }
             }}
-            onToggleFolder={(id) => {
-                toggleFolder(treeStore, id);
-            }}
-            onFocusChange={(id) => {
-                setFocusedRow(treeStore, id);
-            }}
+            onToggleFolder={treeActions.toggleFolder}
+            onFocusChange={treeActions.focusRow}
+            onContextMenuRequest={treeActions.requestMenu}
+            overlays={<TreeOverlaysContainer />}
             onNewNote={() => {
                 void notesActions.createNote();
             }}
