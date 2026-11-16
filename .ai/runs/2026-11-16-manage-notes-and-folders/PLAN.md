@@ -20,7 +20,7 @@ Refs: #16 (issue), #27 (spec PR, merged). Branch: `feat/manage-notes-and-folders
 | 1     | 1.3  | `buildTree` (C-5 filtering and ordering) with tests                                   | dispatch | done   | 490e34b |
 | 1     | 1.4  | `rewriteRelativeLinks` (Lezer) with round-trip property test                          | dispatch | done   | c4c771c |
 | 1     | 1.5  | `renameNote` and `moveNotes` use cases (collisions, C-8 bulk move) with tests         | dispatch | done   | 53cbf38 |
-| 1     | 1.6  | Notes store `renamePath` (tabs, sessions, autosave, settings) and actions with tests  | dispatch | done   | 5a9d5ba |
+| 1     | 1.6  | Notes store `renamePath` (tabs, sessions, autosave, settings) and actions with tests  | dispatch | done   | ee5390b |
 | 2     | 2.1  | ui `Tree` component (multi-select, drop target) with stories and tests                | dispatch | todo   |         |
 | 2     | 2.2  | ui `ContextMenu` component with stories and tests                                     | dispatch | todo   |         |
 | 2     | 2.3  | ui rename and new-folder dialogs with inline error, stories and tests                 | dispatch | todo   |         |
