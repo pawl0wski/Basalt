@@ -4,3 +4,8 @@ export type {
     MarkdownEditorOptions,
 } from "./createMarkdownEditor";
 export { basaltTheme } from "./theme";
+export {
+    activeLineNumbers,
+    buildLivePreviewDecorations,
+    livePreview,
+} from "./livePreview";

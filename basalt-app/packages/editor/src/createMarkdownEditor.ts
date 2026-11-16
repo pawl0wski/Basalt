@@ -1,7 +1,8 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { markdown } from "@codemirror/lang-markdown";
+import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { EditorState, type Extension } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
+import { livePreview } from "./livePreview";
 import { basaltTheme } from "./theme";
 
 export type MarkdownEditorOptions = {
@@ -30,11 +31,12 @@ export function createMarkdownEditor(
     }: MarkdownEditorOptions,
 ): MarkdownEditor {
     const baseExtensions: Extension[] = [
-        markdown(),
+        markdown({ base: markdownLanguage }),
         history(),
         keymap.of([...defaultKeymap, ...historyKeymap]),
         EditorView.lineWrapping,
         basaltTheme,
+        livePreview,
         EditorView.updateListener.of((update) => {
             if (update.docChanged) onChange(update.state.doc.toString());
         }),

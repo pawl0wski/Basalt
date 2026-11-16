@@ -303,3 +303,60 @@ test.describe("note errors", () => {
         await expect(editor(page, "ok")).toBeVisible();
     });
 });
+
+test.describe("live preview", () => {
+    test("renders a line once the cursor leaves it and shows source on the cursor line", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", { "a.md": "" });
+        await option(page, "a").click();
+
+        await page.keyboard.type("## Title\n**bold** and *em*\nlast");
+
+        const lines = page.locator(".cm-line");
+        await expect(lines.nth(0)).toHaveText("Title");
+        await expect(lines.nth(0)).toHaveClass(/cm-lp-h2/);
+        await expect(lines.nth(1)).toHaveText("bold and em");
+        await expect(lines.nth(2)).toHaveText("last");
+
+        await page.keyboard.press("ArrowUp");
+        await expect(lines.nth(1)).toHaveText("**bold** and *em*");
+        await expect(lines.nth(0)).toHaveText("Title");
+
+        await page.keyboard.press("ArrowUp");
+        await expect(lines.nth(0)).toHaveText("## Title");
+        await expect(lines.nth(1)).toHaveText("bold and em");
+    });
+
+    test("keeps one editing surface and saves the exact typed source", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", { "a.md": "" });
+        await option(page, "a").click();
+        const source = "# Head\n\n`code` and **strong**\n[t](u)\n> quote";
+
+        await page.keyboard.type(source);
+
+        await expect(page.locator(".cm-editor")).toHaveCount(1);
+        await expect(page.locator("textarea, input[type=text]")).toHaveCount(0);
+        await expect(page.locator(".cm-lp-code")).toHaveText("code");
+        await expect(page.locator(".cm-lp-strong")).toHaveText("strong");
+        await expect
+            .poll(() => readOnDisk(page, "a.md"), { timeout: 5000 })
+            .toBe(source);
+    });
+
+    test("shows source of an opened note on the first line and renders the rest", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", {
+            "a.md": "# Alpha\n\n- [ ] todo\n- [x] done",
+        });
+
+        await option(page, "a").click();
+
+        await expect(page.locator(".cm-line").nth(0)).toHaveText("# Alpha");
+        await expect(page.locator(".cm-lp-task")).toHaveCount(2);
+        await expect(page.locator(".cm-lp-task-done")).toHaveCount(1);
+    });
+});
