@@ -102,3 +102,5 @@ export type {
     Attachments,
     ReadImageResult,
 } from "./attachments";
+export { HIDDEN_ROOT_FOLDERS, buildTree } from "./tree";
+export type { FolderNode, NoteNode, TreeNode } from "./tree";
