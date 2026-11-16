@@ -104,3 +104,4 @@ export type {
 } from "./attachments";
 export { HIDDEN_ROOT_FOLDERS, buildTree } from "./tree";
 export type { FolderNode, NoteNode, TreeNode } from "./tree";
+export { rewriteRelativeLinks } from "./link-rewrite";

@@ -47,19 +47,15 @@ export function resolveLinkTarget(
     if (destination.startsWith("/") || destination.includes("\\")) {
         return INVALID;
     }
-    const resolved = notePath.split("/").slice(0, -1);
+    const decoded = notePath.split("/").slice(0, -1);
     for (const segment of destination.split("/")) {
         if (segment === "") return INVALID;
         if (segment === ".") continue;
         if (segment === "..") {
-            if (resolved.length === 0) return INVALID;
-            resolved.pop();
+            if (decoded.length === 0) return INVALID;
+            decoded.pop();
             continue;
         }
-        resolved.push(segment);
-    }
-    const decoded: string[] = [];
-    for (const segment of resolved) {
         const value = decodeSegment(segment);
         if (value === null) return INVALID;
         decoded.push(value);

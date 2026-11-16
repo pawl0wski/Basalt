@@ -14,8 +14,10 @@
         "typecheck": "tsc --noEmit",
         "test": "vitest run"
     },
+    "dependencies": {
+        "@lezer/markdown": "^1.8.1"
+    },
     "devDependencies": {
-        "@lezer/markdown": "^1.8.1",
         "fast-check": "^4.10.2",
         "typescript": "~6.0.3"
     }
