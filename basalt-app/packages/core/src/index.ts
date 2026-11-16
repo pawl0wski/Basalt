@@ -105,3 +105,10 @@ export type {
 export { HIDDEN_ROOT_FOLDERS, buildTree } from "./tree";
 export type { FolderNode, NoteNode, TreeNode } from "./tree";
 export { rewriteRelativeLinks } from "./link-rewrite";
+export { createNoteOperations } from "./note-operations";
+export type {
+    MoveNotesInput,
+    NoteMove,
+    NoteOperations,
+    RenameNoteInput,
+} from "./note-operations";

@@ -1,0 +1,554 @@
+import { describe, expect, it, vi } from "vitest";
+import { createNoteOperations } from "./note-operations";
+import type { WorkspaceFileSystem } from "./ports";
+import { createInMemoryWorkspaceFileSystem } from "./testing/in-memory-workspace-file-system";
+import { toWorkspacePath, type WorkspacePath } from "./workspace-path";
+
+function p(input: string): WorkspacePath {
+    const result = toWorkspacePath(input);
+    if (!result.ok) throw new Error(input);
+    return result.value;
+}
+
+const encode = (text: string) => new TextEncoder().encode(text);
+
+function setup(
+    files: Record<string, string> = {},
+    options: { readOnly?: boolean } = {},
+    wrap: (fs: WorkspaceFileSystem) => WorkspaceFileSystem = (fs) => fs,
+) {
+    const seeded = createInMemoryWorkspaceFileSystem();
+    for (const [name, text] of Object.entries(files)) {
+        if (name.endsWith("/")) {
+            void seeded.mkdir(p(name.slice(0, -1)));
+        } else {
+            seeded.externalWrite(p(name), encode(text));
+        }
+    }
+    const memory = options.readOnly
+        ? createInMemoryWorkspaceFileSystem({
+              readOnly: true,
+              state: seeded.getState(),
+          })
+        : seeded;
+    const ops = createNoteOperations({ fs: wrap(memory) });
+    const paths = async () => {
+        const listing = await memory.list();
+        if (!listing.ok) throw new Error("list failed");
+        return listing.value.map((entry) => entry.path as string).sort();
+    };
+    const text = async (path: string) => {
+        const result = await memory.readText(p(path));
+        return result.ok ? result.value : null;
+    };
+    return { memory, ops, paths, text };
+}
+
+function errorOf<T>(
+    result: { ok: boolean; error?: { code: string; message: string } } & T,
+) {
+    if (result.ok || !result.error) throw new Error("expected an error");
+    return result.error;
+}
+
+describe("renameNote", () => {
+    it("renames the file in place, keeps its folder and content", async () => {
+        const { ops, paths, text } = setup({ "docs/old.md": "# Keep" });
+
+        const result = await ops.renameNote({
+            path: p("docs/old.md"),
+            newName: "New name",
+        });
+
+        expect(result).toEqual({
+            ok: true,
+            value: { path: "docs/New name.md" },
+        });
+        expect(await paths()).toEqual(["docs", "docs/New name.md"]);
+        expect(await text("docs/New name.md")).toBe("# Keep");
+    });
+
+    it("does not rewrite links when renaming within the same folder", async () => {
+        const { ops, text } = setup({ "d/a.md": "[x](../y.md)" });
+
+        await ops.renameNote({ path: p("d/a.md"), newName: "b" });
+
+        expect(await text("d/b.md")).toBe("[x](../y.md)");
+    });
+
+    it("allows a case-only change of the note's own name", async () => {
+        const { ops, paths } = setup({ "note.md": "x" });
+
+        const result = await ops.renameNote({
+            path: p("note.md"),
+            newName: "Note",
+        });
+
+        expect(result).toEqual({ ok: true, value: { path: "Note.md" } });
+        expect(await paths()).toEqual(["Note.md"]);
+    });
+
+    it("treats an unchanged name as success without touching the file system", async () => {
+        const { memory, ops } = setup({ "a.md": "x" });
+        const events = vi.fn();
+        await memory.watch(events);
+
+        const result = await ops.renameNote({ path: p("a.md"), newName: "a" });
+
+        expect(result).toEqual({ ok: true, value: { path: "a.md" } });
+        expect(events).not.toHaveBeenCalled();
+    });
+
+    it("rejects a name that collides with a sibling by case and keeps both", async () => {
+        const { ops, paths } = setup({ "Foo.md": "1", "bar.md": "2" });
+
+        const result = await ops.renameNote({
+            path: p("bar.md"),
+            newName: "foo",
+        });
+
+        expect(errorOf(result).code).toBe("already-exists");
+        expect(await paths()).toEqual(["Foo.md", "bar.md"]);
+    });
+
+    it("rejects a name that collides with a sibling only by Unicode form", async () => {
+        const nfd = "Zazółc";
+        const { ops, paths } = setup({ [`${nfd}.md`]: "1", "other.md": "2" });
+
+        const result = await ops.renameNote({
+            path: p("other.md"),
+            newName: "Zazółc",
+        });
+
+        expect(errorOf(result).code).toBe("already-exists");
+        expect(await paths()).toEqual([`${nfd}.md`, "other.md"]);
+    });
+
+    it("allows the same name as a note in another folder", async () => {
+        const { ops } = setup({ "a/x.md": "1", "b/y.md": "2" });
+
+        const result = await ops.renameNote({
+            path: p("b/y.md"),
+            newName: "x",
+        });
+
+        expect(result.ok).toBe(true);
+    });
+
+    it("rejects a name that collides with a folder", async () => {
+        const { ops } = setup({ "a.md": "1", "b.md/": "" });
+
+        const result = await ops.renameNote({ path: p("a.md"), newName: "b" });
+
+        expect(errorOf(result).code).toBe("already-exists");
+    });
+
+    it.each([
+        "",
+        "..",
+        "a/b",
+        "a\\b",
+        "bad:name",
+        "con",
+        "trailing.",
+        ".hidden",
+        "x ".padEnd(300, "x"),
+    ])(
+        "rejects the invalid name %j without changing anything",
+        async (newName) => {
+            const { ops, paths } = setup({ "a.md": "x" });
+
+            const result = await ops.renameNote({ path: p("a.md"), newName });
+
+            expect(errorOf(result).code).toBe("invalid-path");
+            expect(await paths()).toEqual(["a.md"]);
+        },
+    );
+
+    it("reports not-found for a missing note", async () => {
+        const { ops } = setup({ "a.md": "x" });
+
+        const result = await ops.renameNote({
+            path: p("gone.md"),
+            newName: "b",
+        });
+
+        expect(errorOf(result).code).toBe("not-found");
+    });
+
+    it("refuses to rename a folder or a non-Markdown file as a note", async () => {
+        const { ops, paths } = setup({ "d/": "", "pic.png": "x" });
+
+        const folder = await ops.renameNote({ path: p("d"), newName: "e" });
+        const image = await ops.renameNote({
+            path: p("pic.png"),
+            newName: "e",
+        });
+
+        expect(errorOf(folder).code).toBe("invalid-path");
+        expect(errorOf(image).code).toBe("invalid-path");
+        expect(await paths()).toEqual(["d", "pic.png"]);
+    });
+
+    it("reports permission-denied in a read-only workspace and changes nothing", async () => {
+        const { ops, paths } = setup({ "a.md": "x" }, { readOnly: true });
+
+        const result = await ops.renameNote({ path: p("a.md"), newName: "b" });
+
+        expect(errorOf(result).code).toBe("permission-denied");
+        expect(await paths()).toEqual(["a.md"]);
+    });
+
+    it("surfaces already-exists when the target appears after the check", async () => {
+        const { ops } = setup({ "a.md": "1" }, {}, (fs) => ({
+            ...fs,
+            rename: async () => ({
+                ok: false,
+                error: { code: "already-exists", message: "raced" },
+            }),
+        }));
+
+        const result = await ops.renameNote({ path: p("a.md"), newName: "b" });
+
+        expect(errorOf(result)).toEqual({
+            code: "already-exists",
+            message: "raced",
+        });
+    });
+
+    it("passes a list failure through", async () => {
+        const { ops } = setup({ "a.md": "1" }, {}, (fs) => ({
+            ...fs,
+            list: async () => ({
+                ok: false,
+                error: { code: "unavailable", message: "gone" },
+            }),
+        }));
+
+        const result = await ops.renameNote({ path: p("a.md"), newName: "b" });
+
+        expect(errorOf(result).code).toBe("unavailable");
+    });
+});
+
+describe("moveNotes", () => {
+    it("moves a note into a folder and rewrites its relative links", async () => {
+        const { ops, paths, text } = setup({
+            "n.md": "[a](plan.md) ![i](attachments/x.png) [w](https://e.com)",
+            "docs/": "",
+        });
+
+        const result = await ops.moveNotes({
+            paths: [p("n.md")],
+            destinationFolder: p("docs"),
+        });
+
+        expect(result).toEqual({
+            ok: true,
+            value: { moved: [{ from: "n.md", to: "docs/n.md" }] },
+        });
+        expect(await paths()).toEqual(["docs", "docs/n.md"]);
+        expect(await text("docs/n.md")).toBe(
+            "[a](../plan.md) ![i](../attachments/x.png) [w](https://e.com)",
+        );
+    });
+
+    it("moves a note to the workspace root and rewrites links out of the folder", async () => {
+        const { ops, text } = setup({ "d/n.md": "[a](../x.md) [b](y.md)" });
+
+        const result = await ops.moveNotes({
+            paths: [p("d/n.md")],
+            destinationFolder: null,
+        });
+
+        expect(result.ok).toBe(true);
+        expect(await text("n.md")).toBe("[a](x.md) [b](d/y.md)");
+    });
+
+    it("keeps a BOM and CRLF line endings when it rewrites links", async () => {
+        const { ops, text } = setup({
+            "n.md": "﻿[ref]: x.md\r\n\r\n[a][ref]\r\n",
+            "d/": "",
+        });
+
+        await ops.moveNotes({ paths: [p("n.md")], destinationFolder: p("d") });
+
+        expect(await text("d/n.md")).toBe(
+            "﻿[ref]: ../x.md\r\n\r\n[a][ref]\r\n",
+        );
+    });
+
+    it("does not write the note again when no link changed", async () => {
+        const writeTextAtomic = vi.fn();
+        const { ops, text } = setup(
+            { "n.md": "plain [w](https://e.com)", "d/": "" },
+            {},
+            (fs) => ({
+                ...fs,
+                writeTextAtomic,
+            }),
+        );
+
+        await ops.moveNotes({ paths: [p("n.md")], destinationFolder: p("d") });
+
+        expect(writeTextAtomic).not.toHaveBeenCalled();
+        expect(await text("d/n.md")).toBe("plain [w](https://e.com)");
+    });
+
+    it("ignores a note already in the destination folder without an error", async () => {
+        const { memory, ops } = setup({ "d/n.md": "x", "m.md": "y" });
+        const events = vi.fn();
+        await memory.watch(events);
+
+        const same = await ops.moveNotes({
+            paths: [p("d/n.md")],
+            destinationFolder: p("d"),
+        });
+        const root = await ops.moveNotes({
+            paths: [p("m.md")],
+            destinationFolder: null,
+        });
+
+        expect(same).toEqual({ ok: true, value: { moved: [] } });
+        expect(root).toEqual({ ok: true, value: { moved: [] } });
+        expect(events).not.toHaveBeenCalled();
+    });
+
+    it("skips notes already in the destination and moves the others", async () => {
+        const { ops, paths } = setup({ "d/a.md": "1", "b.md": "2" });
+
+        const result = await ops.moveNotes({
+            paths: [p("d/a.md"), p("b.md")],
+            destinationFolder: p("d"),
+        });
+
+        expect(result).toEqual({
+            ok: true,
+            value: { moved: [{ from: "b.md", to: "d/b.md" }] },
+        });
+        expect(await paths()).toEqual(["d", "d/a.md", "d/b.md"]);
+    });
+
+    it("moves nothing and names the first collision when any note collides", async () => {
+        const { ops, paths } = setup({
+            "a.md": "1",
+            "b.md": "2",
+            "c.md": "3",
+            "d/B.md": "taken",
+            "d/C.md": "taken",
+        });
+
+        const result = await ops.moveNotes({
+            paths: [p("a.md"), p("b.md"), p("c.md")],
+            destinationFolder: p("d"),
+        });
+
+        const error = errorOf(result);
+        expect(error.code).toBe("already-exists");
+        expect(error.message).toContain("b.md");
+        expect(error.message).not.toContain("c.md");
+        expect(await paths()).toEqual([
+            "a.md",
+            "b.md",
+            "c.md",
+            "d",
+            "d/B.md",
+            "d/C.md",
+        ]);
+    });
+
+    it("detects two selected notes that would land on the same name", async () => {
+        const { ops, paths } = setup({
+            "x/n.md": "1",
+            "y/n.md": "2",
+            "d/": "",
+        });
+
+        const result = await ops.moveNotes({
+            paths: [p("x/n.md"), p("y/n.md")],
+            destinationFolder: p("d"),
+        });
+
+        const error = errorOf(result);
+        expect(error.code).toBe("already-exists");
+        expect(error.message).toContain("n.md");
+        expect(await paths()).toEqual(["d", "x", "x/n.md", "y", "y/n.md"]);
+    });
+
+    it("moves a duplicated path only once", async () => {
+        const { ops } = setup({ "a.md": "1", "d/": "" });
+
+        const result = await ops.moveNotes({
+            paths: [p("a.md"), p("a.md")],
+            destinationFolder: p("d"),
+        });
+
+        expect(result).toEqual({
+            ok: true,
+            value: { moved: [{ from: "a.md", to: "d/a.md" }] },
+        });
+    });
+
+    it("rejects a missing or non-folder destination and a missing or non-note source before moving", async () => {
+        const { ops, paths } = setup({
+            "a.md": "1",
+            "f.md": "2",
+            "pic.png": "3",
+            "d/": "",
+        });
+
+        const noFolder = await ops.moveNotes({
+            paths: [p("a.md")],
+            destinationFolder: p("zzz"),
+        });
+        const fileAsFolder = await ops.moveNotes({
+            paths: [p("a.md")],
+            destinationFolder: p("f.md"),
+        });
+        const missing = await ops.moveNotes({
+            paths: [p("a.md"), p("gone.md")],
+            destinationFolder: p("d"),
+        });
+        const image = await ops.moveNotes({
+            paths: [p("a.md"), p("pic.png")],
+            destinationFolder: p("d"),
+        });
+
+        expect(errorOf(noFolder).code).toBe("not-found");
+        expect(errorOf(fileAsFolder).code).toBe("invalid-path");
+        expect(errorOf(missing).code).toBe("not-found");
+        expect(errorOf(image).code).toBe("invalid-path");
+        expect(await paths()).toEqual(["a.md", "d", "f.md", "pic.png"]);
+    });
+
+    it("rejects a hidden destination folder", async () => {
+        const { ops, paths } = setup({ "a.md": "1", ".git/": "" });
+
+        const result = await ops.moveNotes({
+            paths: [p("a.md")],
+            destinationFolder: p(".git"),
+        });
+
+        expect(errorOf(result).code).toBe("invalid-path");
+        expect(await paths()).toEqual([".git", "a.md"]);
+    });
+
+    it("reports permission-denied in a read-only workspace and changes nothing", async () => {
+        const { ops, paths } = setup(
+            { "a.md": "1", "d/": "" },
+            { readOnly: true },
+        );
+
+        const result = await ops.moveNotes({
+            paths: [p("a.md")],
+            destinationFolder: p("d"),
+        });
+
+        const error = errorOf(result);
+        expect(error.code).toBe("permission-denied");
+        expect(error.message).not.toMatch(/Moved \d/);
+        expect(await paths()).toEqual(["a.md", "d"]);
+    });
+
+    it("stops at an I/O failure midway, keeps earlier moves and reports the count and the failing note", async () => {
+        let calls = 0;
+        const { ops, paths } = setup(
+            { "a.md": "1", "b.md": "2", "c.md": "3", "d/": "" },
+            {},
+            (fs) => ({
+                ...fs,
+                rename: async (from, to) => {
+                    calls += 1;
+                    if (calls === 2) {
+                        return {
+                            ok: false,
+                            error: { code: "unknown", message: "disk error" },
+                        };
+                    }
+                    return fs.rename(from, to);
+                },
+            }),
+        );
+        const onMoved = vi.fn();
+
+        const result = await ops.moveNotes({
+            paths: [p("a.md"), p("b.md"), p("c.md")],
+            destinationFolder: p("d"),
+            onMoved,
+        });
+
+        const error = errorOf(result);
+        expect(error.code).toBe("unknown");
+        expect(error.message).toContain("Moved 1 of 3");
+        expect(error.message).toContain("b.md");
+        expect(error.message).toContain("disk error");
+        expect(onMoved.mock.calls).toEqual([[{ from: "a.md", to: "d/a.md" }]]);
+        expect(await paths()).toEqual(["b.md", "c.md", "d", "d/a.md"]);
+    });
+
+    it("keeps a note moved when its links cannot be updated and says so", async () => {
+        const { ops, paths, text } = setup(
+            { "n.md": "[a](x.md)", "d/": "" },
+            {},
+            (fs) => ({
+                ...fs,
+                writeTextAtomic: async () => ({
+                    ok: false,
+                    error: { code: "unknown", message: "write failed" },
+                }),
+            }),
+        );
+        const onMoved = vi.fn();
+
+        const result = await ops.moveNotes({
+            paths: [p("n.md")],
+            destinationFolder: p("d"),
+            onMoved,
+        });
+
+        const error = errorOf(result);
+        expect(error.message).toContain(
+            "moved but its links could not be updated",
+        );
+        expect(error.message).toContain("write failed");
+        expect(onMoved).toHaveBeenCalledWith({ from: "n.md", to: "d/n.md" });
+        expect(await paths()).toEqual(["d", "d/n.md"]);
+        expect(await text("d/n.md")).toBe("[a](x.md)");
+    });
+
+    it("keeps a moved note whose text cannot be read and stops the run", async () => {
+        const { memory, ops, paths } = setup({ "d/": "" });
+        memory.externalWrite(p("bin.md"), Uint8Array.of(0xff, 0xfe));
+        memory.externalWrite(p("ok.md"), encode("[a](x.md)"));
+
+        const result = await ops.moveNotes({
+            paths: [p("bin.md"), p("ok.md")],
+            destinationFolder: p("d"),
+        });
+
+        const error = errorOf(result);
+        expect(error.code).toBe("not-utf8");
+        expect(error.message).toContain("bin.md");
+        expect(await paths()).toEqual(["d", "d/bin.md", "ok.md"]);
+    });
+
+    it("moves nothing when the listing fails", async () => {
+        const rename = vi.fn();
+        const { ops } = setup({ "a.md": "1" }, {}, (fs) => ({
+            ...fs,
+            rename,
+            list: async () => ({
+                ok: false,
+                error: { code: "unavailable", message: "gone" },
+            }),
+        }));
+
+        const result = await ops.moveNotes({
+            paths: [p("a.md")],
+            destinationFolder: null,
+        });
+
+        expect(errorOf(result).code).toBe("unavailable");
+        expect(rename).not.toHaveBeenCalled();
+    });
+});
