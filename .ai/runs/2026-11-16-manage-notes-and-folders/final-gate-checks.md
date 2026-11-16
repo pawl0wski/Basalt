@@ -15,14 +15,16 @@ from `SDLC.md`, run on the run's worktree after Step 5.4.
 | `npm run test:e2e` | pass — 169 tests (`manage-notes`, `move-notes`, `delete-notes`, and the rest) |
 | `npm run test:stories` | pass — 47 files, 237 tests |
 | `npm run check:tokens` | pass — "No values outside the tokens." |
-| `npm run rust:fmt` | **not run** — `cargo fmt` unavailable (no `rustfmt` component; installed rustc is 1.63, too old for edition 2024) |
-| `npm run rust:lint` | **not run** — `cargo clippy` unavailable (no `clippy` component) |
+| `npm run rust:fmt` | **not run locally** — `cargo fmt` unavailable (no `rustfmt` component; installed rustc is 1.63, too old for edition 2024). **CI: success.** |
+| `npm run rust:lint` | **not run locally** — `cargo clippy` unavailable (no `clippy` component). **CI: success.** |
 
-The two Rust commands must run in CI. Step 5.2 changed `src-tauri` (`trash`
-dependency, `move_to_trash` command, Rust tests); a local `rustc --emit=metadata`
-parse check reported only the expected unresolved-crate errors (no syntax
-errors). `cargo test` for the Rust tests and `npm run tauri build -- --no-bundle`
-for the `Cargo.toml` change were not run here.
+Step 5.2 changed `src-tauri` (`trash` dependency, `move_to_trash` command, Rust
+tests); a local `rustc --emit=metadata` parse check reported only the expected
+unresolved-crate errors (no syntax errors). The PR's CI run 43954597285 then
+passed every job, including **Rust checks (cargo fmt + clippy)** and **Tauri
+desktop build (Linux/Alpine and windows-latest)** — so the Rust, the `trash`
+dependency and the command are verified in CI. `cargo test` for the Rust tests
+is still only run by `npm run rust:test` (not in CI).
 
 ## What the run delivered
 

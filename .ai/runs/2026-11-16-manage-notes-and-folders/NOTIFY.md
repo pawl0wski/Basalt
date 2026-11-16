@@ -27,3 +27,10 @@
 - Final gate green: format, lint, typecheck, 1491 unit tests, build, 169 e2e, 237 story tests, tokens. `rust:fmt`/`rust:lint`/`cargo test`/`tauri build` unavailable in the sandbox; Step 5.2 Rust UNVERIFIED beyond a parse check.
 - C-5 per-folder read errors remain out of scope by owner decision.
 - PR #28 is `Status: complete`; lock released.
+
+## 2026-11-16T21:12:00Z — rebase, review and CI
+
+- Rebased the branch onto `master` (conflicts in `workspace-actions.ts`, `e2e/support.ts`, `.ai/lessons.md`); forwarded the new `rename` through `withScopeReporting` and updated the master-side tests that used the old flat-list roles (a2e8a4a). Force-pushed with lease per the repo lesson.
+- Re-ran the full gate after the rebase: format, lint, typecheck, 1535 unit tests, build, 172 e2e, 237 story tests, tokens — green.
+- Posted the review verdict (approve; can't self-approve, posted as a comment) and the outcome comment; released the lock.
+- CI run 43954597285 passed every job, including Rust checks (cargo fmt + clippy) and Tauri desktop builds (Linux/Alpine, windows-latest). The Step 5.2 Rust is now verified in CI. PR is merge-ready.
