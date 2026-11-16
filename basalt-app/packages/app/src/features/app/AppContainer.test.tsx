@@ -207,15 +207,24 @@ describe("AppContainer", () => {
             return { harness, fs };
         }
 
-        it("shows the folder name, the sorted Markdown notes and the no-note empty state", async () => {
+        it("shows the folder name, the folders first then the sorted Markdown notes, and the no-note empty state", async () => {
+            const user = userEvent.setup();
             await openLayout();
 
             expect(screen.getByText("Basalt notes")).toBeInTheDocument();
             expect(
                 screen
-                    .getAllByRole("option")
+                    .getAllByRole("treeitem")
                     .map((option) => option.textContent),
-            ).toEqual(["ideas", "projects/Roadmap", "Welcome"]);
+            ).toEqual(["projects", "ideas", "Welcome"]);
+            await user.click(
+                screen.getByRole("treeitem", { name: "projects" }),
+            );
+            expect(
+                screen
+                    .getAllByRole("treeitem")
+                    .map((option) => option.textContent),
+            ).toEqual(["projects", "Roadmap", "ideas", "Welcome"]);
             expect(
                 screen.getByText(en.workspace.noNote.title),
             ).toBeInTheDocument();
@@ -228,12 +237,12 @@ describe("AppContainer", () => {
             const { harness } = await openLayout();
 
             await userEvent.click(
-                screen.getByRole("option", { name: "ideas" }),
+                screen.getByRole("treeitem", { name: "ideas" }),
             );
 
             expect(harness.notesStore.getState().activeNote).toBe("ideas.md");
             expect(
-                screen.getByRole("option", { name: "ideas" }),
+                screen.getByRole("treeitem", { name: "ideas" }),
             ).toHaveAttribute("aria-selected", "true");
         });
 
@@ -251,7 +260,7 @@ describe("AppContainer", () => {
             );
 
             expect(
-                await screen.findByRole("option", { name: "Untitled" }),
+                await screen.findByRole("treeitem", { name: "Untitled" }),
             ).toBeInTheDocument();
         });
 
@@ -265,9 +274,9 @@ describe("AppContainer", () => {
                     }),
                 ).getByRole("button", { name: en.workspace.newNote }),
             );
-            await screen.findByRole("option", { name: "Untitled" });
+            await screen.findByRole("treeitem", { name: "Untitled" });
             const event = pressCtrl("n");
-            await screen.findByRole("option", { name: "Untitled 1" });
+            await screen.findByRole("treeitem", { name: "Untitled 1" });
 
             expect(event.defaultPrevented).toBe(true);
             expect(harness.notesStore.getState().activeNote).toBe(
@@ -284,7 +293,7 @@ describe("AppContainer", () => {
                 ).getByRole("button", { name: en.workspace.newNote }),
             );
 
-            await screen.findByRole("option", { name: "Untitled" });
+            await screen.findByRole("treeitem", { name: "Untitled" });
             expect(harness.notesStore.getState().activeNote).toBe(
                 "Untitled.md",
             );
@@ -316,7 +325,7 @@ describe("AppContainer", () => {
             expect(
                 await screen.findByText(en.errors["permission-denied"]),
             ).toBeInTheDocument();
-            expect(screen.getAllByRole("option")).toHaveLength(3);
+            expect(screen.getAllByRole("treeitem")).toHaveLength(3);
         });
 
         it("shows the fallback notice and refreshes on window focus when the watcher cannot start", async () => {
@@ -332,7 +341,7 @@ describe("AppContainer", () => {
             window.dispatchEvent(new Event("focus"));
 
             expect(
-                await screen.findByRole("option", { name: "added" }),
+                await screen.findByRole("treeitem", { name: "added" }),
             ).toBeInTheDocument();
         });
 
@@ -354,7 +363,7 @@ describe("AppContainer", () => {
             harness.watchScheduler.fire();
 
             expect(
-                await screen.findByRole("option", { name: "added" }),
+                await screen.findByRole("treeitem", { name: "added" }),
             ).toBeInTheDocument();
         });
 

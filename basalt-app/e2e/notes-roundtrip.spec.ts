@@ -10,8 +10,8 @@ const encoder = new TextEncoder();
 
 function option(page: Page, name: string) {
     return page
-        .getByRole("listbox", { name: "Notes" })
-        .getByRole("option", { name, exact: true });
+        .getByRole("tree", { name: "Notes" })
+        .getByRole("treeitem", { name, exact: true });
 }
 
 function editor(page: Page, name: string) {
@@ -37,8 +37,15 @@ test.describe("choosing a workspace lists Markdown files", () => {
         });
 
         await expect(
-            page.getByRole("listbox", { name: "Notes" }).getByRole("option"),
-        ).toHaveText(["a", "b", "docs/deep/c"]);
+            page.getByRole("tree", { name: "Notes" }).getByRole("treeitem"),
+        ).toHaveText(["docs", "a", "b"]);
+
+        await page.getByRole("treeitem", { name: "docs" }).click();
+        await page.getByRole("treeitem", { name: "deep" }).click();
+
+        await expect(
+            page.getByRole("tree", { name: "Notes" }).getByRole("treeitem"),
+        ).toHaveText(["docs", "deep", "c", "a", "b"]);
     });
 });
 

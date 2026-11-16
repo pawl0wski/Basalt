@@ -16,7 +16,11 @@ import {
     createImageHub,
     type ImageHub,
 } from "./features/attachments/image-hub";
-import { createTreeStore, type TreeStore } from "./features/tree/tree-store";
+import {
+    createTreeStore,
+    emptyTreeState,
+    type TreeStore,
+} from "./features/tree/tree-store";
 import { connectTreeStore } from "./features/tree/tree-wiring";
 import { createSettingsWriter } from "./features/settings/settings-writer";
 import { createWorkspaceActions } from "./features/workspace/workspace-actions";
@@ -64,11 +68,7 @@ export function createServices(
     const workspaceStore = createWorkspaceStore();
     const notesStore = createNotesStore();
     const treeStore = createTreeStore();
-    connectTreeStore({
-        tree: treeStore,
-        notes: notesStore,
-        workspace: workspaceStore,
-    });
+    connectTreeStore({ tree: treeStore, notes: notesStore });
     const notesActions = createNotesActions({
         store: notesStore,
         settings,
@@ -87,6 +87,9 @@ export function createServices(
         images,
         watchSchedule: options.watchSchedule ?? timeoutScheduler,
         watchDebounceMs: WATCH_DEBOUNCE_MS,
+        onWorkspaceReset: () => {
+            treeStore.setState(emptyTreeState());
+        },
         onFlushBlocked: (error) => {
             leaveStore.setState({
                 pending: { kind: "change-workspace" },

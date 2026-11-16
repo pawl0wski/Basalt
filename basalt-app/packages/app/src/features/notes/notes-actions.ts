@@ -1,4 +1,5 @@
 import {
+    buildTree,
     createAutosave,
     createNoteOperations,
     createNotes,
@@ -15,6 +16,7 @@ import {
     type NoteService,
     type Result,
     type SaveMode,
+    type TreeNode,
     type WorkspaceFileSystem,
     type WorkspacePath,
     type WorkspaceRoot,
@@ -48,7 +50,9 @@ export type NotesActions = {
         path: WorkspacePath,
         options?: { readonly focus?: boolean },
     ): Promise<Result<void>>;
-    createNote(): Promise<Result<Note>>;
+    createNote(options?: {
+        readonly folder?: WorkspacePath | null;
+    }): Promise<Result<Note>>;
     renamePath(from: WorkspacePath, to: WorkspacePath): Promise<void>;
     renameNote(
         path: WorkspacePath,
@@ -73,6 +77,7 @@ export type NotesActions = {
 
 type ActiveWorkspace = {
     readonly root: WorkspaceRoot;
+    readonly fs: WorkspaceFileSystem;
     readonly notes: NoteService;
     readonly operations: NoteOperations;
 };
@@ -96,12 +101,12 @@ const NO_WORKSPACE: AppError = {
 
 const EXTERNAL_CHECK_ATTEMPTS = 4;
 
-function sortKey(note: Note): string {
-    return note.path.slice(0, -".md".length).toLowerCase();
-}
-
-function sortNotes(notes: readonly Note[]): Note[] {
-    return [...notes].sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+function flattenNotes(nodes: readonly TreeNode[]): Note[] {
+    return nodes.flatMap((node) =>
+        node.kind === "folder"
+            ? flattenNotes(node.children)
+            : [{ path: node.path, name: node.name }],
+    );
 }
 
 export function createNotesActions(options: NotesActionsOptions): NotesActions {
@@ -239,13 +244,18 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
     async function refreshNotes(): Promise<Result<void>> {
         const active = workspace;
         if (!active) return err(NO_WORKSPACE);
-        const listed = await active.notes.listNotes();
+        const listed = await active.fs.list();
         if (workspace !== active) return err(NO_WORKSPACE);
         if (!listed.ok) {
             store.setState({ listError: listed.error });
             return listed;
         }
-        store.setState({ notes: sortNotes(listed.value), listError: null });
+        const tree = buildTree(listed.value);
+        store.setState({
+            tree,
+            notes: flattenNotes(tree),
+            listError: null,
+        });
         return ok(undefined);
     }
 
@@ -279,28 +289,25 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         return result;
     }
 
-    async function createNoteNow(): Promise<Result<Note>> {
+    async function createNoteNow(
+        folder: WorkspacePath | null,
+    ): Promise<Result<Note>> {
         const active = workspace;
         if (!active) return err(NO_WORKSPACE);
         const name = active.notes.suggestNoteName(
             store.getState().notes,
             untitledName(),
+            folder,
         );
-        const created = await active.notes.createNote(name);
+        const created = await active.notes.createNote(name, folder);
         if (workspace !== active) return err(NO_WORKSPACE);
         if (!created.ok) {
             store.setState({ createError: created.error });
             return created;
         }
-        store.setState((state) => ({
-            notes: sortNotes([
-                ...state.notes.filter(
-                    (note) => note.path !== created.value.path,
-                ),
-                created.value,
-            ]),
-            createError: null,
-        }));
+        store.setState({ createError: null });
+        await refreshNotes();
+        if (workspace !== active) return err(NO_WORKSPACE);
         await openNote(created.value.path, { focus: true });
         return created;
     }
@@ -491,8 +498,11 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
 
     let lastCreate: Promise<unknown> = Promise.resolve();
 
-    function createNote(): Promise<Result<Note>> {
-        const run = lastCreate.then(createNoteNow);
+    function createNote(createOptions?: {
+        readonly folder?: WorkspacePath | null;
+    }): Promise<Result<Note>> {
+        const folder = createOptions?.folder ?? null;
+        const run = lastCreate.then(() => createNoteNow(folder));
         lastCreate = run;
         return run;
     }
@@ -501,6 +511,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         async enterWorkspace(root, fs) {
             const active = {
                 root,
+                fs,
                 notes: createNotes({ fs }),
                 operations: createNoteOperations({ fs }),
             };

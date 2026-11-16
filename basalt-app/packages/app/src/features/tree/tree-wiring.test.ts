@@ -1,7 +1,6 @@
 import { toWorkspacePath } from "@basalt/core";
 import { describe, expect, it } from "vitest";
 import { createNotesStore } from "../notes/notes-store";
-import { createWorkspaceStore } from "../workspace/workspace-store";
 import { connectTreeStore } from "./tree-wiring";
 import { createTreeStore, toggleFolder } from "./tree-store";
 
@@ -14,9 +13,8 @@ function path(value: string) {
 function setup() {
     const tree = createTreeStore();
     const notes = createNotesStore();
-    const workspace = createWorkspaceStore();
-    const stop = connectTreeStore({ tree, notes, workspace });
-    return { tree, notes, workspace, stop };
+    const stop = connectTreeStore({ tree, notes });
+    return { tree, notes, stop };
 }
 
 describe("connectTreeStore", () => {
@@ -43,15 +41,6 @@ describe("connectTreeStore", () => {
         const { tree, notes } = setup();
         notes.setState({ activeNote: path("root.md") });
         notes.setState({ activeNote: null });
-        expect(tree.getState().expanded.size).toBe(0);
-    });
-
-    it("resets the tree state when the workspace root changes", () => {
-        const { tree, workspace } = setup();
-        toggleFolder(tree, "a");
-
-        workspace.setState({ root: "/other" as never });
-
         expect(tree.getState().expanded.size).toBe(0);
     });
 

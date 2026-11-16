@@ -11,8 +11,8 @@ const READ_ONLY = "The workspace folder is read-only. Nothing was changed.";
 
 function option(page: Page, name: string) {
     return page
-        .getByRole("listbox", { name: "Notes" })
-        .getByRole("option", { name, exact: true });
+        .getByRole("tree", { name: "Notes" })
+        .getByRole("treeitem", { name, exact: true });
 }
 
 function editor(page: Page, name: string) {

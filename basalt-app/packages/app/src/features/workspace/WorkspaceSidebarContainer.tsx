@@ -1,15 +1,21 @@
+import { useMemo } from "react";
 import { useStore } from "zustand";
 import { useTranslation } from "react-i18next";
 import { useServices } from "../../useServices";
+import { findTreeNode, toTreeNodes } from "../tree/tree-nodes";
+import { setFocusedRow, toggleFolder } from "../tree/tree-store";
 import { folderName } from "./folder-name";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
 
 export function WorkspaceSidebarContainer() {
     const { t } = useTranslation();
-    const { workspaceStore, notesStore, notesActions } = useServices();
+    const { workspaceStore, notesStore, treeStore, notesActions } =
+        useServices();
     const root = useStore(workspaceStore, (state) => state.root);
     const watchMode = useStore(workspaceStore, (state) => state.watchMode);
-    const { notes, activeNote, listError, createError } = useStore(notesStore);
+    const { tree, activeNote, listError, createError } = useStore(notesStore);
+    const { expanded, focusedId } = useStore(treeStore);
+    const nodes = useMemo(() => toTreeNodes(tree, expanded), [tree, expanded]);
 
     return (
         <WorkspaceSidebar
@@ -24,8 +30,9 @@ export function WorkspaceSidebarContainer() {
                 listErrorTitle: t("workspace.listError.title"),
                 retry: t("workspace.listError.retry"),
             }}
-            notes={notes.map((note) => ({ path: note.path, name: note.name }))}
-            selectedPath={activeNote}
+            nodes={nodes}
+            activeId={activeNote}
+            focusedId={focusedId}
             listError={listError ? t(`errors.${listError.code}`) : null}
             createError={createError ? t(`errors.${createError.code}`) : null}
             notice={
@@ -33,10 +40,17 @@ export function WorkspaceSidebarContainer() {
                     ? t("workspace.watchFallback")
                     : null
             }
-            onSelect={(path) => {
-                const note = notes.find((candidate) => candidate.path === path);
-                if (note)
-                    void notesActions.openNote(note.path, { focus: true });
+            onOpenNote={(id) => {
+                const node = findTreeNode(tree, id);
+                if (node?.kind === "note") {
+                    void notesActions.openNote(node.path, { focus: true });
+                }
+            }}
+            onToggleFolder={(id) => {
+                toggleFolder(treeStore, id);
+            }}
+            onFocusChange={(id) => {
+                setFocusedRow(treeStore, id);
             }}
             onNewNote={() => {
                 void notesActions.createNote();

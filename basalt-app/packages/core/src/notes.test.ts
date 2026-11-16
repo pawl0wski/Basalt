@@ -121,6 +121,93 @@ describe("suggestNoteName", () => {
     });
 });
 
+describe("suggestNoteName in a folder", () => {
+    it("only counts notes of that folder", async () => {
+        const { memory, notes } = setup();
+        memory.externalWrite(path("Untitled.md"), encode(""));
+        memory.externalWrite(path("docs/Untitled.md"), encode(""));
+        memory.externalWrite(path("docs/Untitled 1.md"), encode(""));
+        memory.externalWrite(path("other/Untitled 5.md"), encode(""));
+        const listed = await notes.listNotes();
+        if (!listed.ok) throw new Error("list failed");
+
+        expect(
+            notes.suggestNoteName(listed.value, "Untitled", path("docs")),
+        ).toBe("Untitled 2");
+        expect(
+            notes.suggestNoteName(listed.value, "Untitled", path("fresh")),
+        ).toBe("Untitled");
+        expect(notes.suggestNoteName(listed.value, "Untitled", null)).toBe(
+            "Untitled 1",
+        );
+    });
+});
+
+describe("createNote in a folder", () => {
+    it("creates the note inside the folder and returns its name without the folder", async () => {
+        const { memory, notes } = setup();
+        await memory.mkdir(path("docs"));
+
+        const result = await notes.createNote("Untitled", path("docs"));
+
+        expect(result).toEqual({
+            ok: true,
+            value: { path: "docs/Untitled.md", name: "Untitled" },
+        });
+        expect(await bytesOf(memory, "docs/Untitled.md")).toEqual([]);
+    });
+
+    it("allows the same name in the root and in a folder", async () => {
+        const { memory, notes } = setup();
+        await memory.mkdir(path("docs"));
+        memory.externalWrite(path("Untitled.md"), encode("keep"));
+
+        const result = await notes.createNote("Untitled", path("docs"));
+
+        expect(result.ok).toBe(true);
+        expect(await bytesOf(memory, "Untitled.md")).toEqual([
+            ...encode("keep"),
+        ]);
+    });
+
+    it("rejects a case-only collision inside the folder", async () => {
+        const { memory, notes } = setup();
+        memory.externalWrite(path("docs/Ideas.md"), encode("keep"));
+
+        const result = await notes.createNote("ideas", path("docs"));
+
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.error.code).toBe("already-exists");
+    });
+
+    it("does not create a missing folder or use a file as a folder", async () => {
+        const { memory, notes } = setup();
+        memory.externalWrite(path("file.md"), encode("x"));
+
+        const missing = await notes.createNote("a", path("gone"));
+        const file = await notes.createNote("a", path("file.md"));
+
+        for (const result of [missing, file]) {
+            expect(result.ok).toBe(false);
+            if (!result.ok) expect(result.error.code).toBe("not-found");
+        }
+        expect(memory.getState().entries.map((entry) => entry.path)).toEqual([
+            "file.md",
+        ]);
+    });
+
+    it("reports permission-denied in a read-only workspace", async () => {
+        const memory = createInMemoryWorkspaceFileSystem({ readOnly: true });
+        memory.externalWrite(path("docs/x.md"), encode("x"));
+        const notes = createNotes({ fs: memory });
+
+        const result = await notes.createNote("a", path("docs"));
+
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.error.code).toBe("permission-denied");
+    });
+});
+
 describe("createNote", () => {
     it("creates an empty .md file in the workspace root", async () => {
         const { memory, notes } = setup();

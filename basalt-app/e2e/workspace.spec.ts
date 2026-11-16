@@ -11,19 +11,19 @@ const NEW_NOTE = { name: "New note" };
 const READ_ONLY = "The workspace folder is read-only. Nothing was changed.";
 
 function options(page: import("@playwright/test").Page) {
-    return page.getByRole("listbox", { name: "Notes" }).getByRole("option");
+    return page.getByRole("tree", { name: "Notes" }).getByRole("treeitem");
 }
 
 test.describe("workspace sidebar", () => {
-    test("lists the demo workspace notes sorted, without non-Markdown files", async ({
+    test("lists the demo workspace folders first, then notes sorted, without non-Markdown files or the attachments folder", async ({
         page,
     }) => {
         await page.goto("/");
         await page.getByRole("button", OPEN_FOLDER).click();
 
         await expect(options(page)).toHaveText([
+            "projects",
             "Ideas",
-            "projects/Roadmap",
             "Welcome",
         ]);
         await expect(page.getByText("readme")).toHaveCount(0);
@@ -57,13 +57,13 @@ test.describe("workspace sidebar", () => {
     test("opens a note from the list and highlights it", async ({ page }) => {
         await openWorkspaceWith(page, "/work/W", { "a.md": "", "b.md": "" });
 
-        await page.getByRole("option", { name: "b" }).click();
+        await page.getByRole("treeitem", { name: "b" }).click();
 
-        await expect(page.getByRole("option", { name: "b" })).toHaveAttribute(
+        await expect(page.getByRole("treeitem", { name: "b" })).toHaveAttribute(
             "aria-selected",
             "true",
         );
-        await expect(page.getByRole("option", { name: "a" })).toHaveAttribute(
+        await expect(page.getByRole("treeitem", { name: "a" })).toHaveAttribute(
             "aria-selected",
             "false",
         );
@@ -77,16 +77,16 @@ test.describe("workspace sidebar", () => {
             "b.md": "",
             "c.md": "",
         });
-        await page.getByRole("option", { name: "a" }).focus();
+        await page.getByRole("treeitem", { name: "a" }).focus();
 
         await page.keyboard.press("ArrowDown");
-        await expect(page.getByRole("option", { name: "b" })).toBeFocused();
+        await expect(page.getByRole("treeitem", { name: "b" })).toBeFocused();
         await page.keyboard.press("ArrowDown");
-        await expect(page.getByRole("option", { name: "c" })).toBeFocused();
+        await expect(page.getByRole("treeitem", { name: "c" })).toBeFocused();
         await page.keyboard.press("ArrowUp");
         await page.keyboard.press("Enter");
 
-        await expect(page.getByRole("option", { name: "b" })).toHaveAttribute(
+        await expect(page.getByRole("treeitem", { name: "b" })).toHaveAttribute(
             "aria-selected",
             "true",
         );
@@ -163,13 +163,13 @@ test.describe("new note", () => {
             .getByRole("button", NEW_NOTE)
             .click();
         await expect(
-            page.getByRole("option", { name: "Untitled" }),
+            page.getByRole("treeitem", { name: "Untitled" }),
         ).toBeVisible();
         await page.keyboard.press("Control+N");
 
         await expect(options(page)).toHaveText(["a", "Untitled", "Untitled 1"]);
         await expect(
-            page.getByRole("option", { name: "Untitled 1" }),
+            page.getByRole("treeitem", { name: "Untitled 1" }),
         ).toHaveAttribute("aria-selected", "true");
         await expect(page.getByRole("dialog")).toHaveCount(0);
         const files = await page.evaluate(
@@ -239,7 +239,7 @@ test.describe("sidebar collapse", () => {
         await expect
             .poll(async () => (await wrapper.boundingBox())?.width)
             .toBeGreaterThan(200);
-        await expect(page.getByRole("option", { name: "a" })).toBeVisible();
+        await expect(page.getByRole("treeitem", { name: "a" })).toBeVisible();
     });
 
     test("does not animate with reduced motion", async ({ page }) => {

@@ -51,8 +51,8 @@ async function openNote(name: string) {
         .setup()
         .click(
             within(
-                screen.getByRole("listbox", { name: en.workspace.notesLabel }),
-            ).getByRole("option", { name }),
+                screen.getByRole("tree", { name: en.workspace.notesLabel }),
+            ).getByRole("treeitem", { name }),
         );
     await screen.findByRole("textbox", { name });
 }
@@ -239,7 +239,9 @@ describe("workspace lost", () => {
             expect(app.harness.workspaceStore.getState().root).toBe(B);
         });
         expect(app.harness.workspaceStore.getState().unavailable).toBe(false);
-        expect(await screen.findByRole("option", { name: "z" })).toBeVisible();
+        expect(
+            await screen.findByRole("treeitem", { name: "z" }),
+        ).toBeVisible();
         expect(screen.queryByRole("alert")).toBeNull();
     });
 

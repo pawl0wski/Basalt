@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { TreeNode } from "@basalt/ui";
 import { describe, expect, it, vi } from "vitest";
 import {
     WorkspaceSidebar,
@@ -19,11 +20,21 @@ const texts: WorkspaceSidebarTexts = {
     retry: "Again",
 };
 
-const notes = [
-    { path: "Ideas.md", name: "Ideas" },
-    { path: "projects/Roadmap.md", name: "Roadmap" },
-    { path: "Welcome.md", name: "Welcome" },
-];
+function nodesWith(expanded: boolean): TreeNode[] {
+    return [
+        {
+            kind: "folder",
+            id: "projects",
+            name: "projects",
+            expanded,
+            children: [
+                { kind: "note", id: "projects/Roadmap.md", name: "Roadmap" },
+            ],
+        },
+        { kind: "note", id: "Ideas.md", name: "Ideas" },
+        { kind: "note", id: "Welcome.md", name: "Welcome" },
+    ];
+}
 
 function props(
     overrides: Partial<WorkspaceSidebarProps> = {},
@@ -31,12 +42,15 @@ function props(
     return {
         workspaceName: "My notes",
         texts,
-        notes,
-        selectedPath: null,
+        nodes: nodesWith(false),
+        activeId: null,
+        focusedId: null,
         listError: null,
         createError: null,
         notice: null,
-        onSelect: vi.fn(),
+        onOpenNote: vi.fn(),
+        onToggleFolder: vi.fn(),
+        onFocusChange: vi.fn(),
         onNewNote: vi.fn(),
         onRetry: vi.fn(),
         ...overrides,
@@ -58,56 +72,93 @@ describe("WorkspaceSidebar", () => {
         ).not.toBeInTheDocument();
     });
 
-    it("lists notes in a labelled listbox and marks only the selected one", () => {
-        render(<WorkspaceSidebar {...props({ selectedPath: "Ideas.md" })} />);
+    it("shows a labelled tree with folders first and the active note marked", () => {
+        render(<WorkspaceSidebar {...props({ activeId: "Ideas.md" })} />);
 
-        const list = screen.getByRole("listbox", { name: "All notes" });
-        const options = within(list).getAllByRole("option");
-        expect(options.map((option) => option.textContent)).toEqual([
+        const tree = screen.getByRole("tree", { name: "All notes" });
+        const rows = within(tree).getAllByRole("treeitem");
+        expect(rows.map((row) => row.textContent)).toEqual([
+            "projects",
             "Ideas",
-            "projects/Roadmap",
             "Welcome",
         ]);
-        expect(options.map((o) => o.getAttribute("aria-selected"))).toEqual([
-            "true",
-            "false",
-            "false",
-        ]);
+        expect(
+            rows.map((row) => row.getAttribute("aria-current") === "true"),
+        ).toEqual([false, true, false]);
     });
 
-    it("selects a note on click and with Enter", async () => {
+    it("shows a note of an expanded folder by its name under the folder, with the same row height as top-level rows", () => {
+        render(<WorkspaceSidebar {...props({ nodes: nodesWith(true) })} />);
+
+        const nested = screen.getByRole("treeitem", { name: "Roadmap" });
+        const top = screen.getByRole("treeitem", { name: "Ideas" });
+        expect(nested).toHaveAttribute("aria-level", "2");
+        expect(nested.textContent).toBe("Roadmap");
+        expect(nested.className).toBe(top.className);
+    });
+
+    it("hides the notes of a collapsed folder", () => {
+        render(<WorkspaceSidebar {...props()} />);
+
+        expect(
+            screen.queryByRole("treeitem", { name: "Roadmap" }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole("treeitem", { name: "projects" }),
+        ).toHaveAttribute("aria-expanded", "false");
+    });
+
+    it("opens a note on click and with Enter, and toggles a folder", async () => {
         const user = userEvent.setup();
         const p = props();
         render(<WorkspaceSidebar {...p} />);
 
-        await user.click(screen.getByRole("option", { name: "Ideas" }));
-        screen.getByRole("option", { name: "Welcome" }).focus();
+        await user.click(screen.getByRole("treeitem", { name: "Ideas" }));
+        screen.getByRole("treeitem", { name: "Welcome" }).focus();
         await user.keyboard("{Enter}");
+        await user.click(screen.getByRole("treeitem", { name: "projects" }));
 
-        expect(p.onSelect).toHaveBeenNthCalledWith(1, "Ideas.md");
-        expect(p.onSelect).toHaveBeenNthCalledWith(2, "Welcome.md");
+        expect(p.onOpenNote).toHaveBeenNthCalledWith(1, "Ideas.md");
+        expect(p.onOpenNote).toHaveBeenNthCalledWith(2, "Welcome.md");
+        expect(p.onToggleFolder).toHaveBeenCalledWith("projects");
     });
 
-    it("moves focus with the arrow keys, wrapping at both ends", async () => {
+    it("moves focus with the arrow keys and reports the focused row", async () => {
         const user = userEvent.setup();
-        render(<WorkspaceSidebar {...props({ selectedPath: "Ideas.md" })} />);
-        const [first, second, third] = screen.getAllByRole("option");
+        const p = props();
+        render(<WorkspaceSidebar {...p} />);
 
-        first?.focus();
+        screen.getByRole("treeitem", { name: "projects" }).focus();
         await user.keyboard("{ArrowDown}");
-        expect(second).toHaveFocus();
-        await user.keyboard("{ArrowDown}{ArrowDown}");
-        expect(first).toHaveFocus();
-        await user.keyboard("{ArrowUp}");
-        expect(third).toHaveFocus();
+
+        expect(screen.getByRole("treeitem", { name: "Ideas" })).toHaveFocus();
+        expect(p.onFocusChange).toHaveBeenLastCalledWith("Ideas.md");
+    });
+
+    it("shows a folder-only workspace as a tree, not as the empty state", () => {
+        const folderOnly: TreeNode[] = [
+            {
+                kind: "folder",
+                id: "empty",
+                name: "empty",
+                expanded: false,
+                children: [],
+            },
+        ];
+        render(<WorkspaceSidebar {...props({ nodes: folderOnly })} />);
+
+        expect(
+            screen.getByRole("treeitem", { name: "empty" }),
+        ).toBeInTheDocument();
+        expect(screen.queryByText("Nothing here")).not.toBeInTheDocument();
     });
 
     it("shows the empty state with a create action for an empty workspace", async () => {
         const user = userEvent.setup();
-        const p = props({ notes: [] });
+        const p = props({ nodes: [] });
         render(<WorkspaceSidebar {...p} />);
 
-        expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+        expect(screen.queryByRole("tree")).not.toBeInTheDocument();
         expect(screen.getByText("Nothing here")).toBeInTheDocument();
         await user.click(screen.getByRole("button", { name: "Start writing" }));
         expect(p.onNewNote).toHaveBeenCalledOnce();
@@ -121,7 +172,7 @@ describe("WorkspaceSidebar", () => {
         const alert = screen.getByRole("alert");
         expect(alert).toHaveTextContent("Cannot read");
         expect(alert).toHaveTextContent("Could not list.");
-        expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+        expect(screen.queryByRole("tree")).not.toBeInTheDocument();
         await user.click(screen.getByRole("button", { name: "Again" }));
         expect(p.onRetry).toHaveBeenCalledOnce();
     });

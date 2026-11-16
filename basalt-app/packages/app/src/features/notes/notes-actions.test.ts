@@ -268,6 +268,123 @@ describe("creating notes", () => {
     });
 });
 
+describe("the notes tree", () => {
+    it("lists notes of sub folders and empty folders, hides attachments, dot entries and other files", async () => {
+        const { h, fs } = await openWorkspace({
+            "Welcome.md": "",
+            "projects/Roadmap.md": "",
+            "projects/2026/Plan.md": "",
+            "attachments/readme.md": "",
+            "attachments/a.png": "",
+            ".hidden/x.md": "",
+            "data.txt": "",
+        });
+        await fs.mkdir(wsPath("empty"));
+        await h.notesActions.refreshNotes();
+
+        const state = h.notesStore.getState();
+        expect(state.tree.map((node) => `${node.kind}:${node.name}`)).toEqual([
+            "folder:empty",
+            "folder:projects",
+            "note:Welcome",
+        ]);
+        expect(state.notes.map((note) => note.path)).toEqual([
+            "projects/2026/Plan.md",
+            "projects/Roadmap.md",
+            "Welcome.md",
+        ]);
+        expect(state.notes.map((note) => note.name)).toEqual([
+            "Plan",
+            "Roadmap",
+            "Welcome",
+        ]);
+    });
+
+    it("keeps the previous tree and sets the list error when listing fails", async () => {
+        const { h, fs } = await openWorkspace({ "a.md": "" });
+        const before = h.notesStore.getState().tree;
+        fs.removeRoot();
+
+        const result = await h.notesActions.refreshNotes();
+
+        expect(result.ok).toBe(false);
+        expect(h.notesStore.getState().listError).not.toBeNull();
+        expect(h.notesStore.getState().tree).toBe(before);
+    });
+
+    it("creates Untitled inside a folder, opens it and expands the folder", async () => {
+        const { h, fs } = await openWorkspace({
+            "docs/Untitled.md": "",
+            "Untitled.md": "",
+        });
+
+        const created = await h.notesActions.createNote({
+            folder: wsPath("docs"),
+        });
+
+        expect(created.ok && created.value.path).toBe("docs/Untitled 1.md");
+        expect(h.notesStore.getState().activeNote).toBe("docs/Untitled 1.md");
+        expect(h.notesStore.getState().focusRequest?.path).toBe(
+            "docs/Untitled 1.md",
+        );
+        expect(h.treeStore.getState().expanded.has("docs")).toBe(true);
+        const listed = await fs.list();
+        expect(listed.ok && listed.value.map((e) => e.path).sort()).toEqual([
+            "Untitled.md",
+            "docs",
+            "docs/Untitled 1.md",
+            "docs/Untitled.md",
+        ]);
+    });
+
+    it("creates in the root when no folder is given", async () => {
+        const { h } = await openWorkspace({ "docs/Untitled.md": "" });
+        const created = await h.notesActions.createNote();
+        expect(created.ok && created.value.path).toBe("Untitled.md");
+    });
+
+    it("creates nothing in a read-only workspace folder and reports permission-denied", async () => {
+        const { h, fs } = await openWorkspace(
+            { "docs/a.md": "" },
+            { readOnly: true },
+        );
+        const created = await h.notesActions.createNote({
+            folder: wsPath("docs"),
+        });
+        expect(!created.ok && created.error.code).toBe("permission-denied");
+        expect(h.notesStore.getState().createError?.code).toBe(
+            "permission-denied",
+        );
+        const listed = await fs.list();
+        expect(listed.ok && listed.value.map((e) => e.path).sort()).toEqual([
+            "docs",
+            "docs/a.md",
+        ]);
+        expect(h.notesStore.getState().openNotes).toEqual([]);
+    });
+
+    it("expands the folders of a restored active note", async () => {
+        const { h } = await openWorkspace(
+            { "a/b/c.md": "x" },
+            {},
+            {
+                ...defaultAppSettings(),
+                lastWorkspace: A,
+                workspaces: {
+                    [A]: {
+                        openNotes: [wsPath("a/b/c.md")],
+                        activeNote: wsPath("a/b/c.md"),
+                    },
+                },
+            },
+        );
+        expect([...h.treeStore.getState().expanded].sort()).toEqual([
+            "a",
+            "a/b",
+        ]);
+    });
+});
+
 describe("tabs", () => {
     it("closing a dirty tab flushes first and activates a neighbour", async () => {
         const { h, fs } = await openWorkspace({ "n.md": "1", "m.md": "2" });

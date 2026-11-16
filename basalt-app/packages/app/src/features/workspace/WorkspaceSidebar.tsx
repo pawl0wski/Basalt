@@ -3,9 +3,9 @@ import {
     Button,
     EmptyState,
     ErrorState,
-    NoteList,
     NoteSidebar,
-    type NoteListEntry,
+    Tree,
+    type TreeNode,
 } from "@basalt/ui";
 
 export type WorkspaceSidebarTexts = {
@@ -22,12 +22,15 @@ export type WorkspaceSidebarTexts = {
 export type WorkspaceSidebarProps = {
     workspaceName: string;
     texts: WorkspaceSidebarTexts;
-    notes: NoteListEntry[];
-    selectedPath: string | null;
+    nodes: TreeNode[];
+    activeId: string | null;
+    focusedId: string | null;
     listError: string | null;
     createError: string | null;
     notice: string | null;
-    onSelect: (path: string) => void;
+    onOpenNote: (id: string) => void;
+    onToggleFolder: (id: string) => void;
+    onFocusChange: (id: string) => void;
     onNewNote: () => void;
     onRetry: () => void;
 };
@@ -35,12 +38,15 @@ export type WorkspaceSidebarProps = {
 export function WorkspaceSidebar({
     workspaceName,
     texts,
-    notes,
-    selectedPath,
+    nodes,
+    activeId,
+    focusedId,
     listError,
     createError,
     notice,
-    onSelect,
+    onOpenNote,
+    onToggleFolder,
+    onFocusChange,
     onNewNote,
     onRetry,
 }: WorkspaceSidebarProps) {
@@ -57,35 +63,36 @@ export function WorkspaceSidebar({
                     <Alert variant="warning">{createError}</Alert>
                 </div>
             ) : null}
-            <NoteList
-                label={texts.notesLabel}
-                notes={notes}
-                selectedPath={selectedPath}
-                onSelect={onSelect}
-                status={listError === null ? "ready" : "error"}
-                empty={
-                    <EmptyState
-                        title={texts.emptyTitle}
-                        description={texts.emptyDescription}
-                        action={
-                            <Button onClick={onNewNote}>
-                                {texts.emptyAction}
-                            </Button>
-                        }
-                    />
-                }
-                error={
-                    <ErrorState
-                        title={texts.listErrorTitle}
-                        description={listError}
-                        action={
-                            <Button variant="secondary" onClick={onRetry}>
-                                {texts.retry}
-                            </Button>
-                        }
-                    />
-                }
-            />
+            {listError !== null ? (
+                <ErrorState
+                    title={texts.listErrorTitle}
+                    description={listError}
+                    action={
+                        <Button variant="secondary" onClick={onRetry}>
+                            {texts.retry}
+                        </Button>
+                    }
+                />
+            ) : nodes.length === 0 ? (
+                <EmptyState
+                    title={texts.emptyTitle}
+                    description={texts.emptyDescription}
+                    action={
+                        <Button onClick={onNewNote}>{texts.emptyAction}</Button>
+                    }
+                />
+            ) : (
+                <Tree
+                    label={texts.notesLabel}
+                    nodes={nodes}
+                    activeId={activeId}
+                    focusedId={focusedId}
+                    draggable={false}
+                    onFocusChange={onFocusChange}
+                    onToggleFolder={onToggleFolder}
+                    onOpenNote={onOpenNote}
+                />
+            )}
         </NoteSidebar>
     );
 }
