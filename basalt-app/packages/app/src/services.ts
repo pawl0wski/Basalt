@@ -16,6 +16,8 @@ import {
     createImageHub,
     type ImageHub,
 } from "./features/attachments/image-hub";
+import { createTreeStore, type TreeStore } from "./features/tree/tree-store";
+import { connectTreeStore } from "./features/tree/tree-wiring";
 import { createSettingsWriter } from "./features/settings/settings-writer";
 import { createWorkspaceActions } from "./features/workspace/workspace-actions";
 import {
@@ -32,6 +34,7 @@ export const WATCH_DEBOUNCE_MS = 300;
 export type Services = {
     readonly workspaceStore: WorkspaceStore;
     readonly notesStore: NotesStore;
+    readonly treeStore: TreeStore;
     readonly workspaceActions: WorkspaceActions;
     readonly notesActions: NotesActions;
     readonly leaveStore: LeaveStore;
@@ -60,6 +63,12 @@ export function createServices(
     const settings = createSettingsWriter(platform.settings);
     const workspaceStore = createWorkspaceStore();
     const notesStore = createNotesStore();
+    const treeStore = createTreeStore();
+    connectTreeStore({
+        tree: treeStore,
+        notes: notesStore,
+        workspace: workspaceStore,
+    });
     const notesActions = createNotesActions({
         store: notesStore,
         settings,
@@ -98,6 +107,7 @@ export function createServices(
     return {
         workspaceStore,
         notesStore,
+        treeStore,
         workspaceActions,
         notesActions,
         leaveStore,
