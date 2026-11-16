@@ -172,12 +172,15 @@ test.describe("the folder tree (AC-04.6, AC-04.8)", () => {
 });
 
 test.describe("the context menu (AC-04.9)", () => {
-    test("right-click on a note offers Rename only", async ({ page }) => {
+    test("right-click on a note offers Rename and Delete", async ({ page }) => {
         await openWorkspaceWith(page, "/work/W", FILES);
 
         await openMenuOn(page, "Ideas");
 
-        await expect(page.getByRole("menuitem")).toHaveText(["Rename"]);
+        await expect(page.getByRole("menuitem")).toHaveText([
+            "Rename",
+            "Delete",
+        ]);
     });
 
     test("right-click on a folder offers New note and New folder", async ({
@@ -230,7 +233,10 @@ test.describe("the context menu (AC-04.9)", () => {
 
             await page.keyboard.press(key);
 
-            await expect(page.getByRole("menuitem")).toHaveText(["Rename"]);
+            await expect(page.getByRole("menuitem")).toHaveText([
+                "Rename",
+                "Delete",
+            ]);
             await page.keyboard.press("Escape");
             await expect(page.getByRole("menu")).toHaveCount(0);
             await expect(row(page, "Ideas")).toBeFocused();
