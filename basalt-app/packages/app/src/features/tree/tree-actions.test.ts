@@ -280,3 +280,193 @@ describe("toggleFolder and focusRow", () => {
         expect(h.treeStore.getState().focusedId).toBe("docs");
     });
 });
+
+describe("dragging a note onto a folder", () => {
+    it("moves the file, the open tab follows and the destination expands", async () => {
+        const { h, fs } = await open({ "a.md": "text", "docs/b.md": "" });
+        await h.notesActions.openNote(wsPath("a.md"));
+
+        h.treeActions.dragStart("a.md");
+        await h.treeActions.drop({ type: "folder", id: "docs" });
+
+        expect(await paths(fs)).toEqual(["docs", "docs/a.md", "docs/b.md"]);
+        expect(h.notesStore.getState().activeNote).toBe("docs/a.md");
+        expect(h.notesStore.getState().openNotes.map((s) => s.path)).toEqual([
+            "docs/a.md",
+        ]);
+        expect(h.treeStore.getState().expanded.has("docs")).toBe(true);
+        expect(h.treeStore.getState().focusedId).toBe("docs/a.md");
+        expect(h.treeStore.getState().dragging.size).toBe(0);
+        expect(h.notesStore.getState().createError).toBeNull();
+    });
+
+    it("moves a note to the workspace root", async () => {
+        const { h, fs } = await open({ "docs/a.md": "" });
+        await h.notesActions.openNote(wsPath("docs/a.md"));
+
+        h.treeActions.dragStart("docs/a.md");
+        await h.treeActions.drop({ type: "root" });
+
+        expect(await paths(fs)).toEqual(["a.md", "docs"]);
+        expect(h.notesStore.getState().activeNote).toBe("a.md");
+    });
+
+    it("flushes unsaved text before moving and keeps it", async () => {
+        const { h, fs } = await open({ "a.md": "old", "docs/b.md": "" });
+        await h.notesActions.openNote(wsPath("a.md"));
+        h.notesActions.updateText(wsPath("a.md"), "typed");
+
+        h.treeActions.dragStart("a.md");
+        await h.treeActions.drop({ type: "folder", id: "docs" });
+
+        const text = await fs.readText(wsPath("docs/a.md"));
+        expect(text).toEqual({ ok: true, value: "typed" });
+    });
+
+    it("rewrites a relative image link in the moved note", async () => {
+        const { h, fs } = await open({
+            "a.md": "![pic](attachments/p.png)",
+            "attachments/p.png": "x",
+            "docs/b.md": "",
+        });
+
+        h.treeActions.dragStart("a.md");
+        await h.treeActions.drop({ type: "folder", id: "docs" });
+
+        const text = await fs.readText(wsPath("docs/a.md"));
+        expect(text).toEqual({
+            ok: true,
+            value: "![pic](../attachments/p.png)",
+        });
+    });
+
+    it("ignores a drop on the note's own folder and the root for a root note without touching the disk", async () => {
+        const { h, fs } = await open({ "a.md": "", "docs/b.md": "" });
+        const before = await paths(fs);
+        h.treeActions.dragStart("docs/b.md");
+        await h.treeActions.drop({ type: "folder", id: "docs" });
+        h.treeActions.dragStart("a.md");
+        await h.treeActions.drop({ type: "root" });
+
+        expect(await paths(fs)).toEqual(before);
+        expect(h.notesStore.getState().createError).toBeNull();
+        expect(h.treeStore.getState().expanded.has("docs")).toBe(false);
+        expect(h.treeStore.getState().focusedId).toBeNull();
+    });
+
+    it("ignores a drop when nothing is being dragged", async () => {
+        const { h, fs } = await open({ "a.md": "", "docs/b.md": "" });
+        const before = await paths(fs);
+
+        await h.treeActions.drop({ type: "folder", id: "docs" });
+
+        expect(await paths(fs)).toEqual(before);
+    });
+
+    it("ignores a drop on a folder that is not in the tree", async () => {
+        const { h, fs } = await open({ "a.md": "" });
+
+        h.treeActions.dragStart("a.md");
+        await h.treeActions.drop({ type: "folder", id: "gone" });
+
+        expect(await paths(fs)).toEqual(["a.md"]);
+    });
+
+    it("shows a collision as the sidebar error and moves nothing", async () => {
+        const { h, fs } = await open({ "a.md": "1", "docs/A.md": "2" });
+
+        h.treeActions.dragStart("a.md");
+        await h.treeActions.drop({ type: "folder", id: "docs" });
+
+        expect(await paths(fs)).toEqual(["a.md", "docs", "docs/A.md"]);
+        expect(h.notesStore.getState().createError?.detail).toEqual({
+            kind: "move-collision",
+            name: "a.md",
+        });
+        expect(h.treeStore.getState().expanded.has("docs")).toBe(false);
+    });
+
+    it("shows the read-only error and changes nothing", async () => {
+        const { h, fs } = await open(
+            { "a.md": "", "docs/b.md": "" },
+            { readOnly: true },
+        );
+
+        h.treeActions.dragStart("a.md");
+        await h.treeActions.drop({ type: "folder", id: "docs" });
+
+        expect(await paths(fs)).toEqual(["a.md", "docs", "docs/b.md"]);
+        expect(h.notesStore.getState().createError?.code).toBe(
+            "permission-denied",
+        );
+    });
+
+    it("ending a drag elsewhere does nothing to the disk", async () => {
+        const { h, fs } = await open({ "a.md": "", "docs/b.md": "" });
+        const before = await paths(fs);
+        h.treeActions.dragStart("a.md");
+        h.treeActions.dropTargetChange({ type: "folder", id: "docs" });
+
+        h.treeActions.dragEnd();
+
+        expect(await paths(fs)).toEqual(before);
+        expect(h.treeStore.getState().dragging.size).toBe(0);
+        expect(h.treeStore.getState().dropTarget).toBeNull();
+    });
+});
+
+describe("drop target highlight", () => {
+    it("is set for a folder that would receive the note and for the root", async () => {
+        const { h } = await open({ "a.md": "", "docs/b.md": "" });
+        h.treeActions.dragStart("a.md");
+
+        h.treeActions.dropTargetChange({ type: "folder", id: "docs" });
+        expect(h.treeStore.getState().dropTarget).toEqual({
+            type: "folder",
+            id: "docs",
+        });
+
+        h.treeActions.dragStart("docs/b.md");
+        h.treeActions.dropTargetChange({ type: "root" });
+        expect(h.treeStore.getState().dropTarget).toEqual({ type: "root" });
+    });
+
+    it("is not set for the note's own folder, the root of a root note, an unknown folder, or no target", async () => {
+        const { h } = await open({ "a.md": "", "docs/b.md": "" });
+
+        h.treeActions.dragStart("docs/b.md");
+        h.treeActions.dropTargetChange({ type: "folder", id: "docs" });
+        expect(h.treeStore.getState().dropTarget).toBeNull();
+
+        h.treeActions.dragStart("a.md");
+        h.treeActions.dropTargetChange({ type: "root" });
+        expect(h.treeStore.getState().dropTarget).toBeNull();
+        h.treeActions.dropTargetChange({ type: "folder", id: "nope" });
+        expect(h.treeStore.getState().dropTarget).toBeNull();
+
+        h.treeActions.dropTargetChange({ type: "folder", id: "docs" });
+        h.treeActions.dropTargetChange(null);
+        expect(h.treeStore.getState().dropTarget).toBeNull();
+    });
+
+    it("is not set when nothing is being dragged", async () => {
+        const { h } = await open({ "docs/b.md": "" });
+
+        h.treeActions.dropTargetChange({ type: "folder", id: "docs" });
+
+        expect(h.treeStore.getState().dropTarget).toBeNull();
+    });
+});
+
+describe("hoverOpen", () => {
+    it("expands the folder while dragging only", async () => {
+        const { h } = await open({ "a.md": "", "docs/b.md": "" });
+
+        h.treeActions.hoverOpen("docs");
+        expect(h.treeStore.getState().expanded.has("docs")).toBe(false);
+
+        h.treeActions.dragStart("a.md");
+        h.treeActions.hoverOpen("docs");
+        expect(h.treeStore.getState().expanded.has("docs")).toBe(true);
+    });
+});

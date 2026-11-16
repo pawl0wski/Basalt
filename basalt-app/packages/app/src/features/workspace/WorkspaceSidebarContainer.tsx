@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useServices } from "../../useServices";
 import { findTreeNode, toTreeNodes } from "../tree/tree-nodes";
 import { TreeOverlaysContainer } from "../tree/TreeOverlaysContainer";
+import { describeMoveError } from "../tree/move-error";
 import { folderName } from "./folder-name";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
 
@@ -14,7 +15,7 @@ export function WorkspaceSidebarContainer() {
     const root = useStore(workspaceStore, (state) => state.root);
     const watchMode = useStore(workspaceStore, (state) => state.watchMode);
     const { tree, activeNote, listError, createError } = useStore(notesStore);
-    const { expanded, focusedId } = useStore(treeStore);
+    const { expanded, focusedId, dragging, dropTarget } = useStore(treeStore);
     const nodes = useMemo(() => toTreeNodes(tree, expanded), [tree, expanded]);
 
     return (
@@ -34,7 +35,7 @@ export function WorkspaceSidebarContainer() {
             activeId={activeNote}
             focusedId={focusedId}
             listError={listError ? t(`errors.${listError.code}`) : null}
-            createError={createError ? t(`errors.${createError.code}`) : null}
+            createError={createError ? describeMoveError(t, createError) : null}
             notice={
                 watchMode === "focus-fallback"
                     ? t("workspace.watchFallback")
@@ -49,6 +50,15 @@ export function WorkspaceSidebarContainer() {
             onToggleFolder={treeActions.toggleFolder}
             onFocusChange={treeActions.focusRow}
             onContextMenuRequest={treeActions.requestMenu}
+            draggingIds={dragging}
+            dropTarget={dropTarget}
+            onDragStart={treeActions.dragStart}
+            onDragEnd={treeActions.dragEnd}
+            onDropTargetChange={treeActions.dropTargetChange}
+            onDrop={(target) => {
+                void treeActions.drop(target);
+            }}
+            onFolderHoverOpen={treeActions.hoverOpen}
             overlays={<TreeOverlaysContainer />}
             onNewNote={() => {
                 void notesActions.createNote();

@@ -54,6 +54,13 @@ function props(
         onNewNote: vi.fn(),
         onRetry: vi.fn(),
         onContextMenuRequest: vi.fn(),
+        draggingIds: new Set(),
+        dropTarget: null,
+        onDragStart: vi.fn(),
+        onDragEnd: vi.fn(),
+        onDropTargetChange: vi.fn(),
+        onDrop: vi.fn(),
+        onFolderHoverOpen: vi.fn(),
         ...overrides,
     };
 }

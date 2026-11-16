@@ -385,3 +385,59 @@ describe("the rename dialog", () => {
         expect(await paths(fs)).toEqual(["a.md"]);
     });
 });
+
+describe("dragging notes in the tree", () => {
+    beforeAll(async () => {
+        await initI18n();
+    });
+
+    const transfer = () => ({
+        dataTransfer: {
+            setData: vi.fn(),
+            types: [],
+            files: [],
+            dropEffect: "",
+            effectAllowed: "",
+        },
+    });
+
+    it("highlights the folder under the drag, moves the note on drop and clears the highlight", async () => {
+        const { fs } = await openApp({ "a.md": "", "docs/b.md": "" });
+
+        fireEvent.dragStart(row("a"), transfer());
+        fireEvent.dragOver(row("docs"), transfer());
+        expect(row("docs")).toHaveAttribute("data-drop-target", "true");
+        fireEvent.drop(row("docs"), transfer());
+
+        await vi.waitFor(async () => {
+            expect(await paths(fs)).toEqual(["docs", "docs/a.md", "docs/b.md"]);
+        });
+        expect(row("a")).toHaveAttribute("aria-level", "2");
+        expect(row("docs")).not.toHaveAttribute("data-drop-target");
+    });
+
+    it("does not highlight the own folder of the dragged note", async () => {
+        const user = userEvent.setup();
+        await openApp({ "docs/b.md": "" });
+        await user.click(row("docs"));
+
+        fireEvent.dragStart(row("b"), transfer());
+        fireEvent.dragOver(row("docs"), transfer());
+
+        expect(row("docs")).not.toHaveAttribute("data-drop-target");
+    });
+
+    it("shows a localised collision message in the sidebar", async () => {
+        const { fs } = await openApp({ "a.md": "", "docs/A.md": "" });
+
+        fireEvent.dragStart(row("a"), transfer());
+        fireEvent.drop(row("docs"), transfer());
+
+        expect(
+            await screen.findByText(
+                '"a.md" already exists in the destination. Nothing was moved.',
+            ),
+        ).toBeInTheDocument();
+        expect(await paths(fs)).toEqual(["a.md", "docs", "docs/A.md"]);
+    });
+});

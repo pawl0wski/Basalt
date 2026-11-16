@@ -15,8 +15,22 @@ export const APP_ERROR_CODES = [
 
 export type AppErrorCode = (typeof APP_ERROR_CODES)[number];
 
+export type AppErrorDetail =
+    | { readonly kind: "move-collision"; readonly name: string }
+    | {
+          readonly kind: "move-stopped";
+          readonly name: string;
+          readonly moved: number;
+          readonly total: number;
+          readonly linksOnly: boolean;
+      };
+
 export type AppError = {
-    [C in AppErrorCode]: { readonly code: C; readonly message: string };
+    [C in AppErrorCode]: {
+        readonly code: C;
+        readonly message: string;
+        readonly detail?: AppErrorDetail;
+    };
 }[AppErrorCode];
 
 export type Result<T> =

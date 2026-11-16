@@ -24,9 +24,15 @@ export type TreeDialog =
           readonly parent: WorkspacePath | null;
       });
 
+export type DropTarget =
+    | { readonly type: "root" }
+    | { readonly type: "folder"; readonly id: string };
+
 export type TreeState = {
     readonly expanded: ReadonlySet<string>;
     readonly focusedId: string | null;
+    readonly dragging: ReadonlySet<string>;
+    readonly dropTarget: DropTarget | null;
     readonly menu: TreeMenu | null;
     readonly dialog: TreeDialog | null;
 };
@@ -34,7 +40,14 @@ export type TreeState = {
 export type TreeStore = StoreApi<TreeState>;
 
 export function emptyTreeState(): TreeState {
-    return { expanded: new Set(), focusedId: null, menu: null, dialog: null };
+    return {
+        expanded: new Set(),
+        focusedId: null,
+        dragging: new Set(),
+        dropTarget: null,
+        menu: null,
+        dialog: null,
+    };
 }
 
 export function createTreeStore(): TreeStore {
@@ -122,4 +135,31 @@ export function setDialogError(
 export function closeDialog(store: TreeStore): void {
     if (store.getState().dialog === null) return;
     store.setState({ dialog: null });
+}
+
+export function startDrag(store: TreeStore, ids: ReadonlySet<string>): void {
+    store.setState({ dragging: ids, dropTarget: null, menu: null });
+}
+
+export function endDrag(store: TreeStore): void {
+    const { dragging, dropTarget } = store.getState();
+    if (dragging.size === 0 && dropTarget === null) return;
+    store.setState({ dragging: new Set(), dropTarget: null });
+}
+
+export function sameDropTarget(
+    a: DropTarget | null,
+    b: DropTarget | null,
+): boolean {
+    if (a === null || b === null) return a === b;
+    if (a.type === "root") return b.type === "root";
+    return b.type === "folder" && a.id === b.id;
+}
+
+export function setDropTarget(
+    store: TreeStore,
+    target: DropTarget | null,
+): void {
+    if (sameDropTarget(store.getState().dropTarget, target)) return;
+    store.setState({ dropTarget: target });
 }

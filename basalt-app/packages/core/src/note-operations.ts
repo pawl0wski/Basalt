@@ -1,7 +1,13 @@
 import { rewriteRelativeLinks } from "./link-rewrite";
 import { isMarkdownPath } from "./notes";
 import type { FileEntry, WorkspaceFileSystem } from "./ports";
-import { err, ok, type AppError, type Result } from "./result";
+import {
+    err,
+    ok,
+    type AppError,
+    type AppErrorDetail,
+    type Result,
+} from "./result";
 import {
     pathKey,
     toWorkspacePath,
@@ -57,8 +63,12 @@ function isDotEntry(path: string): boolean {
     return path.split("/").some((segment) => segment.startsWith("."));
 }
 
-function failure(code: AppError["code"], message: string): Result<never> {
-    return err({ code, message } as AppError);
+function failure(
+    code: AppError["code"],
+    message: string,
+    detail?: AppErrorDetail,
+): Result<never> {
+    return err({ code, message, detail } as AppError);
 }
 
 function pathOf(value: string): Result<WorkspacePath> {
@@ -160,6 +170,7 @@ export function createNoteOperations({
                 return failure(
                     "already-exists",
                     `"${baseNameOf(path)}" already exists in the destination.`,
+                    { kind: "move-collision", name: baseNameOf(path) },
                 );
             }
             taken.add(key);
@@ -254,5 +265,12 @@ function stopped(
     return err({
         code: error.code,
         message: `${progress} ${detail}: ${error.message}`,
+        detail: {
+            kind: "move-stopped",
+            name,
+            moved: movedCount,
+            total,
+            linksOnly,
+        },
     } as AppError);
 }

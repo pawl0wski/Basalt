@@ -4,6 +4,7 @@ import {
     closeDialog,
     closeMenu,
     createTreeStore,
+    endDrag,
     expandFolders,
     openMenu,
     openNewFolderDialog,
@@ -11,7 +12,9 @@ import {
     setDialogError,
     setDialogName,
     setDialogPending,
+    setDropTarget,
     setFocusedRow,
+    startDrag,
     toggleFolder,
 } from "./tree-store";
 
@@ -152,5 +155,61 @@ describe("dialogs", () => {
         setDialogError(store, "unknown");
         closeDialog(store);
         expect(store.getState()).toBe(before);
+    });
+});
+
+describe("drag state", () => {
+    it("starts with the dragged ids, closes the menu and clears the drop target", () => {
+        const store = createTreeStore();
+        openMenu(store, {
+            target: { kind: "root" },
+            point: { x: 0, y: 0 },
+        });
+        setDropTarget(store, { type: "root" });
+
+        startDrag(store, new Set(["a.md"]));
+
+        expect(store.getState()).toMatchObject({
+            dragging: new Set(["a.md"]),
+            dropTarget: null,
+            menu: null,
+        });
+    });
+
+    it("ends the drag and clears both the ids and the drop target", () => {
+        const store = createTreeStore();
+        startDrag(store, new Set(["a.md"]));
+        setDropTarget(store, { type: "folder", id: "d" });
+
+        endDrag(store);
+
+        expect(store.getState().dragging.size).toBe(0);
+        expect(store.getState().dropTarget).toBeNull();
+    });
+
+    it("ending without a drag leaves the state object untouched", () => {
+        const store = createTreeStore();
+        const before = store.getState();
+        endDrag(store);
+        expect(store.getState()).toBe(before);
+    });
+
+    it("does not replace the state for an equal drop target but does for a different one", () => {
+        const store = createTreeStore();
+        setDropTarget(store, { type: "folder", id: "d" });
+        const first = store.getState();
+
+        setDropTarget(store, { type: "folder", id: "d" });
+        expect(store.getState()).toBe(first);
+
+        setDropTarget(store, { type: "folder", id: "e" });
+        expect(store.getState().dropTarget).toEqual({
+            type: "folder",
+            id: "e",
+        });
+        setDropTarget(store, { type: "root" });
+        expect(store.getState().dropTarget).toEqual({ type: "root" });
+        setDropTarget(store, null);
+        expect(store.getState().dropTarget).toBeNull();
     });
 });

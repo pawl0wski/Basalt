@@ -473,7 +473,10 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         const active = workspace;
         if (!active) return err(NO_WORKSPACE);
         const flushed = await flushBeforeChange(paths);
-        if (!flushed.ok) return flushed;
+        if (!flushed.ok) {
+            store.setState({ createError: flushed.error });
+            return flushed;
+        }
         if (workspace !== active) return err(NO_WORKSPACE);
         const prefix =
             destinationFolder === null ? "" : `${destinationFolder}/`;
@@ -495,6 +498,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             return result;
         });
         if (workspace !== active) return err(NO_WORKSPACE);
+        store.setState({ createError: moved.ok ? null : moved.error });
         await persistTabs();
         await refreshNotes();
         return moved.ok ? ok(moved.value.moved) : moved;

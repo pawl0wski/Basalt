@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { createNoteOperations } from "./note-operations";
 import type { WorkspaceFileSystem } from "./ports";
+import type { AppErrorDetail } from "./result";
 import { createInMemoryWorkspaceFileSystem } from "./testing/in-memory-workspace-file-system";
 import { toWorkspacePath, type WorkspacePath } from "./workspace-path";
 
@@ -45,7 +46,10 @@ function setup(
 }
 
 function errorOf<T>(
-    result: { ok: boolean; error?: { code: string; message: string } } & T,
+    result: {
+        ok: boolean;
+        error?: { code: string; message: string; detail?: AppErrorDetail };
+    } & T,
 ) {
     if (result.ok || !result.error) throw new Error("expected an error");
     return result.error;
@@ -347,6 +351,7 @@ describe("moveNotes", () => {
         expect(error.code).toBe("already-exists");
         expect(error.message).toContain("b.md");
         expect(error.message).not.toContain("c.md");
+        expect(error.detail).toEqual({ kind: "move-collision", name: "b.md" });
         expect(await paths()).toEqual([
             "a.md",
             "b.md",
@@ -482,6 +487,13 @@ describe("moveNotes", () => {
         expect(error.message).toContain("Moved 1 of 3");
         expect(error.message).toContain("b.md");
         expect(error.message).toContain("disk error");
+        expect(error.detail).toEqual({
+            kind: "move-stopped",
+            name: "b.md",
+            moved: 1,
+            total: 3,
+            linksOnly: false,
+        });
         expect(onMoved.mock.calls).toEqual([[{ from: "a.md", to: "d/a.md" }]]);
         expect(await paths()).toEqual(["b.md", "c.md", "d", "d/a.md"]);
     });
@@ -511,6 +523,11 @@ describe("moveNotes", () => {
             "moved but its links could not be updated",
         );
         expect(error.message).toContain("write failed");
+        expect(error.detail).toMatchObject({
+            kind: "move-stopped",
+            name: "n.md",
+            linksOnly: true,
+        });
         expect(onMoved).toHaveBeenCalledWith({ from: "n.md", to: "d/n.md" });
         expect(await paths()).toEqual(["d", "d/n.md"]);
         expect(await text("d/n.md")).toBe("[a](x.md)");

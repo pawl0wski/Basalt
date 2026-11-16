@@ -6,6 +6,7 @@ import {
     ErrorState,
     NoteSidebar,
     Tree,
+    type TreeDropTarget,
     type TreeNode,
 } from "@basalt/ui";
 
@@ -38,6 +39,13 @@ export type WorkspaceSidebarProps = {
         id: string | null,
         point: { x: number; y: number },
     ) => void;
+    draggingIds: ReadonlySet<string>;
+    dropTarget: TreeDropTarget | null;
+    onDragStart: (id: string) => void;
+    onDragEnd: () => void;
+    onDropTargetChange: (target: TreeDropTarget | null) => void;
+    onDrop: (target: TreeDropTarget) => void;
+    onFolderHoverOpen: (id: string) => void;
     overlays?: ReactNode;
 };
 
@@ -56,6 +64,13 @@ export function WorkspaceSidebar({
     onNewNote,
     onRetry,
     onContextMenuRequest,
+    draggingIds,
+    dropTarget,
+    onDragStart,
+    onDragEnd,
+    onDropTargetChange,
+    onDrop,
+    onFolderHoverOpen,
     overlays,
 }: WorkspaceSidebarProps) {
     return (
@@ -108,7 +123,13 @@ export function WorkspaceSidebar({
                     nodes={nodes}
                     activeId={activeId}
                     focusedId={focusedId}
-                    draggable={false}
+                    draggingIds={draggingIds}
+                    dropTarget={dropTarget}
+                    onDragStart={onDragStart}
+                    onDragEnd={onDragEnd}
+                    onDropTargetChange={onDropTargetChange}
+                    onDrop={onDrop}
+                    onFolderHoverOpen={onFolderHoverOpen}
                     className="min-h-full"
                     onContextMenuRequest={onContextMenuRequest}
                     onFocusChange={onFocusChange}

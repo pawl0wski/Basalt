@@ -98,6 +98,11 @@
             "submit": "Create folder",
             "pending": "Creating…"
         },
+        "move": {
+            "collision": "\"{name}\" already exists in the destination. Nothing was moved.",
+            "stopped": "Moved {moved} of {total} notes. \"{name}\" could not be moved: {reason}",
+            "linksNotUpdated": "Moved {moved} of {total} notes. \"{name}\" was moved but its links could not be updated: {reason}"
+        },
         "cancel": "Cancel",
         "nameError": {
             "empty": "Enter a name.",

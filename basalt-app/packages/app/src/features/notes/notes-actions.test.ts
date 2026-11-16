@@ -945,6 +945,10 @@ describe("renaming and moving open notes", () => {
             expect((await fs.stat(n)).ok).toBe(true);
             expect((await fs.stat(m)).ok).toBe(true);
             expect(tabs(h).paths).toEqual(["n.md"]);
+            expect(h.notesStore.getState().createError).toEqual(
+                !result.ok ? result.error : null,
+            );
+            expect(h.notesStore.getState().createError).not.toBeNull();
         });
 
         it("shows the rewritten links in the open editor after the watcher batch", async () => {
@@ -974,6 +978,10 @@ describe("renaming and moving open notes", () => {
 
             expect(!result.ok && result.error.code).toBe("already-exists");
             expect(!result.ok && result.error.message).toContain("m.md");
+            expect(h.notesStore.getState().createError?.detail).toEqual({
+                kind: "move-collision",
+                name: "m.md",
+            });
             expect((await fs.stat(n)).ok).toBe(true);
             expect(tabs(h).paths).toEqual(["n.md", "m.md"]);
         });
@@ -1022,6 +1030,34 @@ describe("renaming and moving open notes", () => {
             expect(
                 h.notesStore.getState().notes.map((note) => note.path),
             ).toEqual(["d/n.md", "m.md"]);
+        });
+
+        it("clears an earlier error after a successful move", async () => {
+            const { h, fs } = await open(
+                { "n.md": "1", "m.md": "2", "d/M.md": "x" },
+                [],
+            );
+            await h.notesActions.moveNotes([m], wsPath("d"));
+            expect(h.notesStore.getState().createError).not.toBeNull();
+
+            await h.notesActions.moveNotes([n], wsPath("d"));
+
+            expect(h.notesStore.getState().createError).toBeNull();
+            expect((await fs.stat(wsPath("d/n.md"))).ok).toBe(true);
+        });
+
+        it("reports permission-denied in a read-only workspace as the sidebar error", async () => {
+            const { h, fs } = await openWorkspace(
+                { "n.md": "1", "d/x.md": "" },
+                { readOnly: true },
+            );
+
+            await h.notesActions.moveNotes([n], wsPath("d"));
+
+            expect(h.notesStore.getState().createError?.code).toBe(
+                "permission-denied",
+            );
+            expect((await fs.stat(n)).ok).toBe(true);
         });
 
         it("does nothing when the note is already in the destination", async () => {

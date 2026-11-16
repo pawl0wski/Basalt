@@ -10,6 +10,10 @@ import {
 } from "./tree-nodes";
 import {
     closeDialog,
+    endDrag,
+    setDropTarget,
+    startDrag,
+    type DropTarget,
     closeMenu,
     expandFolders,
     openMenu,
@@ -34,6 +38,11 @@ export type TreeActions = {
     setName(name: string): void;
     cancelDialog(): void;
     submitDialog(): Promise<void>;
+    dragStart(id: string): void;
+    dragEnd(): void;
+    dropTargetChange(target: DropTarget | null): void;
+    hoverOpen(id: string): void;
+    drop(target: DropTarget): Promise<void>;
 };
 
 export function createTreeActions(options: {
@@ -95,7 +104,61 @@ export function createTreeActions(options: {
         closeDialog(store);
     }
 
+    function destinationOf(target: DropTarget): WorkspacePath | null | false {
+        if (target.type === "root") return null;
+        const node = findTreeNode(currentTree(), target.id);
+        return node?.kind === "folder" ? node.path : false;
+    }
+
+    function changesFolder(
+        paths: Iterable<string>,
+        destination: WorkspacePath | null,
+    ): boolean {
+        return [...paths].some(
+            (path) => parentFolder(path as WorkspacePath) !== destination,
+        );
+    }
+
     return {
+        dragStart: (id) => {
+            startDrag(store, new Set([id]));
+        },
+        dragEnd: () => {
+            endDrag(store);
+        },
+        dropTargetChange(target) {
+            const { dragging } = store.getState();
+            if (dragging.size === 0 || target === null) {
+                setDropTarget(store, null);
+                return;
+            }
+            const destination = destinationOf(target);
+            setDropTarget(
+                store,
+                destination !== false && changesFolder(dragging, destination)
+                    ? target
+                    : null,
+            );
+        },
+        hoverOpen(id) {
+            if (store.getState().dragging.size === 0) return;
+            expandFolders(store, [id]);
+        },
+        async drop(target) {
+            const paths = [...store.getState().dragging] as WorkspacePath[];
+            endDrag(store);
+            const destination = destinationOf(target);
+            if (destination === false || !changesFolder(paths, destination))
+                return;
+            const moved = await notes.moveNotes(paths, destination);
+            if (!moved.ok || moved.value.length === 0) return;
+            if (destination !== null)
+                expandFolders(store, [
+                    ...ancestorFolders(destination),
+                    destination,
+                ]);
+            setFocusedRow(store, moved.value[moved.value.length - 1].to);
+        },
         toggleFolder: (id) => {
             toggleFolder(store, id);
         },
