@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
     pathKey,
+    sameWorkspaceRoot,
     toWorkspacePath,
     validateNoteName,
     type WorkspacePath,
@@ -126,5 +127,49 @@ describe("validateNoteName", () => {
             valid: false,
             reason: "too-long",
         });
+    });
+});
+
+describe("sameWorkspaceRoot", () => {
+    it("treats identical paths as the same", () => {
+        expect(sameWorkspaceRoot("C:\\notes", "C:\\notes")).toBe(true);
+        expect(sameWorkspaceRoot("/home/a/notes", "/home/a/notes")).toBe(true);
+    });
+
+    it("ignores the extended-length prefix", () => {
+        expect(sameWorkspaceRoot("\\\\?\\C:\\notes", "C:\\notes")).toBe(true);
+    });
+
+    it("ignores the separator style", () => {
+        expect(sameWorkspaceRoot("C:\\a\\notes", "C:/a/notes")).toBe(true);
+    });
+
+    it("ignores trailing separators", () => {
+        expect(sameWorkspaceRoot("/home/a/notes/", "/home/a/notes")).toBe(true);
+        expect(sameWorkspaceRoot("C:\\a\\notes\\", "C:\\a\\notes")).toBe(true);
+        expect(sameWorkspaceRoot("/home/a/notes//", "/home/a/notes")).toBe(
+            true,
+        );
+    });
+
+    it("keeps the separator on drive and filesystem roots", () => {
+        expect(sameWorkspaceRoot("C:\\", "C:/")).toBe(true);
+        expect(sameWorkspaceRoot("C:\\", "C:")).toBe(true);
+        expect(sameWorkspaceRoot("C:\\", "C:\\notes")).toBe(false);
+        expect(sameWorkspaceRoot("/", "/")).toBe(true);
+        expect(sameWorkspaceRoot("/", "/home")).toBe(false);
+        expect(sameWorkspaceRoot("/", "")).toBe(false);
+    });
+
+    it("is case-sensitive", () => {
+        expect(sameWorkspaceRoot("C:\\Notes", "C:\\notes")).toBe(false);
+        expect(sameWorkspaceRoot("/home/A", "/home/a")).toBe(false);
+    });
+
+    it("distinguishes different folders", () => {
+        expect(sameWorkspaceRoot("/home/a/notes", "/home/a/notes2")).toBe(
+            false,
+        );
+        expect(sameWorkspaceRoot("/home/a/notes", "/home/a")).toBe(false);
     });
 });

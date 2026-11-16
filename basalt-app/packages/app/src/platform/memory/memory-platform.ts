@@ -3,6 +3,7 @@ import {
     err,
     ok,
     parseAppSettingsText,
+    type Result,
     toWorkspacePath,
     type WorkspacePath,
     type WorkspaceRoot,
@@ -46,6 +47,7 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
     const workspaces = loadWorkspaces(storage);
     const flags = { readOnly: false, failWatch: false };
     let pickerResult: string | null | undefined;
+    let scopeDeniedPrefix: string | null = null;
     let current: { root: string; fs: InMemoryWorkspaceFileSystem } | null =
         null;
 
@@ -78,6 +80,52 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
         persist();
     }
 
+    function isDenied(target: string): boolean {
+        const prefix = scopeDeniedPrefix;
+        if (prefix === null) return false;
+        return target === prefix || target.startsWith(`${prefix}/`);
+    }
+
+    function deniedResult(): Result<never> {
+        return err({
+            code: "scope-denied",
+            message: "forbidden path: not allowed on the scope",
+        });
+    }
+
+    function withScopeDenial(
+        fs: InMemoryWorkspaceFileSystem,
+    ): InMemoryWorkspaceFileSystem {
+        return {
+            ...fs,
+            async stat(target) {
+                return isDenied(target) ? deniedResult() : fs.stat(target);
+            },
+            async readText(target) {
+                return isDenied(target) ? deniedResult() : fs.readText(target);
+            },
+            async readBytes(target) {
+                return isDenied(target) ? deniedResult() : fs.readBytes(target);
+            },
+            async writeTextAtomic(target, text) {
+                return isDenied(target)
+                    ? deniedResult()
+                    : fs.writeTextAtomic(target, text);
+            },
+            async createExclusive(target, content) {
+                return isDenied(target)
+                    ? deniedResult()
+                    : fs.createExclusive(target, content);
+            },
+            async readDir(target) {
+                return isDenied(target) ? deniedResult() : fs.readDir(target);
+            },
+            async mkdir(target) {
+                return isDenied(target) ? deniedResult() : fs.mkdir(target);
+            },
+        };
+    }
+
     function openFs(root: string, state: InMemoryState) {
         const fs = createInMemoryWorkspaceFileSystem({
             state,
@@ -101,8 +149,9 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
                 return result;
             },
         };
-        current = { root, fs: guarded };
-        return guarded;
+        const scoped = withScopeDenial(guarded);
+        current = { root, fs: scoped };
+        return scoped;
     }
 
     function requireCurrent(): InMemoryWorkspaceFileSystem {
@@ -132,6 +181,7 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
         },
         picker: {
             async pickDirectory() {
+                scopeDeniedPrefix = null;
                 if (pickerResult === undefined) {
                     if (!workspaces.has(DEMO_WORKSPACE_ROOT)) {
                         seed(DEMO_WORKSPACE_ROOT, DEMO_WORKSPACE_FILES);
@@ -168,6 +218,9 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
         },
         setReadOnly(readOnly) {
             flags.readOnly = readOnly;
+        },
+        setScopeDenied(prefix) {
+            scopeDeniedPrefix = prefix;
         },
         setFailWatch(failWatch) {
             flags.failWatch = failWatch;

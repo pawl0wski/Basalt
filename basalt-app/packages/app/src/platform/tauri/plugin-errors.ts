@@ -6,16 +6,23 @@ function errorText(error: unknown): string {
     return "";
 }
 
+const SCOPE_DENIED = /forbidden path|not allowed on the scope/i;
 const NOT_FOUND =
     /no such file|not found|cannot find the (file|path)|os error (2|3)\b/i;
 const PERMISSION_DENIED =
-    /permission denied|access is denied|forbidden path|not allowed on the|read-only|os error (1|5|13|30)\b/i;
+    /permission denied|access is denied|read-only|os error (1|5|13|30)\b/i;
 const ALREADY_EXISTS =
     /already exists|file exists|the file exists|os error (17|80|183)\b/i;
 const INVALID_PATH = /is a directory|not a directory|os error (20|21|267)\b/i;
 
 export function mapPluginError(error: unknown): AppError {
     const text = errorText(error);
+    if (SCOPE_DENIED.test(text)) {
+        return {
+            code: "scope-denied",
+            message: "The app is not allowed to access this path.",
+        };
+    }
     if (NOT_FOUND.test(text)) {
         return {
             code: "not-found",

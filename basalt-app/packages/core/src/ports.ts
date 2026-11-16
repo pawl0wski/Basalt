@@ -42,7 +42,9 @@ export interface WorkspaceAccess {
 }
 
 export interface WorkspacePicker {
-    pickDirectory(): Promise<Result<WorkspaceRoot | null>>;
+    pickDirectory(options?: {
+        defaultPath?: WorkspaceRoot;
+    }): Promise<Result<WorkspaceRoot | null>>;
 }
 
 export interface WorkspaceSettings {

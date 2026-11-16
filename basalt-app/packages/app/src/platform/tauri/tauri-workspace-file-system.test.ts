@@ -348,7 +348,7 @@ describe("TauriWorkspaceAccess", () => {
 
     it.each([
         ["a deleted folder", ROOT, "not-found"],
-        ["a folder outside the fs scope", "/elsewhere", "permission-denied"],
+        ["a folder outside the fs scope", "/elsewhere", "scope-denied"],
         ["a regular file", `${ROOT}/file.md`, "invalid-path"],
     ])("rejects %s", async (_label, root, code) => {
         const plugin = installFakePluginFs(ROOT);

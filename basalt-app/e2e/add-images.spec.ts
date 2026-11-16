@@ -1,5 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
-import { openWorkspaceWith, readSavedBytes, readSavedText } from "./support";
+import {
+    openWorkspaceWith,
+    readSavedBytes,
+    readSavedText,
+    setScopeDenied,
+} from "./support";
 
 const PNG = Array.from(
     Buffer.from(
@@ -253,5 +258,128 @@ test.describe("adding images by paste and drop", () => {
         expect(
             await page.evaluate(() => window.__basaltTestFs?.listFiles() ?? []),
         ).toEqual(["a.md"]);
+    });
+
+    test("a denied folder scope shows a notice and a banner, and granting access keeps the open note", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", { "a.md": "" });
+        await option(page, "a").click();
+        await page.keyboard.type("typed text");
+        await setScopeDenied(page, "attachments");
+
+        await dropFiles(page, [png("d.png")]);
+
+        await expect(
+            page.locator(".bs-alert", {
+                hasText:
+                    "Basalt does not have access to this part of the workspace folder. Nothing was changed.",
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByText("Basalt needs access to the whole workspace folder"),
+        ).toBeVisible();
+        expect(
+            await page.evaluate(() => window.__basaltTestFs?.listFiles() ?? []),
+        ).not.toContain("attachments/d.png");
+
+        await page.getByRole("button", { name: "Grant access" }).click();
+
+        await expect(
+            page.getByText("Basalt needs access to the whole workspace folder"),
+        ).toHaveCount(0);
+        await expect(editor(page, "a")).toContainText("typed text");
+        await expect(option(page, "a")).toBeVisible();
+
+        await dropFiles(page, [png("d.png")]);
+
+        await expect(page.locator("img.cm-image-preview")).toHaveCount(1);
+        expect(await savedBytes(page, "attachments/d.png")).toEqual(PNG);
+        await expect
+            .poll(async () =>
+                (await readSavedText(page, "a.md"))
+                    ?.replace(/\n?!\[d\]\(attachments\/d\.png\)\n?/, "")
+                    .trim(),
+            )
+            .toBe("typed text");
+    });
+    test("dropping far below the text in an empty note inserts the link and writes the file", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", { "a.md": "" });
+        await option(page, "a").click();
+        await expect(editor(page, "a")).toBeVisible();
+
+        const box = await page.locator(".cm-editor").boundingBox();
+        const main = await page.locator("main").boundingBox();
+        expect(box).not.toBeNull();
+        expect(main).not.toBeNull();
+        expect(box?.height ?? 0).toBeGreaterThan((main?.height ?? 0) * 0.7);
+
+        const prevented = await page.evaluate(
+            ({ items }) => {
+                const transfer = new DataTransfer();
+                for (const item of items) {
+                    transfer.items.add(
+                        new File([Uint8Array.from(item.bytes)], item.name, {
+                            type: item.type,
+                        }),
+                    );
+                }
+                const rect = document
+                    .querySelector(".cm-editor")
+                    ?.getBoundingClientRect();
+                const target = document.elementFromPoint(
+                    (rect?.left ?? 0) + 40,
+                    (rect?.bottom ?? 0) - 30,
+                );
+                const event = new DragEvent("drop", {
+                    dataTransfer: transfer,
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: (rect?.left ?? 0) + 40,
+                    clientY: (rect?.bottom ?? 0) - 30,
+                });
+                target?.dispatchEvent(event);
+                return {
+                    prevented: event.defaultPrevented,
+                    inEditor: Boolean(target?.closest(".cm-editor")),
+                };
+            },
+            { items: [png("low.png")] },
+        );
+
+        expect(prevented).toEqual({ prevented: true, inEditor: true });
+        await expect(page.locator("img.cm-image-preview")).toHaveCount(1);
+        expect(await savedBytes(page, "attachments/low.png")).toEqual(PNG);
+        await expect
+            .poll(() => readSavedText(page, "a.md"), { timeout: 5000 })
+            .toBe("![low](attachments/low.png)");
+    });
+
+    test("a long note scrolls inside the editor and not in the pane", async ({
+        page,
+    }) => {
+        const lines = Array.from({ length: 200 }, (_, i) => `line ${i}`);
+        await openWorkspaceWith(page, "/work/W", { "a.md": lines.join("\n") });
+        await option(page, "a").click();
+        await expect(editor(page, "a")).toContainText("line 0");
+
+        const metrics = await page.evaluate(() => {
+            const main = document.querySelector("main");
+            const scroller = document.querySelector(".cm-scroller");
+            return {
+                paneOverflows:
+                    (main?.scrollHeight ?? 0) > (main?.clientHeight ?? 0) + 1,
+                scrollerOverflows:
+                    (scroller?.scrollHeight ?? 0) >
+                    (scroller?.clientHeight ?? 0) + 1,
+            };
+        });
+
+        expect(metrics).toEqual({
+            paneOverflows: false,
+            scrollerOverflows: true,
+        });
     });
 });

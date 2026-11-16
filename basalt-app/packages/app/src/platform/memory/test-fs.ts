@@ -5,6 +5,7 @@ export interface BasaltTestFs {
     ): void;
     setPickerResult(root: string | null | undefined): void;
     setReadOnly(readOnly: boolean): void;
+    setScopeDenied(prefix: string | null): void;
     setFailWatch(failWatch: boolean): void;
     failNextWrite(): void;
     listFiles(): string[];

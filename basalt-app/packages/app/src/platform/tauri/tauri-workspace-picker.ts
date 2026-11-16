@@ -4,9 +4,16 @@ import { attempt } from "./plugin-errors";
 
 export function createTauriWorkspacePicker(): WorkspacePicker {
     return {
-        async pickDirectory() {
+        async pickDirectory(options) {
             const picked = await attempt(() =>
-                open({ directory: true, multiple: false }),
+                open({
+                    directory: true,
+                    multiple: false,
+                    recursive: true,
+                    ...(options?.defaultPath === undefined
+                        ? {}
+                        : { defaultPath: options.defaultPath }),
+                }),
             );
             if (!picked.ok) return picked;
             return ok((picked.value as WorkspaceRoot | null) ?? null);

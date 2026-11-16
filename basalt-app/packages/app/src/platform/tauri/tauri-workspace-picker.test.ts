@@ -1,3 +1,4 @@
+import type { WorkspaceRoot } from "@basalt/core";
 import { afterEach, expect, it } from "vitest";
 import {
     installFakePluginFs,
@@ -26,4 +27,33 @@ it("returns null when the dialog is cancelled", async () => {
         ok: true,
         value: null,
     });
+});
+
+it("requests a recursive scope without a default path", async () => {
+    plugin = installFakePluginFs("/ws");
+    plugin.pickDirectory("/home/me/notes");
+
+    await createTauriWorkspacePicker().pickDirectory();
+
+    expect(plugin.dialogOptions).toEqual([
+        { directory: true, multiple: false, recursive: true },
+    ]);
+});
+
+it("passes the default path to the dialog when given", async () => {
+    plugin = installFakePluginFs("/ws");
+    plugin.pickDirectory("/home/me/notes");
+
+    await createTauriWorkspacePicker().pickDirectory({
+        defaultPath: "/home/me/notes" as WorkspaceRoot,
+    });
+
+    expect(plugin.dialogOptions).toEqual([
+        {
+            directory: true,
+            multiple: false,
+            recursive: true,
+            defaultPath: "/home/me/notes",
+        },
+    ]);
 });

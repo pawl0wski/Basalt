@@ -24,6 +24,14 @@ describe("add notice", () => {
         });
     });
 
+    it("explains a scope denial instead of calling the folder read-only", () => {
+        const text = noticeText(t, { failed: 1, reason: "scope-denied" });
+        expect(text).toBe(
+            "1 file was not added: Basalt does not have access to this part of the workspace folder. Nothing was changed.",
+        );
+        expect(text).not.toContain("read-only");
+    });
+
     it("words one and many files and picks an image-specific text for too-large", () => {
         expect(noticeText(t, { failed: 1, reason: "unsupported" })).toBe(
             "1 file was not added: This file format is not supported.",

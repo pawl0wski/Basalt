@@ -7,6 +7,7 @@ export type TestFs = {
     ): void;
     setPickerResult(root: string | null | undefined): void;
     setReadOnly(readOnly: boolean): void;
+    setScopeDenied(prefix: string | null): void;
     setFailWatch(failWatch: boolean): void;
     failNextWrite(): void;
     listFiles(): string[];
@@ -130,4 +131,13 @@ export async function removeRoot(page: Page): Promise<void> {
     await page.evaluate(() => {
         window.__basaltTestFs?.removeRoot();
     });
+}
+
+export async function setScopeDenied(
+    page: Page,
+    prefix: string | null,
+): Promise<void> {
+    await page.evaluate((value) => {
+        window.__basaltTestFs?.setScopeDenied(value);
+    }, prefix);
 }

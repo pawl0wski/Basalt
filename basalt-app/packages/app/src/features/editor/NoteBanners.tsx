@@ -103,3 +103,25 @@ export function WorkspaceUnavailableBanner({
         />
     );
 }
+
+export type WorkspaceAccessBannerProps = BannerText & {
+    grantAccess: BannerAction;
+    changeWorkspace: BannerAction;
+};
+
+export function WorkspaceAccessBanner({
+    title,
+    message,
+    grantAccess,
+    changeWorkspace,
+}: WorkspaceAccessBannerProps) {
+    return (
+        <ActionBanner
+            title={title}
+            message={message}
+            variant="warning"
+            primary={grantAccess}
+            secondary={changeWorkspace}
+        />
+    );
+}

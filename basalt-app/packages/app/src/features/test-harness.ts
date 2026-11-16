@@ -7,6 +7,7 @@ import {
     type AppSettings,
     type AppSettingsStore,
     type Result,
+    type WorkspacePicker,
     type WorkspacePath,
     type WorkspaceRoot,
 } from "@basalt/core";
@@ -89,6 +90,7 @@ export function createHarness(
     let persisted = options.settings ?? defaultAppSettings();
     const state = { picked: options.picked ?? null };
     const saves: AppSettings[] = [];
+    const pickCalls: Parameters<WorkspacePicker["pickDirectory"]>[0][] = [];
     const settingsStore: AppSettingsStore = {
         load: () => Promise.resolve(ok(persisted)),
         save(next): Promise<Result<void>> {
@@ -136,7 +138,8 @@ export function createHarness(
             },
         },
         picker: {
-            pickDirectory() {
+            pickDirectory(pickOptions) {
+                pickCalls.push(pickOptions);
                 return Promise.resolve(
                     options.pickError
                         ? err({ code: "unknown", message: "picker failed" })
@@ -159,6 +162,7 @@ export function createHarness(
         scheduler,
         watchScheduler,
         saves,
+        pickCalls,
         windowState,
         requestWindowClose: async () => {
             const results = await Promise.all(

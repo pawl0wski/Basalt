@@ -15,10 +15,22 @@ describe("mapPluginError", () => {
         ["Permission denied (os error 13)", "permission-denied"],
         ["Access is denied. (os error 5)", "permission-denied"],
         [
-            "forbidden path: /x, maybe it is not allowed on the scope configuration",
-            "permission-denied",
+            "forbidden path: C:\\Users\\me\\notes\\attachments, maybe it is not allowed on the scope for `allow-read-dir` permission in your capability file",
+            "scope-denied",
         ],
-        ["path not allowed on the configured scope: /x", "permission-denied"],
+        [
+            "forbidden path: /home/me/notes/attachments/a.png, maybe it is not allowed on the scope for `allow-write-file` permission in your capability file",
+            "scope-denied",
+        ],
+        [
+            "forbidden path: /home/me/not found/attachments, maybe it is not allowed on the scope for `allow-read-dir` permission",
+            "scope-denied",
+        ],
+        [
+            "forbidden path: C:\\no such file\\os error 2\\attachments, maybe it is not allowed on the scope",
+            "scope-denied",
+        ],
+        ["path not allowed on the configured scope: /x", "unknown"],
         ["File exists (os error 17)", "already-exists"],
         [
             "Cannot create a file when that file already exists. (os error 183)",
