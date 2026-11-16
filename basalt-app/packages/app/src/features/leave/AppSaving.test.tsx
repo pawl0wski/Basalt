@@ -44,8 +44,8 @@ function typeInto(name: string, insert: string) {
 
 function listOption(name: string) {
     return within(
-        screen.getByRole("listbox", { name: en.workspace.notesLabel }),
-    ).getByRole("option", { name });
+        screen.getByRole("tree", { name: en.workspace.notesLabel }),
+    ).getByRole("treeitem", { name });
 }
 
 function pressCtrlS() {

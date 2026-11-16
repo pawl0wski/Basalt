@@ -27,6 +27,7 @@ export type WorkspaceActionsOptions = {
     readonly watchSchedule: AutosaveScheduler;
     readonly watchDebounceMs: number;
     readonly images?: ImageHub;
+    readonly onWorkspaceReset?: () => void;
     readonly onFlushBlocked?: (error: AppError) => void;
     readonly onWorkspaceLost?: (error: AppError) => void;
 };
@@ -86,6 +87,7 @@ export function createWorkspaceActions(
     async function leaveWorkspace(): Promise<void> {
         await stopWatching();
         notes.leaveWorkspace();
+        options.onWorkspaceReset?.();
         currentFs = null;
         options.images?.setFs(null);
         store.setState({
@@ -148,6 +150,7 @@ export function createWorkspaceActions(
     ): Promise<Result<void>> {
         await stopWatching();
         notes.leaveWorkspace();
+        options.onWorkspaceReset?.();
         const fs: WorkspaceFileSystem = withScopeReporting(rawFs, () => {
             if (currentFs === fs) store.setState({ accessNeeded: true });
         });

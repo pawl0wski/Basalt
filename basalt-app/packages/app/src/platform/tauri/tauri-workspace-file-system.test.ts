@@ -235,6 +235,94 @@ describe("TauriWorkspaceFileSystem", () => {
         });
     });
 
+    describe("rename", () => {
+        it("moves a folder with its content through the plugin rename", async () => {
+            const { plugin, fs } = setup();
+            plugin.seedText(`${ROOT}/old/sub/a.md`, "deep");
+
+            const result = await fs.rename(path("old"), path("new"));
+
+            expect(result.ok).toBe(true);
+            expect(plugin.calls).toContain("rename");
+            expect(plugin.readBytes(`${ROOT}/new/sub/a.md`)).toEqual(
+                encode("deep"),
+            );
+            expect(plugin.entries.has(`${ROOT}/old`)).toBe(false);
+        });
+
+        it("reports already-exists without calling the plugin rename that would overwrite", async () => {
+            const { plugin, fs } = setup();
+            plugin.seedText(`${ROOT}/a.md`, "one");
+            plugin.seedText(`${ROOT}/b.md`, "two");
+
+            const result = await fs.rename(path("a.md"), path("b.md"));
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) expect(result.error.code).toBe("already-exists");
+            expect(plugin.calls).not.toContain("rename");
+            expect(plugin.readBytes(`${ROOT}/b.md`)).toEqual(encode("two"));
+        });
+
+        it("reports not-found for a missing source before touching the destination", async () => {
+            const { plugin, fs } = setup();
+
+            const result = await fs.rename(path("no.md"), path("b.md"));
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) expect(result.error.code).toBe("not-found");
+            expect(plugin.calls).not.toContain("rename");
+        });
+
+        it("allows a case-only change when only the source exists", async () => {
+            const { plugin, fs } = setup();
+            plugin.seedText(`${ROOT}/dir/a.md`, "x");
+
+            const result = await fs.rename(path("dir/a.md"), path("dir/A.md"));
+
+            expect(result.ok).toBe(true);
+            expect(plugin.calls).toContain("rename");
+            expect(plugin.readBytes(`${ROOT}/dir/A.md`)).toEqual(encode("x"));
+        });
+
+        it("refuses a case-only change onto a distinct existing entry", async () => {
+            const { plugin, fs } = setup();
+            plugin.seedText(`${ROOT}/a.md`, "lower");
+            plugin.seedText(`${ROOT}/A.md`, "upper");
+
+            const result = await fs.rename(path("a.md"), path("A.md"));
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) expect(result.error.code).toBe("already-exists");
+            expect(plugin.calls).not.toContain("rename");
+            expect(plugin.readBytes(`${ROOT}/A.md`)).toEqual(encode("upper"));
+        });
+
+        it("maps a plugin permission failure to permission-denied and keeps the file", async () => {
+            const { plugin, fs } = setup();
+            plugin.seedText(`${ROOT}/a.md`, "x");
+            plugin.failNext("rename", "Permission denied (os error 13)");
+
+            const result = await fs.rename(path("a.md"), path("b.md"));
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("permission-denied");
+            }
+            expect(plugin.readBytes(`${ROOT}/a.md`)).toEqual(encode("x"));
+        });
+
+        it("maps a rename failure of the plugin to a typed error, not a throw", async () => {
+            const { plugin, fs } = setup();
+            plugin.seedText(`${ROOT}/a.md`, "x");
+            plugin.failNext("rename", "something unexpected");
+
+            const result = await fs.rename(path("a.md"), path("b.md"));
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) expect(result.error.code).toBe("unknown");
+        });
+    });
+
     describe("watch", () => {
         async function watched() {
             const { plugin, fs } = setup();

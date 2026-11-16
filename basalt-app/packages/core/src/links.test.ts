@@ -19,6 +19,18 @@ const workspace = (path: string) => ({ kind: "workspace", path: p(path) });
 const invalid = { kind: "invalid" };
 
 describe("resolveLinkTarget", () => {
+    it("takes the folders of the note literally and decodes only the destination", () => {
+        expect(resolveLinkTarget(p("100%/n.md"), "t.md")).toEqual(
+            workspace("100%/t.md"),
+        );
+        expect(resolveLinkTarget(p("a%20b/n.md"), "x%20y.md")).toEqual(
+            workspace("a%20b/x y.md"),
+        );
+        expect(resolveLinkTarget(p("a%20b/c/n.md"), "../t.md")).toEqual(
+            workspace("a%20b/t.md"),
+        );
+    });
+
     it("resolves relative to the note in the root and in folders", () => {
         expect(resolveLinkTarget(p("a.md"), "attachments/x.png")).toEqual(
             workspace("attachments/x.png"),

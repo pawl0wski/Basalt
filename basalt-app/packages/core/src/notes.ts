@@ -35,8 +35,15 @@ export interface SaveNoteInput {
 export interface NoteService {
     listNotes(): Promise<Result<readonly Note[]>>;
     openNote(path: WorkspacePath): Promise<Result<OpenedNote>>;
-    suggestNoteName(existing: readonly Note[], baseName: string): string;
-    createNote(name: string): Promise<Result<Note>>;
+    suggestNoteName(
+        existing: readonly Note[],
+        baseName: string,
+        folder?: WorkspacePath | null,
+    ): string;
+    createNote(
+        name: string,
+        folder?: WorkspacePath | null,
+    ): Promise<Result<Note>>;
     saveNote(input: SaveNoteInput): Promise<Result<{ baseText: string }>>;
 }
 
@@ -54,6 +61,10 @@ export function isMarkdownPath(path: string): boolean {
 
 function isDotEntry(path: string): boolean {
     return path.split("/").some((segment) => segment.startsWith("."));
+}
+
+function folderPrefix(folder: WorkspacePath | null): string {
+    return folder === null ? "" : `${folder}/`;
 }
 
 function toNote(entry: FileEntry): Note {
@@ -128,17 +139,23 @@ export function createNotes({ fs }: { fs: WorkspaceFileSystem }): NoteService {
     function suggestNoteName(
         existing: readonly Note[],
         baseName: string,
+        folder: WorkspacePath | null = null,
     ): string {
         const taken = new Set(existing.map((note) => pathKey(note.path)));
         for (let index = 0; ; index += 1) {
             const candidate =
                 index === 0 ? baseName : `${baseName} ${String(index)}`;
-            const path = toWorkspacePath(candidate + EXTENSION);
+            const path = toWorkspacePath(
+                folderPrefix(folder) + candidate + EXTENSION,
+            );
             if (!path.ok || !taken.has(pathKey(path.value))) return candidate;
         }
     }
 
-    async function createNote(name: string): Promise<Result<Note>> {
+    async function createNote(
+        name: string,
+        folder: WorkspacePath | null = null,
+    ): Promise<Result<Note>> {
         const fileName = name + EXTENSION;
         const nameCheck = validateNoteName(name);
         const fileCheck = validateNoteName(fileName);
@@ -148,10 +165,21 @@ export function createNotes({ fs }: { fs: WorkspaceFileSystem }): NoteService {
                 message: "The note name is not valid.",
             });
         }
-        const path = toWorkspacePath(fileName);
+        const path = toWorkspacePath(folderPrefix(folder) + fileName);
         if (!path.ok) return path;
         const listing = await fs.list();
         if (!listing.ok) return listing;
+        if (
+            folder !== null &&
+            !listing.value.some(
+                (entry) => entry.path === folder && entry.kind === "directory",
+            )
+        ) {
+            return err({
+                code: "not-found",
+                message: "The folder was not found.",
+            });
+        }
         const key = pathKey(path.value);
         if (listing.value.some((entry) => pathKey(entry.path) === key)) {
             return err({

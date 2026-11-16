@@ -172,8 +172,13 @@ export function installFakePluginFs(
                 const entry = entries.get(from);
                 if (!entry) throw NOT_FOUND;
                 requireParent(to);
-                entries.delete(from);
-                entries.set(to, entry);
+                for (const key of [...entries.keys()]) {
+                    if (key === from || key.startsWith(`${from}/`)) {
+                        const moved = entries.get(key) as Entry;
+                        entries.delete(key);
+                        entries.set(`${to}${key.slice(from.length)}`, moved);
+                    }
+                }
                 emit({ modify: { kind: "rename", mode: "both" } }, [from, to]);
                 return null;
             }

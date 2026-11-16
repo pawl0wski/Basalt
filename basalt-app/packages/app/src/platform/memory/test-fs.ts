@@ -9,6 +9,7 @@ export interface BasaltTestFs {
     setFailWatch(failWatch: boolean): void;
     failNextWrite(): void;
     listFiles(): string[];
+    listDirectories(): string[];
     readBytes(path: string): Uint8Array | null;
     externalWrite(path: string, bytes: Uint8Array): void;
     externalDelete(path: string): void;

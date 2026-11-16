@@ -13,6 +13,7 @@ import {
     type InMemoryState,
     type InMemoryWorkspaceFileSystem,
 } from "@basalt/core/testing/in-memory";
+import { createInMemoryWorkspaceTrash } from "@basalt/core/testing/in-memory-trash";
 import type { Platform } from "../platform";
 import { createMemoryWindowChrome } from "./memory-window-chrome";
 import { DEMO_WORKSPACE_FILES, DEMO_WORKSPACE_ROOT } from "./demo-workspace";
@@ -148,6 +149,16 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
                 persist();
                 return result;
             },
+            async mkdir(target) {
+                const result = await fs.mkdir(target);
+                persist();
+                return result;
+            },
+            async rename(from, to) {
+                const result = await fs.rename(from, to);
+                persist();
+                return result;
+            },
         };
         const scoped = withScopeDenial(guarded);
         current = { root, fs: scoped };
@@ -206,6 +217,14 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
                 return ok(undefined);
             },
         },
+        trash: () =>
+            createInMemoryWorkspaceTrash(
+                (path) => {
+                    requireCurrent().externalDelete(path);
+                    persist();
+                },
+                { readOnly: () => flags.readOnly },
+            ),
         windowChrome: createMemoryWindowChrome(),
     };
 
@@ -232,6 +251,12 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
             return requireCurrent()
                 .getState()
                 .entries.filter((entry) => entry.kind === "file")
+                .map((entry) => entry.path);
+        },
+        listDirectories() {
+            return requireCurrent()
+                .getState()
+                .entries.filter((entry) => entry.kind === "directory")
                 .map((entry) => entry.path);
         },
         readBytes(target) {

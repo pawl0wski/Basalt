@@ -1,5 +1,5 @@
 export { APP_ERROR_CODES, err, mapError, ok } from "./result";
-export type { AppError, AppErrorCode, Result } from "./result";
+export type { AppError, AppErrorCode, AppErrorDetail, Result } from "./result";
 export {
     NOTE_NAME_ISSUES,
     pathKey,
@@ -25,6 +25,7 @@ export type {
     WorkspacePicker,
     WorkspaceRoot,
     WorkspaceSettings,
+    WorkspaceTrash,
 } from "./ports";
 export { MAX_NOTE_BYTES, createNotes, isMarkdownPath } from "./notes";
 export type {
@@ -102,3 +103,17 @@ export type {
     Attachments,
     ReadImageResult,
 } from "./attachments";
+export { HIDDEN_ROOT_FOLDERS, buildTree } from "./tree";
+export type { FolderNode, NoteNode, TreeNode } from "./tree";
+export { rewriteRelativeLinks } from "./link-rewrite";
+export { createNoteOperations } from "./note-operations";
+export type {
+    MoveNotesInput,
+    NoteMove,
+    CreateFolderInput,
+    DeleteNotesInput,
+    DeleteNotesResult,
+    NoteDeleteFailure,
+    NoteOperations,
+    RenameNoteInput,
+} from "./note-operations";

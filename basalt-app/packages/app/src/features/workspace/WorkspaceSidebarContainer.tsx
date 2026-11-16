@@ -1,15 +1,23 @@
+import { useMemo } from "react";
 import { useStore } from "zustand";
 import { useTranslation } from "react-i18next";
 import { useServices } from "../../useServices";
+import { findTreeNode, toTreeNodes } from "../tree/tree-nodes";
+import { TreeOverlaysContainer } from "../tree/TreeOverlaysContainer";
+import { describeMoveError } from "../tree/move-error";
 import { folderName } from "./folder-name";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
 
 export function WorkspaceSidebarContainer() {
     const { t } = useTranslation();
-    const { workspaceStore, notesStore, notesActions } = useServices();
+    const { workspaceStore, notesStore, treeStore, notesActions, treeActions } =
+        useServices();
     const root = useStore(workspaceStore, (state) => state.root);
     const watchMode = useStore(workspaceStore, (state) => state.watchMode);
-    const { notes, activeNote, listError, createError } = useStore(notesStore);
+    const { tree, activeNote, listError, createError } = useStore(notesStore);
+    const { expanded, focusedId, dragging, dropTarget, selected } =
+        useStore(treeStore);
+    const nodes = useMemo(() => toTreeNodes(tree, expanded), [tree, expanded]);
 
     return (
         <WorkspaceSidebar
@@ -24,20 +32,38 @@ export function WorkspaceSidebarContainer() {
                 listErrorTitle: t("workspace.listError.title"),
                 retry: t("workspace.listError.retry"),
             }}
-            notes={notes.map((note) => ({ path: note.path, name: note.name }))}
-            selectedPath={activeNote}
+            nodes={nodes}
+            activeId={activeNote}
+            focusedId={focusedId}
             listError={listError ? t(`errors.${listError.code}`) : null}
-            createError={createError ? t(`errors.${createError.code}`) : null}
+            createError={createError ? describeMoveError(t, createError) : null}
             notice={
                 watchMode === "focus-fallback"
                     ? t("workspace.watchFallback")
                     : null
             }
-            onSelect={(path) => {
-                const note = notes.find((candidate) => candidate.path === path);
-                if (note)
-                    void notesActions.openNote(note.path, { focus: true });
+            onOpenNote={(id) => {
+                const node = findTreeNode(tree, id);
+                if (node?.kind === "note") {
+                    void treeActions.openNote(node.path);
+                }
             }}
+            onToggleFolder={treeActions.toggleFolder}
+            onFocusChange={treeActions.focusRow}
+            onContextMenuRequest={treeActions.requestMenu}
+            selectedIds={selected}
+            onSelectionChange={treeActions.changeSelection}
+            onClearSelection={treeActions.clearSelection}
+            draggingIds={dragging}
+            dropTarget={dropTarget}
+            onDragStart={treeActions.dragStart}
+            onDragEnd={treeActions.dragEnd}
+            onDropTargetChange={treeActions.dropTargetChange}
+            onDrop={(target) => {
+                void treeActions.drop(target);
+            }}
+            onFolderHoverOpen={treeActions.hoverOpen}
+            overlays={<TreeOverlaysContainer />}
             onNewNote={() => {
                 void notesActions.createNote();
             }}

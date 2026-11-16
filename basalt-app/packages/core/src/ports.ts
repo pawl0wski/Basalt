@@ -34,7 +34,12 @@ export interface WorkspaceFileSystem {
     ): Promise<Result<void>>;
     readDir(path: WorkspacePath): Promise<Result<readonly FileEntry[]>>;
     mkdir(path: WorkspacePath): Promise<Result<void>>;
+    rename(from: WorkspacePath, to: WorkspacePath): Promise<Result<void>>;
     watch(onEvent: (event: WatchEvent) => void): Promise<Result<Unwatch>>;
+}
+
+export interface WorkspaceTrash {
+    moveToTrash(paths: readonly WorkspacePath[]): Promise<Result<void>>;
 }
 
 export interface WorkspaceAccess {

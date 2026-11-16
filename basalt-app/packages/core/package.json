@@ -8,14 +8,17 @@
     "exports": {
         ".": "./src/index.ts",
         "./testing": "./src/testing/index.ts",
-        "./testing/in-memory": "./src/testing/in-memory-workspace-file-system.ts"
+        "./testing/in-memory": "./src/testing/in-memory-workspace-file-system.ts",
+        "./testing/in-memory-trash": "./src/testing/in-memory-workspace-trash.ts"
     },
     "scripts": {
         "typecheck": "tsc --noEmit",
         "test": "vitest run"
     },
+    "dependencies": {
+        "@lezer/markdown": "^1.8.1"
+    },
     "devDependencies": {
-        "@lezer/markdown": "^1.8.1",
         "fast-check": "^4.10.2",
         "typescript": "~6.0.3"
     }

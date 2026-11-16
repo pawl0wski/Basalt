@@ -7,8 +7,8 @@ const PNG = Uint8Array.from(Buffer.from(PNG_BASE64, "base64"));
 
 function option(page: Page, name: string) {
     return page
-        .getByRole("listbox", { name: "Notes" })
-        .getByRole("option", { name, exact: true });
+        .getByRole("tree", { name: "Notes" })
+        .getByRole("treeitem", { name, exact: true });
 }
 
 function image(page: Page) {
@@ -63,10 +63,8 @@ test.describe("images in notes", () => {
             "attachments/pic.png": PNG,
         });
 
-        await page
-            .getByRole("listbox", { name: "Notes" })
-            .getByRole("option", { name: /Plan/ })
-            .click();
+        await option(page, "Projects").click();
+        await option(page, "Plan").click();
 
         await expect(image(page)).toHaveCount(1);
     });

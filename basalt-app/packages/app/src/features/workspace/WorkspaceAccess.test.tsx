@@ -28,13 +28,7 @@ async function openApp() {
     );
     await screen.findByRole("navigation", { name: en.workspace.sidebarLabel });
     await settle();
-    await userEvent
-        .setup()
-        .click(
-            within(
-                screen.getByRole("listbox", { name: en.workspace.notesLabel }),
-            ).getByRole("option", { name: "a" }),
-        );
+    await userEvent.setup().click(screen.getByRole("treeitem", { name: "a" }));
     await screen.findByRole("textbox", { name: "a" });
     return harness;
 }

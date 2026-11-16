@@ -342,6 +342,104 @@ export function describeWorkspaceFileSystemContract(
             });
         });
 
+        describe("rename", () => {
+            it("moves a file and keeps its bytes", async () => {
+                const { fs, seedFile } = await createFixture();
+                await seedFile(path("a.md"), encode("Zażółć"));
+
+                const result = await fs.rename(path("a.md"), path("b.md"));
+
+                expect(result.ok).toBe(true);
+                expect((await fs.stat(path("a.md"))).ok).toBe(false);
+                expect(await fs.readText(path("b.md"))).toEqual({
+                    ok: true,
+                    value: "Zażółć",
+                });
+            });
+
+            it("moves a file into an existing folder", async () => {
+                const { fs, seedFile } = await createFixture();
+                await seedFile(path("a.md"), encode("x"));
+                await fs.mkdir(path("dir"));
+
+                const result = await fs.rename(path("a.md"), path("dir/a.md"));
+
+                expect(result.ok).toBe(true);
+                expect(await fs.readText(path("dir/a.md"))).toEqual({
+                    ok: true,
+                    value: "x",
+                });
+                expect((await fs.stat(path("a.md"))).ok).toBe(false);
+            });
+
+            it("moves a directory with its content", async () => {
+                const { fs, seedFile } = await createFixture();
+                await seedFile(path("old/sub/a.md"), encode("deep"));
+                await seedFile(path("old/b.md"), encode("top"));
+
+                const result = await fs.rename(path("old"), path("new"));
+
+                expect(result.ok).toBe(true);
+                expect(await fs.readText(path("new/sub/a.md"))).toEqual({
+                    ok: true,
+                    value: "deep",
+                });
+                expect(await fs.readText(path("new/b.md"))).toEqual({
+                    ok: true,
+                    value: "top",
+                });
+                expect((await fs.stat(path("old"))).ok).toBe(false);
+                expect((await fs.stat(path("old/b.md"))).ok).toBe(false);
+            });
+
+            it("refuses to replace an existing entry and keeps both", async () => {
+                const { fs, seedFile } = await createFixture();
+                await seedFile(path("a.md"), encode("one"));
+                await seedFile(path("b.md"), encode("two"));
+
+                const result = await fs.rename(path("a.md"), path("b.md"));
+
+                expect(result.ok).toBe(false);
+                if (!result.ok) {
+                    expect(result.error.code).toBe("already-exists");
+                }
+                expect(await fs.readText(path("a.md"))).toEqual({
+                    ok: true,
+                    value: "one",
+                });
+                expect(await fs.readText(path("b.md"))).toEqual({
+                    ok: true,
+                    value: "two",
+                });
+            });
+
+            it("reports not-found for a missing source", async () => {
+                const { fs } = await createFixture();
+
+                const result = await fs.rename(path("no.md"), path("b.md"));
+
+                expect(result.ok).toBe(false);
+                if (!result.ok) expect(result.error.code).toBe("not-found");
+                expect((await fs.stat(path("b.md"))).ok).toBe(false);
+            });
+
+            it("emits a changed event carrying both paths", async () => {
+                const { fixture, events } = await watched();
+                await fixture.seedFile(path("a.md"), encode("x"));
+                events.length = 0;
+
+                await fixture.fs.rename(path("a.md"), path("b.md"));
+
+                await vi.waitFor(() => {
+                    const reported = events.flatMap((event) =>
+                        event.kind === "changed" ? event.paths : [],
+                    );
+                    expect(reported).toContain("a.md");
+                    expect(reported).toContain("b.md");
+                });
+            });
+        });
+
         describe("watch", () => {
             it("emits a changed event for the app's own writes", async () => {
                 const { fixture, events } = await watched();

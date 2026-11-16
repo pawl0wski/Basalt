@@ -317,6 +317,59 @@ export function createInMemoryWorkspaceFileSystem(
             return ok(undefined);
         },
 
+        async rename(from, to) {
+            const removed = rootGuard();
+            if (removed) return removed;
+            if (options.readOnly) {
+                return err({
+                    code: "permission-denied",
+                    message: "The workspace is read-only.",
+                });
+            }
+            const source = entries.get(from);
+            if (!source) {
+                return err({ code: "not-found", message: "No such entry." });
+            }
+            if (writeShouldFail) {
+                writeShouldFail = false;
+                return err({
+                    code: "unknown",
+                    message: "Injected write failure.",
+                });
+            }
+            if (entries.has(to)) {
+                return err({
+                    code: "already-exists",
+                    message: "The destination already exists.",
+                });
+            }
+            if (to.startsWith(`${from}/`)) {
+                return err({
+                    code: "invalid-path",
+                    message: "A folder cannot move into itself.",
+                });
+            }
+            const parent = ancestors(to).at(-1);
+            if (
+                parent !== undefined &&
+                entries.get(parent)?.kind !== "directory"
+            ) {
+                return err({
+                    code: "not-found",
+                    message: "The destination folder does not exist.",
+                });
+            }
+            for (const key of [...entries.keys()]) {
+                if (key === from || key.startsWith(`${from}/`)) {
+                    const moved = entries.get(key) as StoredEntry;
+                    entries.delete(key);
+                    entries.set(`${to}${key.slice(from.length)}`, moved);
+                }
+            }
+            emit({ kind: "changed", paths: [from, to] });
+            return ok(undefined);
+        },
+
         async watch(onEvent) {
             const removed = rootGuard();
             if (removed) return removed;

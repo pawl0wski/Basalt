@@ -15,6 +15,7 @@ type DialogProps = {
     onOpenChange?: (open: boolean) => void;
     role?: "dialog" | "alertdialog";
     onOpenAutoFocus?: (event: Event) => void;
+    onCloseAutoFocus?: (event: Event) => void;
     className?: string;
 };
 
@@ -29,6 +30,7 @@ function Dialog({
     onOpenChange,
     role = "dialog",
     onOpenAutoFocus,
+    onCloseAutoFocus,
     className,
 }: DialogProps) {
     return (
@@ -48,6 +50,7 @@ function Dialog({
                     role={role}
                     {...(description ? {} : { "aria-describedby": undefined })}
                     onOpenAutoFocus={onOpenAutoFocus}
+                    onCloseAutoFocus={onCloseAutoFocus}
                     className={cn(
                         "bs-dialog fixed inset-x-panel top-section flex flex-col gap-between-groups rounded-container border border-border-divider bg-surface-raised p-settings-card text-size-ui text-text-ui tablet:mx-auto tablet:max-w-prose",
                         className,

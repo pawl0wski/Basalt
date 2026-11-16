@@ -11,6 +11,7 @@ export type TestFs = {
     setFailWatch(failWatch: boolean): void;
     failNextWrite(): void;
     listFiles(): string[];
+    listDirectories(): string[];
     readBytes(path: string): Uint8Array | null;
     externalWrite(path: string, bytes: Uint8Array): void;
     externalDelete(path: string): void;
@@ -140,4 +141,18 @@ export async function setScopeDenied(
     await page.evaluate((value) => {
         window.__basaltTestFs?.setScopeDenied(value);
     }, prefix);
+}
+
+export async function listFiles(page: Page): Promise<string[]> {
+    const files = await page.evaluate(
+        () => window.__basaltTestFs?.listFiles() ?? [],
+    );
+    return files.sort();
+}
+
+export async function listDirectories(page: Page): Promise<string[]> {
+    const directories = await page.evaluate(
+        () => window.__basaltTestFs?.listDirectories() ?? [],
+    );
+    return directories.sort();
 }
