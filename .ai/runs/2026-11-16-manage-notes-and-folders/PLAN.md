@@ -23,7 +23,7 @@ Refs: #16 (issue), #27 (spec PR, merged). Branch: `feat/manage-notes-and-folders
 | 1     | 1.6  | Notes store `renamePath` (tabs, sessions, autosave, settings) and actions with tests  | dispatch | done   | ee5390b |
 | 2     | 2.1  | ui `Tree` component (multi-select, drop target) with stories and tests                | dispatch | done   |         |
 | 2     | 2.2  | ui `ContextMenu` component with stories and tests                                     | dispatch | done   |         |
-| 2     | 2.3  | ui rename and new-folder dialogs with inline error, stories and tests                 | dispatch | todo   |         |
+| 2     | 2.3  | ui rename and new-folder dialogs with inline error, stories and tests                 | dispatch | done   |         |
 | 3     | 3.1  | app tree store (expansion, selection) and tree adapter with tests                     | dispatch | todo   |         |
 | 3     | 3.2  | Sidebar renders the tree (AC-04.6, 04.8), i18n keys, new note in folder (AC-04.4)     | dispatch | todo   |         |
 | 3     | 3.3  | Context menu and keyboard open (AC-04.9), new folder (AC-04.3)                        | dispatch | todo   |         |
