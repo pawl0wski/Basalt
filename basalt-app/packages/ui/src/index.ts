@@ -82,6 +82,16 @@ export type {
     WindowControlLabels,
     WindowControls,
 } from "./product/TitleBar";
+export { Tree } from "./product/Tree";
+export type {
+    TreeDropTarget,
+    TreeFolderNode,
+    TreeNode,
+    TreeNoteNode,
+    TreePoint,
+    TreeProps,
+    TreeSelectionChange,
+} from "./product/Tree";
 export { WelcomeScreen } from "./product/WelcomeScreen";
 export type { WelcomeScreenProps } from "./product/WelcomeScreen";
 export { cn } from "./lib/utils";
