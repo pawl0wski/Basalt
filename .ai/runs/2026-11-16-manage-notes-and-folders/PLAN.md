@@ -24,11 +24,11 @@ Refs: #16 (issue), #27 (spec PR, merged). Branch: `feat/manage-notes-and-folders
 | 2     | 2.1  | ui `Tree` component (multi-select, drop target) with stories and tests                | dispatch | done   | 88935e2 |
 | 2     | 2.2  | ui `ContextMenu` component with stories and tests                                     | dispatch | done   | e0aea82 |
 | 2     | 2.3  | ui rename and new-folder dialogs with inline error, stories and tests                 | dispatch | done   | d372415 |
-| 3     | 3.1  | app tree store (expansion, selection) and tree adapter with tests                     | dispatch | todo   |         |
-| 3     | 3.2  | Sidebar renders the tree (AC-04.6, 04.8), i18n keys, new note in folder (AC-04.4)     | dispatch | todo   |         |
-| 3     | 3.3  | Context menu and keyboard open (AC-04.9), new folder (AC-04.3)                        | dispatch | todo   |         |
-| 3     | 3.4  | Rename flow (AC-04.1) and read-only message (AC-04.7)                                 | dispatch | todo   |         |
-| 3     | 3.5  | Playwright e2e for phase 3 criteria                                                   | dispatch | todo   |         |
+| 3     | 3.1  | app tree store (expansion, selection) and tree adapter with tests                     | dispatch | done   | fb5c583 |
+| 3     | 3.2  | Sidebar renders the tree (AC-04.6, 04.8), i18n keys, new note in folder (AC-04.4)     | dispatch | done   | 33843c8 |
+| 3     | 3.3  | Context menu and keyboard open (AC-04.9), new folder (AC-04.3)                        | dispatch | done   | 68d0f30 |
+| 3     | 3.4  | Rename flow (AC-04.1) and read-only message (AC-04.7)                                 | dispatch | done   | 68d0f30 |
+| 3     | 3.5  | Playwright e2e for phase 3 criteria                                                   | dispatch | done   | d88cd80 |
 | 4     | 4.1  | Drag a note onto a folder or root: move, tabs follow, hover-open, link rewrite (04.5) | dispatch | todo   |         |
 | 4     | 4.2  | Multi-selection (AC-04.10) and bulk move (AC-04.13)                                   | dispatch | todo   |         |
 | 4     | 4.3  | Playwright e2e for phase 4 criteria                                                   | dispatch | todo   |         |
@@ -56,3 +56,10 @@ Spec phases A–D. Core use cases and port `rename`; ui Tree, ContextMenu, dialo
 ## Decisions
 
 - Executors read `AGENTS.md` task routes, the spec and `.ai/lessons.md` first. Every Step adds unit tests; e2e in Steps 3.5 and 4.3.
+
+## Phase 3 notes
+
+- Steps 3.3 and 3.4 share one commit (68d0f30): the menu, the dialogs and the rename code were built together on the same files, so they were not split.
+- C-5 gap: the "unreadable folder inline error row" is not supported. `WorkspaceFileSystem.list()` returns one flat recursive listing and does not report per-folder read errors, so the tree cannot tell which folder failed. Supporting it needs a change to the port (partial results with per-directory errors). The ui `Tree` already renders a folder `error`.
+- ui change in Phase 3: `Dialog` and `NameDialog` gained `onCloseAutoFocus` so focus returns to the tree row after the dialog closes.
+- Focus gotcha (e2e only, jsdom cannot reproduce): Radix restores focus to the previous element after a context menu closes. After choosing an item this stole focus from the new dialog input and from the editor of a new note; focus is now restored only when the menu is dismissed without choosing.
