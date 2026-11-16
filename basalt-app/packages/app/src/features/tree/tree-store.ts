@@ -28,6 +28,13 @@ export type DropTarget =
     | { readonly type: "root" }
     | { readonly type: "folder"; readonly id: string };
 
+export type TreeConfirm = {
+    readonly kind: "delete";
+    readonly paths: readonly WorkspacePath[];
+    readonly pending: boolean;
+    readonly error: AppErrorCode | null;
+};
+
 export type TreeState = {
     readonly expanded: ReadonlySet<string>;
     readonly focusedId: string | null;
@@ -37,6 +44,7 @@ export type TreeState = {
     readonly dropTarget: DropTarget | null;
     readonly menu: TreeMenu | null;
     readonly dialog: TreeDialog | null;
+    readonly confirm: TreeConfirm | null;
 };
 
 export type TreeStore = StoreApi<TreeState>;
@@ -51,6 +59,7 @@ export function emptyTreeState(): TreeState {
         dropTarget: null,
         menu: null,
         dialog: null,
+        confirm: null,
     };
 }
 
@@ -139,6 +148,38 @@ export function setDialogError(
 export function closeDialog(store: TreeStore): void {
     if (store.getState().dialog === null) return;
     store.setState({ dialog: null });
+}
+
+export function openDeleteConfirm(
+    store: TreeStore,
+    paths: readonly WorkspacePath[],
+): void {
+    store.setState({
+        menu: null,
+        confirm: { kind: "delete", paths, pending: false, error: null },
+    });
+}
+
+export function closeConfirm(store: TreeStore): void {
+    if (store.getState().confirm === null) return;
+    store.setState({ confirm: null });
+}
+
+export function setConfirmPending(store: TreeStore, pending: boolean): void {
+    const { confirm } = store.getState();
+    if (!confirm) return;
+    store.setState({
+        confirm: { ...confirm, pending, error: pending ? null : confirm.error },
+    });
+}
+
+export function setConfirmError(
+    store: TreeStore,
+    error: AppErrorCode | null,
+): void {
+    const { confirm } = store.getState();
+    if (!confirm) return;
+    store.setState({ confirm: { ...confirm, pending: false, error } });
 }
 
 export function startDrag(store: TreeStore, ids: ReadonlySet<string>): void {

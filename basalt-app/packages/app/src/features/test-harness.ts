@@ -13,7 +13,6 @@ import {
 } from "@basalt/core";
 import {
     createInMemoryWorkspaceFileSystem,
-    createInMemoryWorkspaceTrash,
     type InMemoryWorkspaceFileSystem,
     type InMemoryWorkspaceFileSystemOptions,
 } from "@basalt/core/testing";
@@ -107,7 +106,7 @@ export function createHarness(
     };
     const closeHandlers = new Set<() => Promise<boolean>>();
     const windowState = { destroyed: 0 };
-    const trashState = { readOnly: false };
+    const trashState = { readOnly: false, failNext: false };
     const windowChrome: WindowChrome = {
         minimize() {},
         toggleMaximize() {},
@@ -150,11 +149,28 @@ export function createHarness(
             },
         },
         settings: settingsStore,
-        trash: (target) =>
-            createInMemoryWorkspaceTrash(
-                (path) => workspaces[target]?.externalDelete(path),
-                { readOnly: () => trashState.readOnly },
-            ),
+        trash: (target) => ({
+            moveToTrash(paths) {
+                if (trashState.readOnly) {
+                    return Promise.resolve(
+                        err({
+                            code: "permission-denied",
+                            message: "The workspace is read-only.",
+                        }),
+                    );
+                }
+                if (trashState.failNext) {
+                    trashState.failNext = false;
+                    return Promise.resolve(
+                        err({ code: "unknown", message: "Injected failure." }),
+                    );
+                }
+                for (const path of paths) {
+                    workspaces[target]?.externalDelete(path);
+                }
+                return Promise.resolve(ok(undefined));
+            },
+        }),
         windowChrome,
     };
     const scheduler = createFakeScheduler();
@@ -183,6 +199,9 @@ export function createHarness(
         },
         setTrashReadOnly(value: boolean) {
             trashState.readOnly = value;
+        },
+        failNextTrash() {
+            trashState.failNext = true;
         },
     };
 }

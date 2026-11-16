@@ -8,7 +8,9 @@ export function createTauriWorkspaceTrash(root: WorkspaceRoot): WorkspaceTrash {
     return {
         async moveToTrash(targets) {
             const native = targets.map((path) => paths.toNative(path));
-            return attempt(() => invoke<void>("move_to_trash", { paths: native }));
+            return attempt(() =>
+                invoke<void>("move_to_trash", { paths: native }),
+            );
         },
     };
 }

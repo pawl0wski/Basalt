@@ -1104,3 +1104,68 @@ describe("renaming and moving open notes", () => {
         });
     });
 });
+
+describe("deleting notes", () => {
+    it("deletes the notes, closes their tabs and refreshes the tree", async () => {
+        const { h, fs } = await openWorkspace({
+            "a.md": "1",
+            "b.md": "2",
+            "c.md": "3",
+        });
+        await h.notesActions.openNote(wsPath("a.md"));
+        await h.notesActions.openNote(wsPath("b.md"));
+
+        const result = await h.notesActions.deleteNotes([
+            wsPath("a.md"),
+            wsPath("b.md"),
+        ]);
+
+        expect(result.ok && result.value.deleted).toEqual(["a.md", "b.md"]);
+        const listed = await fs.list();
+        expect(listed.ok && listed.value.map((entry) => entry.path)).toEqual([
+            "c.md",
+        ]);
+        expect(h.notesStore.getState().openNotes).toEqual([]);
+        expect(h.notesStore.getState().activeNote).toBeNull();
+        expect(h.notesStore.getState().notes.map((note) => note.path)).toEqual([
+            "c.md",
+        ]);
+    });
+
+    it("closes the active tab and activates a neighbour", async () => {
+        const { h } = await openWorkspace({
+            "a.md": "1",
+            "b.md": "2",
+            "c.md": "3",
+        });
+        await h.notesActions.openNote(wsPath("a.md"));
+        await h.notesActions.openNote(wsPath("c.md"));
+        await h.notesActions.openNote(wsPath("b.md"));
+
+        await h.notesActions.deleteNotes([wsPath("b.md")]);
+
+        const { openNotes, activeNote } = h.notesStore.getState();
+        expect(openNotes.map((note) => note.path)).toEqual(["a.md", "c.md"]);
+        expect(activeNote).toBe("c.md");
+    });
+
+    it("keeps the note and reports permission-denied when the trash refuses", async () => {
+        const { h, fs } = await openWorkspace({ "a.md": "1" });
+        await h.notesActions.openNote(wsPath("a.md"));
+        h.setTrashReadOnly(true);
+
+        const result = await h.notesActions.deleteNotes([wsPath("a.md")]);
+
+        expect(result.ok && result.value.deleted).toEqual([]);
+        expect(result.ok && result.value.failed[0]?.error.code).toBe(
+            "permission-denied",
+        );
+        const listed = await fs.list();
+        expect(listed.ok && listed.value.map((entry) => entry.path)).toEqual([
+            "a.md",
+        ]);
+        expect(
+            h.notesStore.getState().openNotes.map((note) => note.path),
+        ).toEqual(["a.md"]);
+    });
+});

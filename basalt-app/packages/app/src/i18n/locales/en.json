@@ -81,8 +81,18 @@
         "menu": {
             "label": "Actions",
             "rename": "Rename",
+            "delete": "Delete",
+            "deleteMany": "Delete {count} notes",
             "newNote": "New note",
             "newFolder": "New folder"
+        },
+        "delete": {
+            "title": "Delete \"{name}\"?",
+            "titleMany": "Delete {count} notes?",
+            "description": "The note is moved to the trash.",
+            "descriptionMany": "The {count} notes are moved to the trash.",
+            "confirm": "Delete",
+            "partial": "{failed} of {total} notes were not deleted."
         },
         "rename": {
             "title": "Rename note",

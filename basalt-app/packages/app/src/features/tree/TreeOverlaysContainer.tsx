@@ -1,7 +1,8 @@
+import type { WorkspacePath } from "@basalt/core";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
-import { ContextMenu, type MenuEntry } from "@basalt/ui";
+import { ConfirmDialog, ContextMenu, type MenuEntry } from "@basalt/ui";
 import { useServices } from "../../useServices";
 import { validateEntryName } from "./entry-name";
 import { childrenOf, findTreeNode, parentFolder } from "./tree-nodes";
@@ -26,7 +27,7 @@ function targetRowId(target: MenuTarget, focusedId: string | null) {
 export function TreeOverlaysContainer() {
     const { t } = useTranslation();
     const { treeStore, notesStore, treeActions } = useServices();
-    const { menu, dialog, focusedId } = useStore(treeStore);
+    const { menu, dialog, confirm, selected, focusedId } = useStore(treeStore);
     const tree = useStore(notesStore, (state) => state.tree);
     const chosen = useRef(false);
     const opened = menu?.point;
@@ -43,11 +44,31 @@ export function TreeOverlaysContainer() {
             run();
         };
         if (target.kind === "note") {
+            if (selected.size > 1 && selected.has(target.path)) {
+                return [
+                    {
+                        label: t("tree.menu.deleteMany", {
+                            count: selected.size,
+                        }),
+                        onSelect: choose(() => {
+                            treeActions.requestDelete([
+                                ...selected,
+                            ] as WorkspacePath[]);
+                        }),
+                    },
+                ];
+            }
             return [
                 {
                     label: t("tree.menu.rename"),
                     onSelect: choose(() => {
                         treeActions.startRename(target.path);
+                    }),
+                },
+                {
+                    label: t("tree.menu.delete"),
+                    onSelect: choose(() => {
+                        treeActions.requestDelete([target.path]);
                     }),
                 },
             ];
@@ -67,7 +88,7 @@ export function TreeOverlaysContainer() {
                 }),
             },
         ];
-    }, [menu, t, treeActions]);
+    }, [menu, t, treeActions, selected]);
 
     const dialogParent =
         dialog === null
@@ -93,6 +114,10 @@ export function TreeOverlaysContainer() {
         dialog?.kind === "new-folder" && dialog.parent !== null
             ? (findTreeNode(tree, dialog.parent)?.name ?? dialog.parent)
             : null;
+    const confirmName =
+        confirm?.paths.length === 1
+            ? (findTreeNode(tree, confirm.paths[0])?.name ?? confirm.paths[0])
+            : "";
 
     return (
         <>
@@ -155,6 +180,34 @@ export function TreeOverlaysContainer() {
                     onCloseAutoFocus={(event) => {
                         event.preventDefault();
                         focusRow(treeStore.getState().focusedId);
+                    }}
+                />
+            ) : null}
+            {confirm ? (
+                <ConfirmDialog
+                    open
+                    onOpenChange={(open) => {
+                        if (!open) treeActions.cancelConfirm();
+                    }}
+                    title={
+                        confirm.paths.length === 1
+                            ? t("tree.delete.title", { name: confirmName })
+                            : t("tree.delete.titleMany", {
+                                  count: confirm.paths.length,
+                              })
+                    }
+                    description={
+                        confirm.paths.length === 1
+                            ? t("tree.delete.description")
+                            : t("tree.delete.descriptionMany", {
+                                  count: confirm.paths.length,
+                              })
+                    }
+                    confirmLabel={t("tree.delete.confirm")}
+                    cancelLabel={t("tree.cancel")}
+                    destructive
+                    onConfirm={() => {
+                        void treeActions.confirmDelete();
                     }}
                 />
             ) : null}

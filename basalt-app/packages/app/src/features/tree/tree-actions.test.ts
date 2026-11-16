@@ -576,18 +576,21 @@ describe("selection", () => {
 describe("context menu with a selection", () => {
     const files = { "a.md": "", "b.md": "", "c.md": "", "docs/d.md": "" };
 
-    it("opens no menu on a selected note when two or more notes are selected", async () => {
+    it("opens the menu on a selected note of a multi-selection so it can offer Delete N notes", async () => {
         const { h } = await open(files);
         select(h, "toggle", "a.md");
         select(h, "toggle", "b.md");
 
         h.treeActions.requestMenu("a.md", { x: 1, y: 1 });
 
-        expect(h.treeStore.getState().menu).toBeNull();
+        expect(h.treeStore.getState().menu?.target).toEqual({
+            kind: "note",
+            path: "a.md",
+        });
         expect(h.treeStore.getState().selected.size).toBe(2);
     });
 
-    it("closes an open menu instead of leaving it when the selection blocks the new one", async () => {
+    it("replaces an open menu with the note menu when a multi-selection opens it", async () => {
         const { h } = await open(files);
         h.treeActions.requestMenu("c.md", { x: 1, y: 1 });
         select(h, "toggle", "a.md");
@@ -595,7 +598,10 @@ describe("context menu with a selection", () => {
 
         h.treeActions.requestMenu("b.md", { x: 1, y: 1 });
 
-        expect(h.treeStore.getState().menu).toBeNull();
+        expect(h.treeStore.getState().menu?.target).toEqual({
+            kind: "note",
+            path: "b.md",
+        });
     });
 
     it("clears the selection and shows the menu of an unselected note", async () => {
@@ -635,6 +641,80 @@ describe("context menu with a selection", () => {
         expect(h.treeStore.getState().menu?.target.kind).toBe("root");
 
         expect(h.treeStore.getState().selected.size).toBe(2);
+    });
+});
+
+describe("delete", () => {
+    it("opens the confirm with the paths and cancel closes it without deleting", async () => {
+        const { h, fs } = await open({ "a.md": "1", "b.md": "2" });
+
+        h.treeActions.requestDelete([wsPath("a.md")]);
+        expect(h.treeStore.getState().confirm).toMatchObject({
+            kind: "delete",
+            paths: ["a.md"],
+        });
+
+        h.treeActions.cancelConfirm();
+
+        expect(h.treeStore.getState().confirm).toBeNull();
+        expect(await paths(fs)).toEqual(["a.md", "b.md"]);
+    });
+
+    it("deletes the notes, closes the confirm, closes their tabs and drops them from the selection", async () => {
+        const { h, fs } = await open({
+            "a.md": "1",
+            "b.md": "2",
+            "c.md": "3",
+        });
+        await h.notesActions.openNote(wsPath("a.md"));
+        await h.notesActions.openNote(wsPath("b.md"));
+        select(h, "toggle", "a.md");
+        select(h, "toggle", "b.md");
+        h.treeActions.requestDelete([wsPath("a.md"), wsPath("b.md")]);
+
+        await h.treeActions.confirmDelete();
+
+        expect(await paths(fs)).toEqual(["c.md"]);
+        expect(h.treeStore.getState().confirm).toBeNull();
+        expect(h.treeStore.getState().selected.size).toBe(0);
+        expect(h.notesStore.getState().openNotes).toEqual([]);
+        expect(h.notesStore.getState().createError).toBeNull();
+    });
+
+    it("keeps the notes and shows the read-only error when the trash refuses", async () => {
+        const { h, fs } = await open({ "a.md": "1" });
+        h.setTrashReadOnly(true);
+        h.treeActions.requestDelete([wsPath("a.md")]);
+
+        await h.treeActions.confirmDelete();
+
+        expect(await paths(fs)).toEqual(["a.md"]);
+        expect(h.notesStore.getState().createError?.code).toBe(
+            "permission-denied",
+        );
+    });
+
+    it("reports how many notes were not deleted on a partial failure", async () => {
+        const { h, fs } = await open({
+            "a.md": "1",
+            "b.md": "2",
+            "c.md": "3",
+        });
+        h.failNextTrash();
+        h.treeActions.requestDelete([
+            wsPath("a.md"),
+            wsPath("b.md"),
+            wsPath("c.md"),
+        ]);
+
+        await h.treeActions.confirmDelete();
+
+        expect(await paths(fs)).toEqual(["a.md"]);
+        expect(h.notesStore.getState().createError?.detail).toEqual({
+            kind: "delete-failed",
+            failed: 1,
+            total: 3,
+        });
     });
 });
 

@@ -10,6 +10,7 @@ import {
     type AppError,
     type Autosave,
     type AutosaveScheduler,
+    type DeleteNotesResult,
     type Note,
     type NoteMove,
     type NoteOperations,
@@ -68,6 +69,9 @@ export type NotesActions = {
         paths: readonly WorkspacePath[],
         destinationFolder: WorkspacePath | null,
     ): Promise<Result<readonly NoteMove[]>>;
+    deleteNotes(
+        paths: readonly WorkspacePath[],
+    ): Promise<Result<DeleteNotesResult>>;
     hasUnsavedText(): boolean;
     updateText(path: WorkspacePath, text: string): void;
     saveNow(path: WorkspacePath): Promise<Result<void>>;
@@ -530,13 +534,59 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         return ok(created.value.path);
     }
 
+    async function closeTab(
+        path: WorkspacePath,
+        closeOptions?: { readonly discard?: boolean },
+    ): Promise<Result<void>> {
+        const session = findSession(path);
+        if (!session) return ok(undefined);
+        const autosave = autosaves.get(path);
+        if (autosave && isDirty(session) && !closeOptions?.discard) {
+            const flushed = await autosave.flush();
+            if (!flushed.ok) return flushed;
+        }
+        autosave?.dispose();
+        autosaves.delete(path);
+        targets.delete(path);
+        const { openNotes, activeNote } = store.getState();
+        const index = openNotes.findIndex((note) => note.path === path);
+        const remaining = openNotes.filter((note) => note.path !== path);
+        store.setState({
+            openNotes: remaining,
+            activeNote:
+                activeNote === path
+                    ? ((remaining[index] ?? remaining[index - 1])?.path ?? null)
+                    : activeNote,
+        });
+        await persistTabs();
+        return ok(undefined);
+    }
+
+    async function deleteNotes(
+        paths: readonly WorkspacePath[],
+    ): Promise<Result<DeleteNotesResult>> {
+        const active = workspace;
+        if (!active) return err(NO_WORKSPACE);
+        const result = await active.operations.deleteNotes({ paths });
+        if (workspace !== active) return err(NO_WORKSPACE);
+        if (!result.ok) return result;
+        for (const path of result.value.deleted) {
+            await closeTab(path, { discard: true });
+        }
+        await refreshNotes();
+        return result;
+    }
+
     return {
         async enterWorkspace(root, fs) {
             const active = {
                 root,
                 fs,
                 notes: createNotes({ fs }),
-                operations: createNoteOperations({ fs, trash: options.trash(root) }),
+                operations: createNoteOperations({
+                    fs,
+                    trash: options.trash(root),
+                }),
             };
             workspace = active;
             store.setState(emptyNotesState());
@@ -634,30 +684,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         },
         keepMine: (path) => saveWithMode(path, "overwrite"),
         saveAgain: (path) => saveWithMode(path, "recreate"),
-        async closeTab(path, closeOptions) {
-            const session = findSession(path);
-            if (!session) return ok(undefined);
-            const autosave = autosaves.get(path);
-            if (autosave && isDirty(session) && !closeOptions?.discard) {
-                const flushed = await autosave.flush();
-                if (!flushed.ok) return flushed;
-            }
-            autosave?.dispose();
-            autosaves.delete(path);
-            targets.delete(path);
-            const { openNotes, activeNote } = store.getState();
-            const index = openNotes.findIndex((note) => note.path === path);
-            const remaining = openNotes.filter((note) => note.path !== path);
-            store.setState({
-                openNotes: remaining,
-                activeNote:
-                    activeNote === path
-                        ? ((remaining[index] ?? remaining[index - 1])?.path ??
-                          null)
-                        : activeNote,
-            });
-            await persistTabs();
-            return ok(undefined);
-        },
+        closeTab,
+        deleteNotes,
     };
 }

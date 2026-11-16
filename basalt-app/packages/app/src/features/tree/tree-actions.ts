@@ -10,7 +10,9 @@ import {
 } from "./tree-nodes";
 import {
     clearSelection,
+    closeConfirm,
     closeDialog,
+    openDeleteConfirm,
     pruneSelection,
     selectRange,
     setSelection,
@@ -51,6 +53,9 @@ export type TreeActions = {
     changeSelection(change: SelectionChange): void;
     clearSelection(): void;
     openNote(path: WorkspacePath): Promise<void>;
+    requestDelete(paths: readonly WorkspacePath[]): void;
+    confirmDelete(): Promise<void>;
+    cancelConfirm(): void;
 };
 
 export type SelectionChange = {
@@ -165,6 +170,47 @@ export function createTreeActions(options: {
             clearSelection(store);
             await notes.openNote(path, { focus: true });
         },
+        requestDelete(paths) {
+            openDeleteConfirm(store, paths);
+        },
+        cancelConfirm() {
+            closeConfirm(store);
+        },
+        async confirmDelete() {
+            const { confirm } = store.getState();
+            if (!confirm) return;
+            const paths = confirm.paths;
+            closeConfirm(store);
+            const result = await notes.deleteNotes(paths);
+            const existing = new Set<string>(
+                notesStore.getState().notes.map((note) => note.path),
+            );
+            pruneSelection(store, (id) => existing.has(id));
+            if (!result.ok) {
+                notesStore.setState({ createError: result.error });
+                return;
+            }
+            const { deleted, failed } = result.value;
+            notesStore.setState({
+                createError:
+                    failed.length === 0
+                        ? null
+                        : deleted.length === 0
+                          ? (failed[0]?.error ?? {
+                                code: "unknown",
+                                message: "The notes were not deleted.",
+                            })
+                          : {
+                                code: failed[0]?.error.code ?? "unknown",
+                                message: "Some notes were not deleted.",
+                                detail: {
+                                    kind: "delete-failed",
+                                    failed: failed.length,
+                                    total: paths.length,
+                                },
+                            },
+            });
+        },
         dragEnd: () => {
             endDrag(store);
         },
@@ -233,10 +279,6 @@ export function createTreeActions(options: {
             if (node.kind === "note") {
                 const { selected } = store.getState();
                 if (!selected.has(id)) clearSelection(store);
-                else if (selected.size > 1) {
-                    closeMenu(store);
-                    return;
-                }
             }
             openMenu(store, {
                 target: { kind: node.kind, path: node.path },

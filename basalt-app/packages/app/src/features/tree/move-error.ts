@@ -19,5 +19,11 @@ export function describeMoveError(t: TFunction, error: AppError): string {
             },
         );
     }
+    if (detail?.kind === "delete-failed") {
+        return t("tree.delete.partial", {
+            failed: detail.failed,
+            total: detail.total,
+        });
+    }
     return t(`errors.${error.code}`);
 }

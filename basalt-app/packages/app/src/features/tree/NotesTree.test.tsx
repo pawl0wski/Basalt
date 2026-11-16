@@ -53,7 +53,7 @@ describe("the notes tree context menu", () => {
         await initI18n();
     });
 
-    it("offers Rename on a note", async () => {
+    it("offers Rename and Delete on a note", async () => {
         await openApp({ "a.md": "" });
 
         fireEvent.contextMenu(row("a"));
@@ -61,6 +61,7 @@ describe("the notes tree context menu", () => {
         expect(await screen.findByRole("menu")).toBeInTheDocument();
         expect(menuItems().map((item) => item.textContent)).toEqual([
             en.tree.menu.rename,
+            en.tree.menu.delete,
         ]);
     });
 
@@ -120,6 +121,7 @@ describe("the notes tree context menu", () => {
         await screen.findByRole("menu");
         expect(menuItems().map((item) => item.textContent)).toEqual([
             en.tree.menu.rename,
+            en.tree.menu.delete,
         ]);
     });
 
@@ -386,6 +388,103 @@ describe("the rename dialog", () => {
     });
 });
 
+describe("the delete confirmation", () => {
+    beforeAll(async () => {
+        await initI18n();
+    });
+
+    async function openDelete(name: string) {
+        const user = userEvent.setup();
+        fireEvent.contextMenu(row(name));
+        await screen.findByRole("menu");
+        await user.click(
+            screen.getByRole("menuitem", { name: en.tree.menu.delete }),
+        );
+        return { user, dialog: await screen.findByRole("alertdialog") };
+    }
+
+    it("asks to delete the note with Cancel focused and deletes it on confirm", async () => {
+        const { fs } = await openApp({ "a.md": "1", "b.md": "2" });
+        const { user, dialog } = await openDelete("a");
+
+        expect(dialog).toHaveAccessibleName('Delete "a"?');
+        expect(
+            within(dialog).getByRole("button", { name: en.tree.cancel }),
+        ).toHaveFocus();
+
+        await user.click(
+            within(dialog).getByRole("button", {
+                name: en.tree.delete.confirm,
+            }),
+        );
+
+        await vi.waitFor(async () => {
+            expect(await paths(fs)).toEqual(["b.md"]);
+        });
+        expect(screen.queryByRole("alertdialog")).toBeNull();
+    });
+
+    it("cancelling keeps the note", async () => {
+        const { fs } = await openApp({ "a.md": "1" });
+        const { user, dialog } = await openDelete("a");
+
+        await user.click(
+            within(dialog).getByRole("button", { name: en.tree.cancel }),
+        );
+
+        expect(screen.queryByRole("alertdialog")).toBeNull();
+        expect(await paths(fs)).toEqual(["a.md"]);
+    });
+
+    it("offers Delete N notes for a multi-selection and deletes them all", async () => {
+        const user = userEvent.setup();
+        const { fs } = await openApp({
+            "a.md": "1",
+            "b.md": "2",
+            "c.md": "3",
+        });
+        await user.keyboard("{Control>}");
+        await user.click(row("a"));
+        await user.click(row("b"));
+        await user.keyboard("{/Control}");
+
+        fireEvent.contextMenu(row("a"));
+        await screen.findByRole("menu");
+        await user.click(
+            screen.getByRole("menuitem", { name: "Delete 2 notes" }),
+        );
+
+        const dialog = await screen.findByRole("alertdialog");
+        expect(dialog).toHaveAccessibleName("Delete 2 notes?");
+        await user.click(
+            within(dialog).getByRole("button", {
+                name: en.tree.delete.confirm,
+            }),
+        );
+
+        await vi.waitFor(async () => {
+            expect(await paths(fs)).toEqual(["c.md"]);
+        });
+    });
+
+    it("shows the read-only message and deletes nothing", async () => {
+        const { harness, fs } = await openApp({ "a.md": "1" });
+        harness.setTrashReadOnly(true);
+        const { user, dialog } = await openDelete("a");
+
+        await user.click(
+            within(dialog).getByRole("button", {
+                name: en.tree.delete.confirm,
+            }),
+        );
+
+        expect(
+            await screen.findByText(en.errors["permission-denied"]),
+        ).toBeInTheDocument();
+        expect(await paths(fs)).toEqual(["a.md"]);
+    });
+});
+
 describe("dragging notes in the tree", () => {
     beforeAll(async () => {
         await initI18n();
@@ -521,7 +620,7 @@ describe("selecting several notes in the tree", () => {
         expect(row("docs")).toHaveAttribute("aria-expanded", "true");
     });
 
-    it("opens no context menu on a note of a multi-selection but opens the menu of an unselected note", async () => {
+    it("offers Delete N notes on a note of a multi-selection and the note menu on an unselected note", async () => {
         const user = userEvent.setup();
         await openApp(files);
         await user.keyboard("{Control>}");
@@ -530,14 +629,17 @@ describe("selecting several notes in the tree", () => {
         await user.keyboard("{/Control}");
 
         fireEvent.contextMenu(row("a"));
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(screen.queryByRole("menu")).toBeNull();
+        await screen.findByRole("menu");
+        expect(menuItems().map((item) => item.textContent)).toEqual([
+            "Delete 2 notes",
+        ]);
 
         fireEvent.contextMenu(row("c"));
         await screen.findByRole("menu");
         expect(row("a")).toHaveAttribute("aria-selected", "false");
         expect(menuItems().map((item) => item.textContent)).toEqual([
             en.tree.menu.rename,
+            en.tree.menu.delete,
         ]);
     });
 
