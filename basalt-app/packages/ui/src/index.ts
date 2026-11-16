@@ -30,6 +30,11 @@ export { Switch } from "./components/Switch";
 export type { SwitchProps } from "./components/Switch";
 export { ConfirmDialog } from "./components/ConfirmDialog";
 export type { ConfirmDialogProps } from "./components/ConfirmDialog";
+export { ContextMenu } from "./components/ContextMenu";
+export type {
+    ContextMenuPoint,
+    ContextMenuProps,
+} from "./components/ContextMenu";
 export { Dialog } from "./components/Dialog";
 export type { DialogProps } from "./components/Dialog";
 export { EmptyState } from "./components/EmptyState";
