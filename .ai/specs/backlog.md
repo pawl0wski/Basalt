@@ -18,3 +18,23 @@ Last filed: 2026-10-18
 | E02-S03     | #14   | Changes sync between the owner's devices                           | #6          | #13        | no      |
 
 Note: the live-preview editor (`.ai/specs/implemented/2026-11-08-live-preview-editor.md`, AC-01.18) was extracted from E01-S01 and has no story of its own; it is tracked under epic #5.
+
+## Epic 01 test findings (owner feedback, 2026-11-16)
+
+Backlog source: Epic 01 test findings (owner feedback, 2026-11-16)
+Last filed: 2026-11-16
+
+| Id      | Issue | Title                                                           | Epic | Depends on | Adopted |
+| ------- | ----- | --------------------------------------------------------------- | ---- | ---------- | ------- |
+| E01-S05 | #39   | The owner can rename, move and delete folders                   | #5   | #16        | no      |
+| E01-S06 | #34   | The note name follows its first heading                         | #5   | #8, #16    | no      |
+| E01-S07 | #36   | The status bar shows word count instead of the save state       | #5   | #8         | no      |
+| E01-S08 | #33   | Informational conflicts appear as toasts                        | #5   | #16        | no      |
+| E01-S09 | #35   | Scrolling and scrollbars follow one model                       | #5   | #16        | no      |
+| E01-S10 | #32   | Live preview handles fenced code and backslash escapes          | #5   | —          | no      |
+| E01-S11 | #37   | The owner can format text with Ctrl+B and Ctrl+I                | #5   | #8         | no      |
+| E01-S12 | #40   | The owner can resize images by dragging                         | #5   | #10        | no      |
+| E04     | #38   | Mobile-ready interface                                          | —    | #5         | no      |
+| E05     | #31   | Extended Markdown compatibility                                 | —    | #5         | no      |
+
+E04 and E05 are parked as epics; their stories will be filed after their specs are written. The table above records the Epic 01 test findings; each issue has its own open questions and no spec yet.
