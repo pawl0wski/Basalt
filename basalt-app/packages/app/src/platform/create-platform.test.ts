@@ -31,6 +31,7 @@ describe("createPlatform", () => {
                 "access",
                 "picker",
                 "settings",
+                "trash",
                 "windowChrome",
             ]);
         },

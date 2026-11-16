@@ -25,6 +25,7 @@ export type {
     WorkspacePicker,
     WorkspaceRoot,
     WorkspaceSettings,
+    WorkspaceTrash,
 } from "./ports";
 export { MAX_NOTE_BYTES, createNotes, isMarkdownPath } from "./notes";
 export type {
@@ -110,6 +111,9 @@ export type {
     MoveNotesInput,
     NoteMove,
     CreateFolderInput,
+    DeleteNotesInput,
+    DeleteNotesResult,
+    NoteDeleteFailure,
     NoteOperations,
     RenameNoteInput,
 } from "./note-operations";

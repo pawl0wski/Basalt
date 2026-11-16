@@ -116,6 +116,27 @@ describe("memory platform", () => {
         expect(testFs.listFiles()).toEqual(["a.md"]);
     });
 
+    it("moves a note to the trash and persists the removal, and refuses in a read-only workspace", async () => {
+        const first = createMemoryPlatform(localStorage);
+        first.testFs.seedWorkspace(ROOT, { "a.md": "x", "b.md": "y" });
+        await openRoot(first.platform);
+        const trash = first.platform.trash(ROOT);
+
+        const deleted = await trash.moveToTrash(["a.md" as never]);
+
+        expect(deleted.ok).toBe(true);
+        expect(first.testFs.listFiles()).toEqual(["b.md"]);
+        const reloaded = createMemoryPlatform(localStorage);
+        await openRoot(reloaded.platform);
+        expect(reloaded.testFs.listFiles()).toEqual(["b.md"]);
+
+        first.testFs.setReadOnly(true);
+        const refused = await trash.moveToTrash(["b.md" as never]);
+        expect(refused.ok).toBe(false);
+        if (!refused.ok) expect(refused.error.code).toBe("permission-denied");
+        expect(first.testFs.listFiles()).toEqual(["b.md"]);
+    });
+
     it("exposes the exact saved bytes", async () => {
         const { platform, testFs } = createMemoryPlatform(localStorage);
         testFs.seedWorkspace(ROOT, {});

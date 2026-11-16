@@ -33,6 +33,11 @@ Refs: #16 (issue), #27 (spec PR, merged). Branch: `feat/manage-notes-and-folders
 | 4     | 4.2  | Multi-selection (AC-04.10) and bulk move (AC-04.13)                                   | dispatch | done   | db31a2f |
 | 4     | 4.3  | Playwright e2e for phase 4 criteria                                                   | dispatch | done   | 9349df0 |
 | 4     | 4.4  | Docs: spec status and blocked items, lesson, run log                                  | inline   | done   |         |
+| 5     | 5.1  | core + platform: `WorkspaceTrash` port, `deleteNotes`, in-memory trash, adapters, tests | dispatch | done   |         |
+| 5     | 5.2  | rust: `move_to_trash` command, `trash` dependency, Rust tests                          | dispatch | todo   |         |
+| 5     | 5.3  | app UI: `deleteNotes` action, confirm dialog, context menu, i18n, unit tests           | dispatch | todo   |         |
+| 5     | 5.4  | Playwright e2e for delete (AC-04.2, AC-04.12) and the selection menu (AC-04.11)        | dispatch | todo   |         |
+| 5     | 5.5  | Docs: spec status, lesson, run log                                                     | inline   | todo   |         |
 
 ## Goal
 

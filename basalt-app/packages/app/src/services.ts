@@ -80,6 +80,7 @@ export function createServices(
         schedule: options.schedule ?? timeoutScheduler,
         autosaveDelayMs: AUTOSAVE_DELAY_MS,
         untitledName: options.untitledName,
+        trash: platform.trash,
     });
     const treeActions = createTreeActions({
         store: treeStore,

@@ -23,6 +23,11 @@ export type AppErrorDetail =
           readonly moved: number;
           readonly total: number;
           readonly linksOnly: boolean;
+      }
+    | {
+          readonly kind: "delete-failed";
+          readonly failed: number;
+          readonly total: number;
       };
 
 export type AppError = {

@@ -13,6 +13,7 @@ import {
     type InMemoryState,
     type InMemoryWorkspaceFileSystem,
 } from "@basalt/core/testing/in-memory";
+import { createInMemoryWorkspaceTrash } from "@basalt/core/testing/in-memory-trash";
 import type { Platform } from "../platform";
 import { createMemoryWindowChrome } from "./memory-window-chrome";
 import { DEMO_WORKSPACE_FILES, DEMO_WORKSPACE_ROOT } from "./demo-workspace";
@@ -216,6 +217,14 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
                 return ok(undefined);
             },
         },
+        trash: () =>
+            createInMemoryWorkspaceTrash(
+                (path) => {
+                    requireCurrent().externalDelete(path);
+                    persist();
+                },
+                { readOnly: () => flags.readOnly },
+            ),
         windowChrome: createMemoryWindowChrome(),
     };
 

@@ -3,6 +3,7 @@ import { createNoteOperations } from "./note-operations";
 import type { WorkspaceFileSystem } from "./ports";
 import type { AppErrorDetail } from "./result";
 import { createInMemoryWorkspaceFileSystem } from "./testing/in-memory-workspace-file-system";
+import { createInMemoryWorkspaceTrash } from "./testing/in-memory-workspace-trash";
 import { toWorkspacePath, type WorkspacePath } from "./workspace-path";
 
 function p(input: string): WorkspacePath {
@@ -32,7 +33,11 @@ function setup(
               state: seeded.getState(),
           })
         : seeded;
-    const ops = createNoteOperations({ fs: wrap(memory) });
+    const trash = createInMemoryWorkspaceTrash(
+        (path) => memory.externalDelete(path),
+        { readOnly: () => options.readOnly === true },
+    );
+    const ops = createNoteOperations({ fs: wrap(memory), trash });
     const paths = async () => {
         const listing = await memory.list();
         if (!listing.ok) throw new Error("list failed");
@@ -42,7 +47,7 @@ function setup(
         const result = await memory.readText(p(path));
         return result.ok ? result.value : null;
     };
-    return { memory, ops, paths, text };
+    return { memory, ops, paths, text, trash };
 }
 
 function errorOf<T>(
@@ -669,5 +674,102 @@ describe("createFolder", () => {
 
         expect(errorOf(result).code).toBe("permission-denied");
         expect(await paths()).toEqual(["docs", "docs/a.md"]);
+    });
+});
+
+describe("deleteNotes", () => {
+    it("deletes a note and removes it from the workspace", async () => {
+        const { ops, paths } = setup({ "a.md": "1", "b.md": "2" });
+
+        const result = await ops.deleteNotes({ paths: [p("a.md")] });
+
+        expect(result.ok && result.value.deleted).toEqual([p("a.md")]);
+        expect(result.ok && result.value.failed).toEqual([]);
+        expect(await paths()).toEqual(["b.md"]);
+    });
+
+    it("deletes several notes at once", async () => {
+        const { ops, paths } = setup({
+            "a.md": "1",
+            "b.md": "2",
+            "docs/c.md": "3",
+        });
+
+        const result = await ops.deleteNotes({
+            paths: [p("a.md"), p("docs/c.md")],
+        });
+
+        expect(result.ok && result.value.deleted).toEqual([
+            p("a.md"),
+            p("docs/c.md"),
+        ]);
+        expect(await paths()).toEqual(["b.md", "docs"]);
+    });
+
+    it("reports a path that is not a note as failed and deletes the rest", async () => {
+        const { ops, paths } = setup({ "a.md": "1" });
+
+        const result = await ops.deleteNotes({
+            paths: [p("a.md"), p("gone.md")],
+        });
+
+        expect(result.ok && result.value.deleted).toEqual([p("a.md")]);
+        if (!result.ok) throw new Error("expected ok");
+        expect(result.value.failed.map((entry) => entry.path)).toEqual([
+            p("gone.md"),
+        ]);
+        expect(result.value.failed[0]?.error.code).toBe("not-found");
+        expect(await paths()).toEqual([]);
+    });
+
+    it("reports permission-denied for every note in a read-only workspace and deletes none", async () => {
+        const { ops, paths } = setup(
+            { "a.md": "1", "b.md": "2" },
+            { readOnly: true },
+        );
+
+        const result = await ops.deleteNotes({
+            paths: [p("a.md"), p("b.md")],
+        });
+
+        expect(result.ok && result.value.deleted).toEqual([]);
+        if (!result.ok) throw new Error("expected ok");
+        expect(result.value.failed.map((entry) => entry.error.code)).toEqual([
+            "permission-denied",
+            "permission-denied",
+        ]);
+        expect(await paths()).toEqual(["a.md", "b.md"]);
+    });
+
+    it("continues past a failure and reports the notes that were not deleted", async () => {
+        const { ops, paths, trash } = setup({
+            "a.md": "1",
+            "b.md": "2",
+            "c.md": "3",
+        });
+        trash.failNext();
+
+        const result = await ops.deleteNotes({
+            paths: [p("a.md"), p("b.md"), p("c.md")],
+        });
+
+        expect(result.ok && result.value.deleted).toEqual([
+            p("b.md"),
+            p("c.md"),
+        ]);
+        if (!result.ok) throw new Error("expected ok");
+        expect(result.value.failed.map((entry) => entry.path)).toEqual([
+            p("a.md"),
+        ]);
+        expect(await paths()).toEqual(["a.md"]);
+    });
+
+    it("deletes nothing for an empty list", async () => {
+        const { ops, paths } = setup({ "a.md": "1" });
+
+        const result = await ops.deleteNotes({ paths: [] });
+
+        expect(result.ok && result.value.deleted).toEqual([]);
+        expect(await paths()).toEqual(["a.md"]);
     });
 });

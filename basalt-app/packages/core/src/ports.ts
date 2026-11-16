@@ -38,6 +38,10 @@ export interface WorkspaceFileSystem {
     watch(onEvent: (event: WatchEvent) => void): Promise<Result<Unwatch>>;
 }
 
+export interface WorkspaceTrash {
+    moveToTrash(paths: readonly WorkspacePath[]): Promise<Result<void>>;
+}
+
 export interface WorkspaceAccess {
     open(root: WorkspaceRoot): Promise<Result<WorkspaceFileSystem>>;
 }

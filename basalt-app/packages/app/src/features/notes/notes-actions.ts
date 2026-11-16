@@ -20,6 +20,7 @@ import {
     type WorkspaceFileSystem,
     type WorkspacePath,
     type WorkspaceRoot,
+    type WorkspaceTrash,
 } from "@basalt/core";
 import type { SettingsWriter } from "../settings/settings-writer";
 import {
@@ -35,6 +36,7 @@ export type NotesActionsOptions = {
     readonly schedule: AutosaveScheduler;
     readonly autosaveDelayMs: number;
     readonly untitledName: () => string;
+    readonly trash: (root: WorkspaceRoot) => WorkspaceTrash;
 };
 
 export type NotesActions = {
@@ -534,7 +536,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
                 root,
                 fs,
                 notes: createNotes({ fs }),
-                operations: createNoteOperations({ fs }),
+                operations: createNoteOperations({ fs, trash: options.trash(root) }),
             };
             workspace = active;
             store.setState(emptyNotesState());

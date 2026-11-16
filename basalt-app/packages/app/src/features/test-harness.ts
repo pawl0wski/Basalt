@@ -13,6 +13,7 @@ import {
 } from "@basalt/core";
 import {
     createInMemoryWorkspaceFileSystem,
+    createInMemoryWorkspaceTrash,
     type InMemoryWorkspaceFileSystem,
     type InMemoryWorkspaceFileSystemOptions,
 } from "@basalt/core/testing";
@@ -106,6 +107,7 @@ export function createHarness(
     };
     const closeHandlers = new Set<() => Promise<boolean>>();
     const windowState = { destroyed: 0 };
+    const trashState = { readOnly: false };
     const windowChrome: WindowChrome = {
         minimize() {},
         toggleMaximize() {},
@@ -148,6 +150,11 @@ export function createHarness(
             },
         },
         settings: settingsStore,
+        trash: (target) =>
+            createInMemoryWorkspaceTrash(
+                (path) => workspaces[target]?.externalDelete(path),
+                { readOnly: () => trashState.readOnly },
+            ),
         windowChrome,
     };
     const scheduler = createFakeScheduler();
@@ -173,6 +180,9 @@ export function createHarness(
         persisted: () => persisted,
         pick(value: WorkspaceRoot | null) {
             state.picked = value;
+        },
+        setTrashReadOnly(value: boolean) {
+            trashState.readOnly = value;
         },
     };
 }

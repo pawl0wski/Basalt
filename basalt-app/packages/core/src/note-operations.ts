@@ -1,6 +1,6 @@
 import { rewriteRelativeLinks } from "./link-rewrite";
 import { isMarkdownPath } from "./notes";
-import type { FileEntry, WorkspaceFileSystem } from "./ports";
+import type { FileEntry, WorkspaceFileSystem, WorkspaceTrash } from "./ports";
 import {
     err,
     ok,
@@ -39,6 +39,20 @@ export interface CreateFolderInput {
     readonly name: string;
 }
 
+export interface DeleteNotesInput {
+    readonly paths: readonly WorkspacePath[];
+}
+
+export interface NoteDeleteFailure {
+    readonly path: WorkspacePath;
+    readonly error: AppError;
+}
+
+export interface DeleteNotesResult {
+    readonly deleted: readonly WorkspacePath[];
+    readonly failed: readonly NoteDeleteFailure[];
+}
+
 export interface NoteOperations {
     createFolder(
         input: CreateFolderInput,
@@ -49,6 +63,7 @@ export interface NoteOperations {
     moveNotes(
         input: MoveNotesInput,
     ): Promise<Result<{ moved: readonly NoteMove[] }>>;
+    deleteNotes(input: DeleteNotesInput): Promise<Result<DeleteNotesResult>>;
 }
 
 function directoryOf(path: string): string {
@@ -89,8 +104,10 @@ function findNote(
 
 export function createNoteOperations({
     fs,
+    trash,
 }: {
     fs: WorkspaceFileSystem;
+    trash: WorkspaceTrash;
 }): NoteOperations {
     async function renameNote(
         input: RenameNoteInput,
@@ -246,7 +263,27 @@ export function createNoteOperations({
         return ok({ path: target.value });
     }
 
-    return { renameNote, moveNotes, createFolder };
+    async function deleteNotes(
+        input: DeleteNotesInput,
+    ): Promise<Result<DeleteNotesResult>> {
+        const listing = await fs.list();
+        if (!listing.ok) return listing;
+        const deleted: WorkspacePath[] = [];
+        const failed: NoteDeleteFailure[] = [];
+        for (const path of new Set(input.paths)) {
+            const source = findNote(listing.value, path);
+            if (!source.ok) {
+                failed.push({ path, error: source.error });
+                continue;
+            }
+            const moved = await trash.moveToTrash([path]);
+            if (moved.ok) deleted.push(path);
+            else failed.push({ path, error: moved.error });
+        }
+        return ok({ deleted, failed });
+    }
+
+    return { renameNote, moveNotes, createFolder, deleteNotes };
 }
 
 function stopped(

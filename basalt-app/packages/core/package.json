@@ -7,8 +7,9 @@
     "types": "./src/index.ts",
     "exports": {
         ".": "./src/index.ts",
-        "./testing": "./src/testing/index.ts",
-        "./testing/in-memory": "./src/testing/in-memory-workspace-file-system.ts"
+    "./testing": "./src/testing/index.ts",
+    "./testing/in-memory": "./src/testing/in-memory-workspace-file-system.ts",
+    "./testing/in-memory-trash": "./src/testing/in-memory-workspace-trash.ts"
     },
     "scripts": {
         "typecheck": "tsc --noEmit",

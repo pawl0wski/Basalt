@@ -13,3 +13,10 @@
 - Committed Step 4.3 (9349df0). Updated `PLAN.md`, `HANDOFF.md`, wrote `final-gate-checks.md` and a lesson.
 - Full validation gate green (format, lint, typecheck, 1473 unit tests, build, 162 e2e, 237 story tests, tokens). `rust:fmt`/`rust:lint` unavailable in the sandbox; no Rust changed.
 - Phase E (delete) remains blocked on C-1/C-8/C-9 owner confirmation. C-5 per-folder read errors documented as out of scope for A–D.
+
+## 2026-11-16T21:05:00Z — om-auto-continue-pr-loop resume
+
+- Resumed by: @pawl0wski
+- Resume point: 5.1 (source: Tasks table; Phase 5 appended after the owner confirmed C-1/C-8/C-9)
+- PR head SHA: 7a4485b
+- Owner decision: implement Phase E (delete) with the custom Rust `move_to_trash` (C-1), C-8 partial-failure rules and C-9 (no folder operations) confirmed. C-5 per-folder read errors stay documented as out of scope.
