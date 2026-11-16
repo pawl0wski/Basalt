@@ -9,6 +9,7 @@ import { ErrorBanner } from "./ErrorBanner";
 import {
     ConflictBanner,
     DeletedBanner,
+    WorkspaceAccessBanner,
     WorkspaceUnavailableBanner,
 } from "./NoteBanners";
 import { NoteSessionEditor } from "./NoteSessionEditor";
@@ -26,6 +27,10 @@ export function NoteEditorAreaContainer() {
     const { notesStore, notesActions, workspaceStore, workspaceActions } =
         useServices();
     const unavailable = useStore(workspaceStore, (state) => state.unavailable);
+    const accessNeeded = useStore(
+        workspaceStore,
+        (state) => state.accessNeeded,
+    );
     const [confirm, setConfirm] = useState<PendingConfirm | null>(null);
     const openNotes = useStore(notesStore, (state) => state.openNotes);
     const activeNote = useStore(notesStore, (state) => state.activeNote);
@@ -43,6 +48,25 @@ export function NoteEditorAreaContainer() {
             }}
             changeWorkspace={{
                 label: t("workspace.unavailable.changeWorkspace"),
+                onClick: () => {
+                    void workspaceActions.openWorkspace();
+                },
+            }}
+        />
+    );
+
+    const accessBanner = (
+        <WorkspaceAccessBanner
+            title={t("workspace.accessNeeded.title")}
+            message={t("workspace.accessNeeded.message")}
+            grantAccess={{
+                label: t("workspace.accessNeeded.grant"),
+                onClick: () => {
+                    void workspaceActions.regrantAccess();
+                },
+            }}
+            changeWorkspace={{
+                label: t("workspace.accessNeeded.changeWorkspace"),
                 onClick: () => {
                     void workspaceActions.openWorkspace();
                 },
@@ -164,9 +188,10 @@ export function NoteEditorAreaContainer() {
                     <div
                         key={session.path}
                         hidden={session.path !== activeNote}
-                        className="mx-auto min-h-full w-full max-w-note px-note-x py-between-groups"
+                        className={`mx-auto h-full w-full max-w-note flex-col px-note-x py-between-groups ${session.path === activeNote ? "flex" : "hidden"}`}
                     >
                         {unavailable ? unavailableBanner : null}
+                        {accessNeeded && !unavailable ? accessBanner : null}
                         {session.openFailed && session.error ? (
                             <NoteOpenError
                                 title={t("notes.openError.title")}

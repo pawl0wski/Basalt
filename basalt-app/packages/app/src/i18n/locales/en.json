@@ -36,6 +36,10 @@
             "workspace-unavailable": {
                 "title": "Workspace unavailable",
                 "message": "Your last workspace folder could not be opened. Check that it still exists and that Basalt may access it, then open a folder again."
+            },
+            "workspace-access-needed": {
+                "title": "Basalt needs access to the workspace folder",
+                "message": "Open the workspace folder again to give Basalt access to it."
             }
         }
     },
@@ -64,6 +68,12 @@
             "title": "The workspace folder is not available",
             "message": "The folder was deleted or renamed. Your text is kept here and saving is paused.",
             "retry": "Retry",
+            "changeWorkspace": "Change workspace"
+        },
+        "accessNeeded": {
+            "title": "Basalt needs access to the whole workspace folder",
+            "message": "Select the same workspace folder again to give Basalt access to its sub-folders. Your open notes stay as they are.",
+            "grant": "Grant access",
             "changeWorkspace": "Change workspace"
         }
     },
@@ -109,6 +119,7 @@
     "errors": {
         "not-found": "The file or folder could not be found. It may have been moved or deleted.",
         "permission-denied": "The workspace folder is read-only. Nothing was changed.",
+        "scope-denied": "Basalt does not have access to this part of the workspace folder. Nothing was changed.",
         "already-exists": "A file with this name already exists.",
         "invalid-path": "This name or location is not valid.",
         "not-a-file": "This is a folder, not a note, so it cannot be opened.",

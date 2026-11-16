@@ -27,6 +27,7 @@ export function placeholderKeyFor(reason: ImageLoadFailure): PlaceholderKey {
             return "unsupportedScheme";
         case "invalid-path":
         case "permission-denied":
+        case "scope-denied":
         case "already-exists":
         case "not-a-file":
         case "conflict":

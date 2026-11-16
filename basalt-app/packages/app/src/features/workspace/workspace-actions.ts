@@ -9,11 +9,13 @@ import {
     type WorkspaceAccess,
     type WorkspaceFileSystem,
     type WorkspacePicker,
+    sameWorkspaceRoot,
     type WorkspaceRoot,
 } from "@basalt/core";
 import type { ImageHub } from "../attachments/image-hub";
 import type { NotesActions } from "../notes/notes-actions";
 import type { SettingsWriter } from "../settings/settings-writer";
+import { withScopeReporting } from "./scope-reporting-fs";
 import type { WorkspaceStatus, WorkspaceStore } from "./workspace-store";
 
 export type WorkspaceActionsOptions = {
@@ -33,6 +35,7 @@ export type WorkspaceActions = {
     openWorkspace(): Promise<Result<void>>;
     continueOpen(options: { readonly discard: boolean }): Promise<Result<void>>;
     cancelOpen(): void;
+    regrantAccess(): Promise<Result<void>>;
     restoreWorkspace(): Promise<void>;
     leaveWorkspace(): Promise<void>;
     refreshOnFocus(): Promise<void>;
@@ -91,6 +94,7 @@ export function createWorkspaceActions(
             error: null,
             watchMode: "live",
             unavailable: false,
+            accessNeeded: false,
         });
     }
 
@@ -140,11 +144,15 @@ export function createWorkspaceActions(
 
     async function enter(
         root: WorkspaceRoot,
-        fs: WorkspaceFileSystem,
+        rawFs: WorkspaceFileSystem,
     ): Promise<Result<void>> {
         await stopWatching();
         notes.leaveWorkspace();
+        const fs: WorkspaceFileSystem = withScopeReporting(rawFs, () => {
+            if (currentFs === fs) store.setState({ accessNeeded: true });
+        });
         currentFs = fs;
+        store.setState({ accessNeeded: false });
         options.images?.setFs(fs);
         await notes.enterWorkspace(root, fs);
         store.setState({
@@ -214,6 +222,25 @@ export function createWorkspaceActions(
         cancelOpen() {
             held = null;
         },
+        async regrantAccess() {
+            const { root, status } = store.getState();
+            if (status !== "open" || root === null || opening) {
+                return ok(undefined);
+            }
+            const picked = await picker.pickDirectory({ defaultPath: root });
+            if (!picked.ok) {
+                store.setState({ error: picked.error });
+                return picked;
+            }
+            if (picked.value === null) return ok(undefined);
+            if (!sameWorkspaceRoot(picked.value, root)) {
+                return openRoot(picked.value, status, false);
+            }
+            store.setState({ accessNeeded: false, error: null });
+            await notes.refreshNotes();
+            await options.images?.notifyFocus();
+            return ok(undefined);
+        },
         leaveWorkspace,
         handleWorkspaceLost,
         retryLost,
@@ -231,12 +258,15 @@ export function createWorkspaceActions(
             store.setState({ status: "opening" });
             const opened = await access.open(root);
             if (!opened.ok) {
+                const { code } = opened.error;
                 store.setState({
                     status: "welcome",
                     notice:
-                        opened.error.code === "not-found"
+                        code === "not-found"
                             ? "workspace-missing"
-                            : "workspace-unavailable",
+                            : code === "scope-denied"
+                              ? "workspace-access-needed"
+                              : "workspace-unavailable",
                 });
                 return;
             }

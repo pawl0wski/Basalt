@@ -6,6 +6,7 @@ export const basaltTheme = EditorView.theme({
         backgroundColor: "var(--bs-surface-editor)",
         fontFamily: "var(--bs-font-text)",
         fontSize: "var(--bs-text-size-note)",
+        height: "100%",
     },
     "&.cm-focused": {
         outline: "none",
@@ -13,9 +14,11 @@ export const basaltTheme = EditorView.theme({
     ".cm-scroller": {
         fontFamily: "inherit",
         lineHeight: "var(--bs-text-size-note-line-height)",
+        overflow: "auto",
     },
     ".cm-content": {
         caretColor: "var(--bs-text-note)",
+        minHeight: "100%",
     },
     ".cm-cursor, .cm-dropCursor": {
         borderLeftColor: "var(--bs-text-note)",

@@ -12,6 +12,7 @@ function describeCode(error: AppError): string {
     switch (error.code) {
         case "not-found":
         case "permission-denied":
+        case "scope-denied":
         case "already-exists":
         case "invalid-path":
         case "not-a-file":
@@ -34,6 +35,7 @@ describe("AppError", () => {
         expect([...APP_ERROR_CODES]).toEqual([
             "not-found",
             "permission-denied",
+            "scope-denied",
             "already-exists",
             "invalid-path",
             "not-a-file",

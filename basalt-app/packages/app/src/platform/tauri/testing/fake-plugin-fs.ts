@@ -22,6 +22,7 @@ export interface FakePluginFs {
     readonly entries: Map<string, Entry>;
     readonly configDir: string;
     readonly watchOptions: unknown[];
+    readonly dialogOptions: unknown[];
     seedFile(path: string, bytes: Uint8Array): void;
     seedText(path: string, text: string): void;
     seedSymlink(path: string): void;
@@ -51,6 +52,7 @@ export function installFakePluginFs(
     const failures = new Map<string, string>();
     const calls: string[] = [];
     const watchOptions: unknown[] = [];
+    const dialogOptions: unknown[] = [];
     let nextRid = 1;
     let clock = 1000;
     let picked: string | null = null;
@@ -132,6 +134,7 @@ export function installFakePluginFs(
             case "plugin:path|join":
                 return (a.paths as string[]).join("/");
             case "plugin:dialog|open":
+                dialogOptions.push(a.options);
                 return picked;
             case "plugin:resources|close":
                 watchers.delete(a.rid as number);
@@ -259,6 +262,7 @@ export function installFakePluginFs(
         entries,
         configDir,
         watchOptions,
+        dialogOptions,
         seedFile(path, bytes) {
             for (
                 let dir = parentOf(path);

@@ -111,6 +111,17 @@ describe("file input", () => {
         expect(editor.getText()).toBe("0123![a](a.png)456789");
     });
 
+    it("resolves a drop outside the text to the nearest position instead of the cursor", async () => {
+        const { editor } = mount("0123456789");
+        viewOf().dispatch({ selection: { anchor: 2 } });
+        vi.spyOn(viewOf(), "posAtCoords").mockReturnValue(10);
+
+        drop([file()], { clientX: 5, clientY: 900 });
+        await flush();
+
+        expect(editor.getText()).toBe("0123456789![a](a.png)");
+    });
+
     it("leaves a drop without files (internal text drag) alone", async () => {
         const { onFiles } = mount("x");
         const event = drop([]);

@@ -1,6 +1,7 @@
 export const APP_ERROR_CODES = [
     "not-found",
     "permission-denied",
+    "scope-denied",
     "already-exists",
     "invalid-path",
     "not-a-file",

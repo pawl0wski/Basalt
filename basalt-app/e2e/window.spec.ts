@@ -40,6 +40,7 @@ test.describe("custom window title bar", () => {
     }) => {
         const bar = page.getByRole("banner", { name: "Window title bar" });
 
+        await expect(bar).toBeVisible();
         const metrics = await page.evaluate(() => ({
             overflowY:
                 document.documentElement.scrollHeight -

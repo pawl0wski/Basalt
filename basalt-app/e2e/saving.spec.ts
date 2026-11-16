@@ -136,7 +136,9 @@ test.describe("save errors", () => {
         await expect(alert).toBeVisible({ timeout: 5000 });
         const main = page.locator("main");
 
-        await main.evaluate((element) => {
+        const scroller = page.locator(".cm-scroller");
+        const yBefore = (await alert.boundingBox())?.y ?? -1;
+        await scroller.evaluate((element) => {
             element.scrollTop = 1500;
         });
 
@@ -145,11 +147,10 @@ test.describe("save errors", () => {
         const editorBox = await page.locator(".cm-editor").boundingBox();
         expect(alertBox && mainBox && editorBox).toBeTruthy();
         expect(
-            await main.evaluate((element) => element.scrollTop),
+            await scroller.evaluate((element) => element.scrollTop),
         ).toBeGreaterThan(0);
-        expect(Math.abs((alertBox?.y ?? 0) - (mainBox?.y ?? 0))).toBeLessThan(
-            4,
-        );
+        expect(await main.evaluate((element) => element.scrollTop)).toBe(0);
+        expect(alertBox?.y).toBe(yBefore);
         expect(Math.abs((alertBox?.x ?? 0) - (editorBox?.x ?? 0))).toBeLessThan(
             2,
         );

@@ -182,7 +182,9 @@ test.describe("external changes to the open note", () => {
         await expect(banner).toContainText("This note changed on disk");
         const main = page.locator("main");
 
-        await main.evaluate((element) => {
+        const scroller = page.locator(".cm-scroller");
+        const yBefore = (await banner.boundingBox())?.y ?? -1;
+        await scroller.evaluate((element) => {
             element.scrollTop = 1500;
         });
 
@@ -191,11 +193,10 @@ test.describe("external changes to the open note", () => {
         const editorBox = await page.locator(".cm-editor").boundingBox();
         expect(bannerBox && mainBox && editorBox).toBeTruthy();
         expect(
-            await main.evaluate((element) => element.scrollTop),
+            await scroller.evaluate((element) => element.scrollTop),
         ).toBeGreaterThan(0);
-        expect(Math.abs((bannerBox?.y ?? 0) - (mainBox?.y ?? 0))).toBeLessThan(
-            4,
-        );
+        expect(await main.evaluate((element) => element.scrollTop)).toBe(0);
+        expect(bannerBox?.y).toBe(yBefore);
         expect(
             Math.abs((bannerBox?.x ?? 0) - (editorBox?.x ?? 0)),
         ).toBeLessThan(2);
@@ -221,7 +222,9 @@ test.describe("deleted-file banner layout", () => {
         await expect(banner).toContainText("This note was deleted or moved");
         const main = page.locator("main");
 
-        await main.evaluate((element) => {
+        const scroller = page.locator(".cm-scroller");
+        const yBefore = (await banner.boundingBox())?.y ?? -1;
+        await scroller.evaluate((element) => {
             element.scrollTop = 1500;
         });
 
@@ -230,11 +233,10 @@ test.describe("deleted-file banner layout", () => {
         const editorBox = await page.locator(".cm-editor").boundingBox();
         expect(bannerBox && mainBox && editorBox).toBeTruthy();
         expect(
-            await main.evaluate((element) => element.scrollTop),
+            await scroller.evaluate((element) => element.scrollTop),
         ).toBeGreaterThan(0);
-        expect(Math.abs((bannerBox?.y ?? 0) - (mainBox?.y ?? 0))).toBeLessThan(
-            4,
-        );
+        expect(await main.evaluate((element) => element.scrollTop)).toBe(0);
+        expect(bannerBox?.y).toBe(yBefore);
         expect(
             Math.abs((bannerBox?.width ?? 0) - (editorBox?.width ?? 0)),
         ).toBeLessThan(2);

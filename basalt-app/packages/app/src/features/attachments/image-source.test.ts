@@ -26,6 +26,7 @@ describe("placeholderKeyFor", () => {
         ["not-found", "missing"],
         ["invalid-path", "unreadable"],
         ["permission-denied", "unreadable"],
+        ["scope-denied", "unreadable"],
         ["unknown", "unreadable"],
         ["too-large", "tooLarge"],
         ["unsupported", "unsupported"],
