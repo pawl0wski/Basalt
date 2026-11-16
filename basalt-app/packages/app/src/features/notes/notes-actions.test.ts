@@ -445,3 +445,449 @@ describe("editor focus and open failures", () => {
         expect(session(h).openFailed).toBe(false);
     });
 });
+
+describe("renaming and moving open notes", () => {
+    const m = wsPath("m.md");
+
+    async function open(files: Record<string, string>, paths: string[]) {
+        const context = await openWorkspace(files);
+        for (const path of paths) {
+            await context.h.notesActions.openNote(wsPath(path));
+        }
+        return context;
+    }
+
+    function tabs(h: Awaited<ReturnType<typeof openWorkspace>>["h"]) {
+        const { openNotes, activeNote } = h.notesStore.getState();
+        return { paths: openNotes.map((note) => note.path), activeNote };
+    }
+
+    async function readDisk(
+        fs: Awaited<ReturnType<typeof openWorkspace>>["fs"],
+        path: string,
+    ) {
+        const result = await fs.readText(wsPath(path));
+        return result.ok ? result.value : null;
+    }
+
+    describe("renamePath", () => {
+        it("moves the tab, the active note, the focus request and the persisted settings", async () => {
+            const { h } = await open({ "n.md": "1", "m.md": "2" }, [
+                "n.md",
+                "m.md",
+            ]);
+            await h.notesActions.openNote(n, { focus: true });
+
+            await h.notesActions.renamePath(n, wsPath("d/x.md"));
+
+            expect(tabs(h)).toEqual({
+                paths: ["d/x.md", "m.md"],
+                activeNote: "d/x.md",
+            });
+            expect(h.notesStore.getState().focusRequest?.path).toBe("d/x.md");
+            expect(h.persisted().workspaces[A]).toEqual({
+                openNotes: ["d/x.md", "m.md"],
+                activeNote: "d/x.md",
+            });
+        });
+
+        it("keeps the active note when another tab is renamed", async () => {
+            const { h } = await open({ "n.md": "1", "m.md": "2" }, [
+                "n.md",
+                "m.md",
+            ]);
+
+            await h.notesActions.renamePath(n, wsPath("z.md"));
+
+            expect(tabs(h).activeNote).toBe("m.md");
+        });
+
+        it("makes autosave write to the new path and never to the old one", async () => {
+            const { h, fs } = await open({ "n.md": "1" }, ["n.md"]);
+            const x = wsPath("x.md");
+            await fs.rename(n, x);
+
+            await h.notesActions.renamePath(n, x);
+            h.notesActions.updateText(x, "edited");
+            h.scheduler.fire();
+            await settle();
+
+            expect(await readDisk(fs, "x.md")).toBe("edited");
+            expect((await fs.stat(n)).ok).toBe(false);
+            expect(h.notesStore.getState().openNotes[0]).toMatchObject({
+                path: "x.md",
+                error: null,
+                saveStatus: "saved",
+            });
+        });
+
+        it("renames a tab that failed to open and a path with only a case change", async () => {
+            const { h, fs } = await openWorkspace({});
+            fs.externalWrite(n, new Uint8Array([0xff]));
+            await h.notesActions.openNote(n);
+
+            await h.notesActions.renamePath(n, wsPath("N.md"));
+
+            expect(tabs(h)).toEqual({ paths: ["N.md"], activeNote: "N.md" });
+            expect(h.notesStore.getState().openNotes[0]?.openFailed).toBe(true);
+        });
+
+        it("does nothing for an unknown path or an unchanged path", async () => {
+            const { h } = await open({ "n.md": "1" }, ["n.md"]);
+            const before = h.saves.length;
+
+            await h.notesActions.renamePath(wsPath("other.md"), wsPath("x.md"));
+            await h.notesActions.renamePath(n, n);
+
+            expect(tabs(h)).toEqual({ paths: ["n.md"], activeNote: "n.md" });
+            expect(h.saves.length).toBeGreaterThanOrEqual(before);
+        });
+    });
+
+    describe("renameNote", () => {
+        it("renames on disk, keeps the tab active and refreshes the list", async () => {
+            const { h, fs } = await open({ "n.md": "body" }, ["n.md"]);
+
+            const result = await h.notesActions.renameNote(n, "Renamed");
+
+            expect(result).toEqual({ ok: true, value: "Renamed.md" });
+            expect(await readDisk(fs, "Renamed.md")).toBe("body");
+            expect((await fs.stat(n)).ok).toBe(false);
+            expect(tabs(h)).toEqual({
+                paths: ["Renamed.md"],
+                activeNote: "Renamed.md",
+            });
+            expect(
+                h.notesStore.getState().notes.map((note) => note.path),
+            ).toEqual(["Renamed.md"]);
+            expect(h.persisted().workspaces[A]).toEqual({
+                openNotes: ["Renamed.md"],
+                activeNote: "Renamed.md",
+            });
+        });
+
+        it("flushes unsaved text before renaming so no edit is lost", async () => {
+            const { h, fs } = await open({ "n.md": "old" }, ["n.md"]);
+            h.notesActions.updateText(n, "typed just now");
+
+            const result = await h.notesActions.renameNote(n, "b");
+
+            expect(result.ok).toBe(true);
+            expect(await readDisk(fs, "b.md")).toBe("typed just now");
+            expect(h.notesStore.getState().openNotes[0]).toMatchObject({
+                path: "b.md",
+                text: "typed just now",
+                baseText: "typed just now",
+                saveStatus: "saved",
+            });
+        });
+
+        it("cancels the rename when the flush fails and keeps the text", async () => {
+            const { h, fs } = await open({ "n.md": "old" }, ["n.md"]);
+            h.notesActions.updateText(n, "typed");
+            fs.failNextWrite();
+
+            const result = await h.notesActions.renameNote(n, "b");
+
+            expect(result.ok).toBe(false);
+            expect((await fs.stat(n)).ok).toBe(true);
+            expect((await fs.stat(wsPath("b.md"))).ok).toBe(false);
+            expect(tabs(h)).toEqual({ paths: ["n.md"], activeNote: "n.md" });
+            expect(h.notesStore.getState().openNotes[0]?.text).toBe("typed");
+        });
+
+        it("cancels the rename with a conflict when the note changed on disk", async () => {
+            const { h, fs } = await open({ "n.md": "old" }, ["n.md"]);
+            h.notesActions.updateText(n, "mine");
+            fs.externalWrite(n, new TextEncoder().encode("theirs"));
+
+            const result = await h.notesActions.renameNote(n, "b");
+
+            expect(!result.ok && result.error.code).toBe("conflict");
+            expect(await readDisk(fs, "n.md")).toBe("theirs");
+            expect(tabs(h).paths).toEqual(["n.md"]);
+        });
+
+        it("reports a collision and leaves everything as it was", async () => {
+            const { h, fs } = await open({ "n.md": "1", "Taken.md": "2" }, [
+                "n.md",
+            ]);
+            const saves = h.saves.length;
+
+            const result = await h.notesActions.renameNote(n, "taken");
+
+            expect(!result.ok && result.error.code).toBe("already-exists");
+            expect(await readDisk(fs, "n.md")).toBe("1");
+            expect(tabs(h)).toEqual({ paths: ["n.md"], activeNote: "n.md" });
+            expect(h.saves).toHaveLength(saves);
+        });
+
+        it("reports the invalid name without touching the tab", async () => {
+            const { h } = await open({ "n.md": "1" }, ["n.md"]);
+
+            const result = await h.notesActions.renameNote(n, "a/b");
+
+            expect(!result.ok && result.error.code).toBe("invalid-path");
+            expect(tabs(h).paths).toEqual(["n.md"]);
+        });
+
+        it("renames a note that is not open without opening a tab", async () => {
+            const { h, fs } = await open({ "n.md": "1", "m.md": "2" }, [
+                "m.md",
+            ]);
+
+            const result = await h.notesActions.renameNote(n, "k");
+
+            expect(result.ok).toBe(true);
+            expect((await fs.stat(wsPath("k.md"))).ok).toBe(true);
+            expect(tabs(h)).toEqual({ paths: ["m.md"], activeNote: "m.md" });
+        });
+
+        it("reports permission-denied in a read-only workspace and changes nothing", async () => {
+            const readOnly = seedFs({ "n.md": "1" }, { readOnly: true });
+            const h = createHarness({
+                workspaces: { [A]: readOnly },
+                picked: A,
+            });
+            await h.workspaceActions.openWorkspace();
+            await h.notesActions.openNote(n);
+
+            const result = await h.notesActions.renameNote(n, "b");
+
+            expect(!result.ok && result.error.code).toBe("permission-denied");
+            expect(tabs(h).paths).toEqual(["n.md"]);
+        });
+
+        it("fails without a workspace", async () => {
+            const h = createHarness();
+
+            const result = await h.notesActions.renameNote(n, "b");
+
+            expect(!result.ok && result.error.code).toBe("unavailable");
+        });
+
+        it("ignores the watcher batch caused by its own rename", async () => {
+            const { h, fs } = await open({ "n.md": "body" }, ["n.md"]);
+
+            await h.notesActions.renameNote(n, "b");
+            h.watchScheduler.fire();
+            await settle();
+
+            expect(h.notesStore.getState().openNotes[0]).toMatchObject({
+                path: "b.md",
+                text: "body",
+                error: null,
+                saveStatus: "saved",
+            });
+            expect(await readDisk(fs, "b.md")).toBe("body");
+        });
+
+        it("ignores a watcher batch that arrives while its own rename is in progress", async () => {
+            const base = seedFs({ "n.md": "body" });
+            let notify: () => Promise<void> = async () => {};
+            const fs = {
+                ...base,
+                async rename(
+                    from: Parameters<typeof base.rename>[0],
+                    to: Parameters<typeof base.rename>[1],
+                ) {
+                    const result = await base.rename(from, to);
+                    await notify();
+                    return result;
+                },
+            };
+            const h = createHarness({ workspaces: { [A]: fs }, picked: A });
+            await h.workspaceActions.openWorkspace();
+            await h.notesActions.openNote(n);
+            notify = () =>
+                h.notesActions.handleExternalChanges([n, wsPath("b.md")]);
+
+            const result = await h.notesActions.renameNote(n, "b");
+
+            expect(result.ok).toBe(true);
+            expect(h.notesStore.getState().openNotes[0]).toMatchObject({
+                path: "b.md",
+                error: null,
+            });
+        });
+    });
+
+    describe("moveNotes", () => {
+        it("moves open notes, their tabs follow and the selection of tabs is kept", async () => {
+            const { h, fs } = await open(
+                { "n.md": "1", "m.md": "2", "d/keep.md": "3" },
+                ["n.md", "m.md", "d/keep.md"],
+            );
+            await h.notesActions.openNote(m);
+
+            const result = await h.notesActions.moveNotes([n, m], wsPath("d"));
+
+            expect(result).toEqual({
+                ok: true,
+                value: [
+                    { from: "n.md", to: "d/n.md" },
+                    { from: "m.md", to: "d/m.md" },
+                ],
+            });
+            expect(tabs(h)).toEqual({
+                paths: ["d/n.md", "d/m.md", "d/keep.md"],
+                activeNote: "d/m.md",
+            });
+            expect(h.persisted().workspaces[A]).toEqual({
+                openNotes: ["d/n.md", "d/m.md", "d/keep.md"],
+                activeNote: "d/m.md",
+            });
+            expect((await fs.stat(n)).ok).toBe(false);
+            expect(
+                h.notesStore.getState().notes.map((note) => note.path),
+            ).toEqual(["d/keep.md", "d/m.md", "d/n.md"]);
+        });
+
+        it("flushes unsaved text of a moved note first", async () => {
+            const { h, fs } = await open({ "n.md": "old" }, ["n.md"]);
+            await fs.mkdir(wsPath("d"));
+            h.notesActions.updateText(n, "typed");
+
+            const result = await h.notesActions.moveNotes([n], wsPath("d"));
+
+            expect(result.ok).toBe(true);
+            expect(await readDisk(fs, "d/n.md")).toBe("typed");
+        });
+
+        it("cancels the move when a flush fails", async () => {
+            const { h, fs } = await open({ "n.md": "old", "m.md": "x" }, [
+                "n.md",
+            ]);
+            await fs.mkdir(wsPath("d"));
+            h.notesActions.updateText(n, "typed");
+            fs.failNextWrite();
+
+            const result = await h.notesActions.moveNotes([n, m], wsPath("d"));
+
+            expect(result.ok).toBe(false);
+            expect((await fs.stat(n)).ok).toBe(true);
+            expect((await fs.stat(m)).ok).toBe(true);
+            expect(tabs(h).paths).toEqual(["n.md"]);
+        });
+
+        it("shows the rewritten links in the open editor after the watcher batch", async () => {
+            const { h, fs } = await open({ "n.md": "[a](x.md)" }, ["n.md"]);
+            await fs.mkdir(wsPath("d"));
+
+            await h.notesActions.moveNotes([n], wsPath("d"));
+            h.watchScheduler.fire();
+            await settle();
+
+            expect(await readDisk(fs, "d/n.md")).toBe("[a](../x.md)");
+            expect(h.notesStore.getState().openNotes[0]).toMatchObject({
+                path: "d/n.md",
+                text: "[a](../x.md)",
+                baseText: "[a](../x.md)",
+                error: null,
+            });
+        });
+
+        it("moves nothing and keeps every tab when a name collides", async () => {
+            const { h, fs } = await open(
+                { "n.md": "1", "m.md": "2", "d/M.md": "taken" },
+                ["n.md", "m.md"],
+            );
+
+            const result = await h.notesActions.moveNotes([n, m], wsPath("d"));
+
+            expect(!result.ok && result.error.code).toBe("already-exists");
+            expect(!result.ok && result.error.message).toContain("m.md");
+            expect((await fs.stat(n)).ok).toBe(true);
+            expect(tabs(h).paths).toEqual(["n.md", "m.md"]);
+        });
+
+        it("keeps tabs of notes that were moved before a failure and the others unchanged", async () => {
+            const base = seedFs({ "n.md": "1", "m.md": "2" });
+            await base.mkdir(wsPath("d"));
+            let calls = 0;
+            const fs = {
+                ...base,
+                async rename(
+                    from: Parameters<typeof base.rename>[0],
+                    to: Parameters<typeof base.rename>[1],
+                ) {
+                    calls += 1;
+                    if (calls === 2) {
+                        return {
+                            ok: false as const,
+                            error: {
+                                code: "unknown" as const,
+                                message: "disk",
+                            },
+                        };
+                    }
+                    return base.rename(from, to);
+                },
+            };
+            const h = createHarness({ workspaces: { [A]: fs }, picked: A });
+            await h.workspaceActions.openWorkspace();
+            await h.notesActions.openNote(n);
+            await h.notesActions.openNote(m);
+
+            const result = await h.notesActions.moveNotes([n, m], wsPath("d"));
+
+            expect(!result.ok && result.error.message).toContain(
+                "Moved 1 of 2",
+            );
+            expect(tabs(h)).toEqual({
+                paths: ["d/n.md", "m.md"],
+                activeNote: "m.md",
+            });
+            expect(h.persisted().workspaces[A]?.openNotes).toEqual([
+                "d/n.md",
+                "m.md",
+            ]);
+            expect(
+                h.notesStore.getState().notes.map((note) => note.path),
+            ).toEqual(["d/n.md", "m.md"]);
+        });
+
+        it("does nothing when the note is already in the destination", async () => {
+            const { h, fs } = await open({ "d/n.md": "1" }, ["d/n.md"]);
+
+            const result = await h.notesActions.moveNotes(
+                [wsPath("d/n.md")],
+                wsPath("d"),
+            );
+
+            expect(result).toEqual({ ok: true, value: [] });
+            expect(tabs(h).paths).toEqual(["d/n.md"]);
+            expect((await fs.stat(wsPath("d/n.md"))).ok).toBe(true);
+        });
+
+        it("moves to the workspace root with null and follows the tab", async () => {
+            const { h } = await open({ "d/n.md": "1" }, ["d/n.md"]);
+
+            const result = await h.notesActions.moveNotes(
+                [wsPath("d/n.md")],
+                null,
+            );
+
+            expect(result.ok).toBe(true);
+            expect(tabs(h)).toEqual({ paths: ["n.md"], activeNote: "n.md" });
+        });
+
+        it("reports permission-denied in a read-only workspace and changes nothing", async () => {
+            const readOnly = seedFs(
+                { "n.md": "1", "d/x.md": "2" },
+                { readOnly: true },
+            );
+            const h = createHarness({
+                workspaces: { [A]: readOnly },
+                picked: A,
+            });
+            await h.workspaceActions.openWorkspace();
+            await h.notesActions.openNote(n);
+
+            const result = await h.notesActions.moveNotes([n], wsPath("d"));
+
+            expect(!result.ok && result.error.code).toBe("permission-denied");
+            expect(tabs(h)).toEqual({ paths: ["n.md"], activeNote: "n.md" });
+        });
+    });
+});
