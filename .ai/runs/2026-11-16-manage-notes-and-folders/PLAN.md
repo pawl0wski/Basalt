@@ -15,8 +15,8 @@ Refs: #16 (issue), #27 (spec PR, merged). Branch: `feat/manage-notes-and-folders
 
 | Phase | Step | Title                                                                                 | Exec     | Status | Commit |
 | ----- | ---- | ------------------------------------------------------------------------------------- | -------- | ------ | ------ |
-| 1     | 1.1  | `rename` on WorkspaceFileSystem: port, in-memory fs, contract suite                   | dispatch | done   | (this) |
-| 1     | 1.2  | Tauri and memory-platform `rename` adapters with tests                                | dispatch | todo   |        |
+| 1     | 1.1  | `rename` on WorkspaceFileSystem: port, in-memory fs, contract suite                   | dispatch | done   | 846650e |
+| 1     | 1.2  | Tauri and memory-platform `rename` adapters with tests                                | dispatch | done   | (this) |
 | 1     | 1.3  | `buildTree` (C-5 filtering and ordering) with tests                                   | dispatch | todo   |        |
 | 1     | 1.4  | `rewriteRelativeLinks` (Lezer) with round-trip property test                          | dispatch | todo   |        |
 | 1     | 1.5  | `renameNote` and `moveNotes` use cases (collisions, C-8 bulk move) with tests         | dispatch | todo   |        |

@@ -88,6 +88,34 @@ describe("memory platform", () => {
         ]);
     });
 
+    it("persists a rename and a new folder across a reload and lists directories", async () => {
+        const first = createMemoryPlatform(localStorage);
+        first.testFs.seedWorkspace(ROOT, { "a.md": "# A", "d/b.md": "# B" });
+        const fs = await openRoot(first.platform);
+        await fs.mkdir("empty" as never);
+        const renamed = await fs.rename("a.md" as never, "d/c.md" as never);
+
+        const second = createMemoryPlatform(localStorage);
+        await openRoot(second.platform);
+
+        expect(renamed.ok).toBe(true);
+        expect(second.testFs.listFiles()).toEqual(["d/b.md", "d/c.md"]);
+        expect(second.testFs.listDirectories()).toEqual(["d", "empty"]);
+    });
+
+    it("refuses a rename in a read-only workspace and keeps the file", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        testFs.seedWorkspace(ROOT, { "a.md": "x" });
+        const fs = await openRoot(platform);
+        testFs.setReadOnly(true);
+
+        const result = await fs.rename("a.md" as never, "b.md" as never);
+
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.error.code).toBe("permission-denied");
+        expect(testFs.listFiles()).toEqual(["a.md"]);
+    });
+
     it("exposes the exact saved bytes", async () => {
         const { platform, testFs } = createMemoryPlatform(localStorage);
         testFs.seedWorkspace(ROOT, {});

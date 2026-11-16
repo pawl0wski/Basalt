@@ -148,6 +148,16 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
                 persist();
                 return result;
             },
+            async mkdir(target) {
+                const result = await fs.mkdir(target);
+                persist();
+                return result;
+            },
+            async rename(from, to) {
+                const result = await fs.rename(from, to);
+                persist();
+                return result;
+            },
         };
         const scoped = withScopeDenial(guarded);
         current = { root, fs: scoped };
@@ -232,6 +242,12 @@ export function createMemoryPlatform(storage: Storage): MemoryPlatform {
             return requireCurrent()
                 .getState()
                 .entries.filter((entry) => entry.kind === "file")
+                .map((entry) => entry.path);
+        },
+        listDirectories() {
+            return requireCurrent()
+                .getState()
+                .entries.filter((entry) => entry.kind === "directory")
                 .map((entry) => entry.path);
         },
         readBytes(target) {
