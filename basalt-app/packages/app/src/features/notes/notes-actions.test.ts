@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultAppSettings, type AppSettings } from "@basalt/core";
+import { defaultAppSettings, err, type AppSettings } from "@basalt/core";
 import { createHarness, root, seedFs, settle, wsPath } from "../test-harness";
 import { isDirty } from "./notes-store";
 
@@ -303,7 +303,8 @@ describe("the notes tree", () => {
     it("keeps the previous tree and sets the list error when listing fails", async () => {
         const { h, fs } = await openWorkspace({ "a.md": "" });
         const before = h.notesStore.getState().tree;
-        fs.removeRoot();
+        fs.list = () =>
+            Promise.resolve(err({ code: "unknown", message: "boom" }));
 
         const result = await h.notesActions.refreshNotes();
 

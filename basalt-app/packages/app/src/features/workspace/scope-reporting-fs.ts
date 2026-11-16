@@ -21,6 +21,7 @@ export function withScopeReporting(
             report(fs.createExclusive(path, content)),
         readDir: (path) => report(fs.readDir(path)),
         mkdir: (path) => report(fs.mkdir(path)),
+        rename: (from, to) => report(fs.rename(from, to)),
         watch: (onEvent) => report(fs.watch(onEvent)),
     };
 }
