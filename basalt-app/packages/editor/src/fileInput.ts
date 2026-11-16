@@ -119,10 +119,10 @@ export function createFileInput(options: FileInputOptions): Extension {
                     event.preventDefault();
                     if (view.state.readOnly) return true;
                     const position =
-                        view.posAtCoords({
-                            x: event.clientX,
-                            y: event.clientY,
-                        }) ?? view.state.selection.main.head;
+                        view.posAtCoords(
+                            { x: event.clientX, y: event.clientY },
+                            false,
+                        ) ?? view.state.selection.main.head;
                     start(
                         view,
                         [...transfer.files],

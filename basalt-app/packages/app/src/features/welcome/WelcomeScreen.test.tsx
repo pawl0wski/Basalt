@@ -130,6 +130,7 @@ describe("WelcomeScreenContainer", () => {
     it.each([
         ["workspace-missing", undefined],
         ["workspace-unavailable", "unavailable"],
+        ["workspace-access-needed", "scope-denied"],
     ] as const)(
         "explains a %s notice without an error and keeps lastWorkspace",
         async (notice, accessError) => {

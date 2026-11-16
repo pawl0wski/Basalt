@@ -13,4 +13,5 @@ tags: [images, e2e, editor, ui]
 - `getByRole("status")` matches the status bar as well as `Alert role="status"`; scope to `.bs-alert`.
 - `listFiles()` on the memory platform lists files only, not directories.
 - CodeMirror's own paste handler calls `preventDefault` for text pastes, so `defaultPrevented` cannot prove a paste was left to the default; assert that `onFiles` was not called.
-- UNVERIFIED on real Tauri (Linux WebKitGTK, Windows WebView2): `dragDropEnabled: false` delivering `File` objects, image data in `clipboardData.files`, the drop guard stopping navigation, plugin-fs `mkdir`/`readDir`/byte `writeFile`.
+- Real Tauri plugin-fs is now partly known: with a non-recursive picker scope, `readDir`/`writeFile` below a sub-folder (`attachments/`) fail with `forbidden path` (owner's manual Windows test, 2026-11-16), while `mkdir` of a direct child works. See [workspace-scope-and-forbidden-path](2026-11-16-workspace-scope-and-forbidden-path.md); the memory platform now simulates it with `setScopeDenied`.
+- Still UNVERIFIED on real Tauri (Linux WebKitGTK, Windows WebView2): `dragDropEnabled: false` delivering `File` objects, image data in `clipboardData.files`, the drop guard stopping navigation, plugin-fs byte `writeFile` after the recursive-scope fix, and the whole desktop Windows/Linux check of the fix.

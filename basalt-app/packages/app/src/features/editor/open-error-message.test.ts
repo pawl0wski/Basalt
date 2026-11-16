@@ -39,5 +39,11 @@ describe("openErrorMessage", () => {
         expect(openErrorMessage(t, "permission-denied")).toBe(
             en.errors["permission-denied"],
         );
+        expect(openErrorMessage(t, "scope-denied")).toBe(
+            en.errors["scope-denied"],
+        );
+        expect(openErrorMessage(t, "scope-denied")).not.toBe(
+            en.errors["permission-denied"],
+        );
     });
 });

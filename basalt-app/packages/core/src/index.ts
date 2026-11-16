@@ -3,6 +3,7 @@ export type { AppError, AppErrorCode, Result } from "./result";
 export {
     NOTE_NAME_ISSUES,
     pathKey,
+    sameWorkspaceRoot,
     toWorkspacePath,
     validateNoteName,
 } from "./workspace-path";

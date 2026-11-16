@@ -3,7 +3,8 @@ import { createStore, type StoreApi } from "zustand/vanilla";
 
 export type WorkspaceStatus = "welcome" | "opening" | "open";
 
-export type WorkspaceNotice = "workspace-missing" | "workspace-unavailable";
+export type WorkspaceNotice =
+    "workspace-missing" | "workspace-unavailable" | "workspace-access-needed";
 
 export type WorkspaceState = {
     readonly root: WorkspaceRoot | null;
@@ -12,6 +13,7 @@ export type WorkspaceState = {
     readonly notice: WorkspaceNotice | null;
     readonly watchMode: WatchMode;
     readonly unavailable: boolean;
+    readonly accessNeeded: boolean;
 };
 
 export type WorkspaceStore = StoreApi<WorkspaceState>;
@@ -24,5 +26,6 @@ export function createWorkspaceStore(): WorkspaceStore {
         notice: null,
         watchMode: "live",
         unavailable: false,
+        accessNeeded: false,
     }));
 }

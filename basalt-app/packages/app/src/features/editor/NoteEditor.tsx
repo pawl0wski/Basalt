@@ -90,5 +90,5 @@ export function NoteEditor({
         if (focusRequest > 0) editorRef.current?.focus();
     }, [focusRequest]);
 
-    return <div ref={parentRef} className="min-h-full" />;
+    return <div ref={parentRef} className="min-h-none flex-1" />;
 }

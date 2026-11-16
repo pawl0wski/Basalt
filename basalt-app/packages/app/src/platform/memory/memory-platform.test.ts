@@ -194,6 +194,52 @@ describe("memory platform", () => {
         expect((await fs.watch(() => undefined)).ok).toBe(false);
     });
 
+    it("denies every operation under the scope prefix until the next pick", async () => {
+        const { platform, testFs } = createMemoryPlatform(localStorage);
+        testFs.seedWorkspace(ROOT, {
+            "a.md": "# A",
+            "attachments/x.png": "x",
+            "attachments-old/y.png": "y",
+        });
+        testFs.setPickerResult(ROOT);
+        const fs = await openRoot(platform);
+        const code = (result: { ok: boolean; error?: { code: string } }) =>
+            result.ok ? "ok" : result.error?.code;
+
+        testFs.setScopeDenied("attachments");
+
+        expect(code(await fs.readDir("attachments" as never))).toBe(
+            "scope-denied",
+        );
+        expect(code(await fs.readBytes("attachments/x.png" as never))).toBe(
+            "scope-denied",
+        );
+        expect(
+            code(await fs.createExclusive("attachments/z.png" as never, "z")),
+        ).toBe("scope-denied");
+        expect(code(await fs.mkdir("attachments" as never))).toBe(
+            "scope-denied",
+        );
+        expect(code(await fs.stat("attachments/x.png" as never))).toBe(
+            "scope-denied",
+        );
+        expect(testFs.readBytes("attachments/z.png")).toBeNull();
+        expect(code(await fs.readText("a.md" as never))).toBe("ok");
+        expect(code(await fs.readBytes("attachments-old/y.png" as never))).toBe(
+            "ok",
+        );
+        expect(code(await fs.writeTextAtomic("a.md" as never, "1"))).toBe("ok");
+
+        await platform.picker.pickDirectory();
+
+        expect(code(await fs.readBytes("attachments/x.png" as never))).toBe(
+            "ok",
+        );
+        expect(
+            code(await fs.createExclusive("attachments/z.png" as never, "z")),
+        ).toBe("ok");
+    });
+
     it("tolerates corrupt storage", async () => {
         localStorage.setItem(WORKSPACES_KEY, "not json");
         localStorage.setItem("basalt.memory.settings", "{broken");

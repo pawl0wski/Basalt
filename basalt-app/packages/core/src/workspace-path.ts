@@ -73,3 +73,21 @@ function findNoteNameIssue(name: string): NoteNameIssue | null {
     }
     return null;
 }
+
+const EXTENDED_LENGTH_PREFIX = "\\\\?\\";
+const DRIVE_ROOT = /^[A-Za-z]:$/;
+
+function normalizeWorkspaceRoot(root: string): string {
+    const withoutPrefix = root.startsWith(EXTENDED_LENGTH_PREFIX)
+        ? root.slice(EXTENDED_LENGTH_PREFIX.length)
+        : root;
+    const slashed = withoutPrefix.replace(/\\/g, "/");
+    const trimmed = slashed.replace(/\/+$/, "");
+    if (trimmed === "") return slashed === "" ? "" : "/";
+    if (DRIVE_ROOT.test(trimmed)) return `${trimmed}/`;
+    return trimmed;
+}
+
+export function sameWorkspaceRoot(a: string, b: string): boolean {
+    return normalizeWorkspaceRoot(a) === normalizeWorkspaceRoot(b);
+}

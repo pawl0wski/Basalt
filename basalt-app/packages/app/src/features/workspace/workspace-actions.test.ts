@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { defaultAppSettings, err } from "@basalt/core";
 import { createHarness, root, seedFs, wsPath } from "../test-harness";
 
@@ -232,6 +232,20 @@ describe("restoreWorkspace", () => {
         expect(h.persisted().lastWorkspace).toBe(A);
     });
 
+    it("uses the access-needed notice when the scope denies the root and keeps lastWorkspace", async () => {
+        const h = createHarness({
+            settings: { ...defaultAppSettings(), lastWorkspace: A },
+            accessError: "scope-denied",
+        });
+        await h.workspaceActions.restoreWorkspace();
+        expect(h.workspaceStore.getState()).toMatchObject({
+            root: null,
+            status: "welcome",
+            notice: "workspace-access-needed",
+        });
+        expect(h.persisted().lastWorkspace).toBe(A);
+    });
+
     it("clears the notice after a workspace is opened", async () => {
         const h = createHarness({
             workspaces: { [B]: seedFs({}) },
@@ -243,5 +257,175 @@ describe("restoreWorkspace", () => {
         await h.workspaceActions.openWorkspace();
         expect(h.workspaceStore.getState().notice).toBeNull();
         expect(h.persisted().lastWorkspace).toBe(B);
+    });
+    describe("access needed", () => {
+        const denied = () =>
+            Promise.resolve(
+                err({ code: "scope-denied", message: "forbidden" }),
+            );
+
+        async function openWith(fs = seedFs({ "n.md": "" })) {
+            const h = createHarness({ workspaces: { [A]: fs }, picked: A });
+            await h.workspaceActions.openWorkspace();
+            return { h, fs };
+        }
+
+        it("starts without the flag", async () => {
+            const { h } = await openWith();
+            expect(h.workspaceStore.getState().accessNeeded).toBe(false);
+        });
+
+        it("sets the flag when the workspace file system returns scope-denied", async () => {
+            const { h, fs } = await openWith();
+            fs.list = denied;
+            const refreshed = await h.notesActions.refreshNotes();
+            expect(refreshed.ok).toBe(false);
+            expect(h.workspaceStore.getState().accessNeeded).toBe(true);
+        });
+
+        it("does not set the flag for other errors", async () => {
+            const { h, fs } = await openWith();
+            fs.list = () =>
+                Promise.resolve(err({ code: "unknown", message: "boom" }));
+            await h.notesActions.refreshNotes();
+            expect(h.workspaceStore.getState().accessNeeded).toBe(false);
+        });
+
+        it("keeps unavailable independent of accessNeeded", async () => {
+            const { h, fs } = await openWith();
+            fs.list = denied;
+            await h.notesActions.refreshNotes();
+            expect(h.workspaceStore.getState()).toMatchObject({
+                accessNeeded: true,
+                unavailable: false,
+            });
+        });
+
+        it("resets the flag when leaving the workspace", async () => {
+            const { h, fs } = await openWith();
+            fs.list = denied;
+            await h.notesActions.refreshNotes();
+            await h.workspaceActions.leaveWorkspace();
+            expect(h.workspaceStore.getState().accessNeeded).toBe(false);
+        });
+
+        it("resets the flag when entering another workspace", async () => {
+            const fsA = seedFs({ "n.md": "" });
+            const h = createHarness({
+                workspaces: { [A]: fsA, [B]: seedFs({}) },
+                picked: A,
+            });
+            await h.workspaceActions.openWorkspace();
+            fsA.list = denied;
+            await h.notesActions.refreshNotes();
+            h.pick(B);
+            await h.workspaceActions.openWorkspace();
+            expect(h.workspaceStore.getState().accessNeeded).toBe(false);
+        });
+    });
+});
+
+describe("regrantAccess", () => {
+    const denied = () =>
+        Promise.resolve(err({ code: "scope-denied", message: "forbidden" }));
+
+    async function openDenied(options: { pickError?: boolean } = {}) {
+        const fs = seedFs({ "a.md": "", "b.md": "" });
+        const h = createHarness({
+            workspaces: { [A]: fs, [B]: seedFs({ "z.md": "" }) },
+            settings: { ...defaultAppSettings(), lastWorkspace: A },
+            pickError: options.pickError,
+        });
+        await h.workspaceActions.restoreWorkspace();
+        await h.notesActions.openNote(wsPath("a.md"));
+        h.notesActions.updateText(wsPath("a.md"), "typed");
+        const list = fs.list.bind(fs);
+        fs.list = denied;
+        await h.notesActions.refreshNotes();
+        expect(h.workspaceStore.getState().accessNeeded).toBe(true);
+        return { h, fs, grant: () => (fs.list = list) };
+    }
+
+    it("offers the current root as the default path", async () => {
+        const { h } = await openDenied();
+        h.pick(null);
+        await h.workspaceActions.regrantAccess();
+        expect(h.pickCalls.at(-1)).toEqual({ defaultPath: A });
+    });
+
+    it("clears the flag and refreshes notes for the same folder keeping tabs and unsaved text", async () => {
+        const { h, fs, grant } = await openDenied();
+        grant();
+        fs.externalWrite(wsPath("c.md"), new Uint8Array());
+        h.pick(root(`${A}/`));
+        const result = await h.workspaceActions.regrantAccess();
+        expect(result.ok).toBe(true);
+        expect(h.workspaceStore.getState()).toMatchObject({
+            accessNeeded: false,
+            root: A,
+            status: "open",
+        });
+        const notes = h.notesStore.getState();
+        expect(notes.notes.map((n) => n.name)).toContain("c");
+        expect(notes.activeNote).toBe("a.md");
+        expect(notes.openNotes.map((n) => [n.path, n.text])).toEqual([
+            ["a.md", "typed"],
+        ]);
+    });
+
+    it("reloads images for the same folder", async () => {
+        const { h, grant } = await openDenied();
+        grant();
+        const notify = vi.spyOn(h.images, "notifyFocus");
+        h.pick(A);
+        await h.workspaceActions.regrantAccess();
+        expect(notify).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps the flag when the folder is still denied after the pick", async () => {
+        const { h } = await openDenied();
+        h.pick(A);
+        await h.workspaceActions.regrantAccess();
+        expect(h.workspaceStore.getState().accessNeeded).toBe(true);
+    });
+
+    it("switches through the open flow when a different folder is picked", async () => {
+        const { h } = await openDenied();
+        h.notesActions.updateText(wsPath("a.md"), "");
+        h.pick(B);
+        const result = await h.workspaceActions.regrantAccess();
+        expect(result.ok).toBe(true);
+        expect(h.workspaceStore.getState()).toMatchObject({
+            root: B,
+            accessNeeded: false,
+        });
+        expect(h.notesStore.getState().notes.map((n) => n.name)).toEqual(["z"]);
+    });
+
+    it("changes nothing when the picker is cancelled", async () => {
+        const { h } = await openDenied();
+        h.pick(null);
+        const before = h.workspaceStore.getState();
+        const result = await h.workspaceActions.regrantAccess();
+        expect(result.ok).toBe(true);
+        expect(h.workspaceStore.getState()).toEqual(before);
+    });
+
+    it("stores the error and keeps the flag when the picker fails", async () => {
+        const { h } = await openDenied({ pickError: true });
+        const result = await h.workspaceActions.regrantAccess();
+        expect(result.ok).toBe(false);
+        expect(h.workspaceStore.getState()).toMatchObject({
+            accessNeeded: true,
+            error: { code: "unknown" },
+            root: A,
+        });
+    });
+
+    it("does nothing when no workspace is open", async () => {
+        const h = createHarness({ picked: A });
+        const result = await h.workspaceActions.regrantAccess();
+        expect(result.ok).toBe(true);
+        expect(h.pickCalls).toEqual([]);
     });
 });
