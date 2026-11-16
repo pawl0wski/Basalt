@@ -18,11 +18,11 @@ export type NoteNameValidation =
     | { readonly valid: true }
     | { readonly valid: false; readonly reason: NoteNameIssue };
 
-const MAX_NAME_BYTES = 255;
-const CONTROL_CHARACTERS = /\p{Cc}/u;
+export const MAX_NAME_BYTES = 255;
+export const CONTROL_CHARACTERS = /\p{Cc}/u;
 const DRIVE_PREFIX = /^[A-Za-z]:/;
-const FORBIDDEN_NAME_CHARACTERS = /[:*?"<>|]/;
-const RESERVED_WINDOWS_NAMES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+export const FORBIDDEN_NAME_CHARACTERS = /[:*?"<>|]/;
+export const RESERVED_WINDOWS_NAMES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
 
 function invalidPath(message: string): Result<never> {
     return err({ code: "invalid-path", message });

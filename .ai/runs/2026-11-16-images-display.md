@@ -10,7 +10,7 @@ tags: [images, editor, e01, e01-s03]
 
 ## Goal
 
-Implement Phase 1 of `.ai/specs/2026-10-25-images-in-notes.md`: image display with placeholders. Refs #10 (not Closes; adding images is Phase 2). Stacked on the live-preview PR (#24).
+Implement Phase 1 of `.ai/specs/implemented/2026-10-25-images-in-notes.md`: image display with placeholders. Refs #10 (not Closes; adding images is Phase 2). Stacked on the live-preview PR (#24).
 
 ## What was done
 

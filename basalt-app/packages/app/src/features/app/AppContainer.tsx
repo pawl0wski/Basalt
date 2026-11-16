@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
 import { useTranslation } from "react-i18next";
+import { installDropGuard } from "../attachments/drop-guard";
 import { useServices } from "../../useServices";
 import { useNoteTabs } from "../editor/useNoteTabs";
 import { useKeymap } from "../keymap/useKeymap";
@@ -49,6 +50,8 @@ function AppContent() {
             window.removeEventListener("focus", onFocus);
         };
     }, [workspaceActions]);
+
+    useEffect(() => installDropGuard(window), []);
 
     useEffect(
         () =>

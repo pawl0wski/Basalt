@@ -2,7 +2,7 @@
 date: 2026-10-25
 slug: images-in-notes
 type: spec
-status: draft
+status: implemented
 tags: [notes, images, attachments, editor, workspace, file-kinds, e01]
 ---
 
@@ -407,3 +407,7 @@ Vitest next to code, Playwright in `basalt-app/e2e/` against the memory platform
 | Open note + owner adds an image → note references it and the image is displayed (s07, s08) | Phase 2 steps 4–6 unit tests; step 7 e2e (paste and drop); manual smoke on built apps                   |
 | Opened in another editor → normal Markdown image link, file in the workspace (s07, s08)    | Phase 2 step 3 CommonMark parse and round-trip tests; step 7 e2e byte assertions; manual Obsidian check |
 | (proposed, negative) Missing or unreadable image → placeholder, note text unchanged (s07)  | Phase 1 steps 5–7 unit tests; step 8 e2e (`externalDelete`, note bytes unchanged)                       |
+
+## Implementation status (2026-11-16)
+
+Phase 1 (display) and Phase 2 (paste and drop) are implemented. Not done and recorded as UNVERIFIED: the Phase 2 step 1 spike and the manual smoke test on built Linux and Windows apps (the sandbox cannot run them): `dragDropEnabled: false` delivering `File` objects on drop, clipboard image data on paste (and what lands in `text/plain` for "Copy image"), and the drop guard preventing navigation. Real Tauri `readFile`/`writeFile`/`mkdir`/`readDir` are covered only by the mocked plugin-fs tests. Before release, run the manual checklist from Phase 2 step 8.

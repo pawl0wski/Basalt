@@ -5,12 +5,14 @@ import {
     type WorkspaceFileSystem,
     type WorkspacePath,
 } from "@basalt/core";
+import { addImagesFromFiles, type AddImagesOutcome } from "./add-images";
 import { createImageLoader, type ImageLoader } from "./image-loader";
 
 export type NoteImages = {
     readonly loader: ImageLoader;
     subscribe(listener: () => void): () => void;
     activate(): void;
+    addFiles(files: readonly File[]): Promise<AddImagesOutcome>;
     dispose(): void;
 };
 
@@ -28,9 +30,10 @@ const unavailable = {
 
 const detachedAttachments: Attachments = {
     readImage: async () => err(unavailable),
+    addImage: async () => err(unavailable),
 };
 
-export function createImageHub(): ImageHub {
+export function createImageHub(now: () => Date = () => new Date()): ImageHub {
     let fs: WorkspaceFileSystem | null = null;
     let attachments: Attachments = detachedAttachments;
     const live = new Set<{
@@ -68,6 +71,14 @@ export function createImageHub(): ImageHub {
                         return () => {
                             listeners.delete(listener);
                         };
+                    },
+                    addFiles(files: readonly File[]) {
+                        return addImagesFromFiles({
+                            files,
+                            notePath,
+                            attachments,
+                            now,
+                        });
                     },
                     activate() {
                         live.add(entry);

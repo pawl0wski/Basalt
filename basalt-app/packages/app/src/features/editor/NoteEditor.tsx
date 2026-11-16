@@ -1,5 +1,6 @@
 import {
     createMarkdownEditor,
+    type FileInputOptions,
     type ImageOptions,
     type MarkdownEditor,
 } from "@basalt/editor";
@@ -12,6 +13,7 @@ export type NoteEditorProps = {
     focusRequest?: number;
     readOnly?: boolean;
     images?: NoteEditorImages;
+    files?: FileInputOptions;
 };
 
 export type NoteEditorImages = {
@@ -26,6 +28,7 @@ export function NoteEditor({
     focusRequest = 0,
     readOnly = false,
     images,
+    files,
 }: NoteEditorProps) {
     const parentRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<MarkdownEditor | null>(null);
@@ -34,12 +37,14 @@ export function NoteEditor({
     const textRef = useRef(text);
     const focusRef = useRef(focusRequest);
     const imagesRef = useRef(images);
+    const filesRef = useRef(files);
 
     useEffect(() => {
         onChangeRef.current = onChange;
         textRef.current = text;
         focusRef.current = focusRequest;
         imagesRef.current = images;
+        filesRef.current = files;
     });
 
     useEffect(() => {
@@ -54,6 +59,13 @@ export function NoteEditor({
             readOnly,
             ariaLabel: label,
             images: imagesRef.current?.options,
+            files: filesRef.current
+                ? {
+                      onFiles: (dropped, source) =>
+                          filesRef.current?.onFiles(dropped, source) ??
+                          Promise.resolve([]),
+                  }
+                : undefined,
         });
         const unsubscribe = imagesRef.current?.subscribe(() => {
             editor.refreshImages();

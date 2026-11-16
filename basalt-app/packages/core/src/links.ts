@@ -68,3 +68,47 @@ export function resolveLinkTarget(
     const path = toWorkspacePath(decoded.join("/"));
     return path.ok ? { kind: "workspace", path: path.value } : INVALID;
 }
+
+const ENCODED_CHARACTERS = new Set(' "#%():<>?[\\]^`{|}');
+
+export function encodeLinkSegment(segment: string): string {
+    let result = "";
+    for (const char of segment) {
+        const code = char.codePointAt(0) ?? 0;
+        result +=
+            code < 0x20 || code === 0x7f || ENCODED_CHARACTERS.has(char)
+                ? `%${code.toString(16).toUpperCase().padStart(2, "0")}`
+                : char;
+    }
+    return result;
+}
+
+export function buildRelativeLink(
+    notePath: WorkspacePath,
+    targetPath: WorkspacePath,
+): string {
+    const noteDirectory = notePath.split("/").slice(0, -1);
+    const target = targetPath.split("/");
+    let common = 0;
+    while (
+        common < noteDirectory.length &&
+        common < target.length - 1 &&
+        noteDirectory[common] === target[common]
+    ) {
+        common += 1;
+    }
+    const segments = [
+        ...Array<string>(noteDirectory.length - common).fill(".."),
+        ...target.slice(common),
+    ];
+    return segments
+        .map((segment) =>
+            segment === ".." ? segment : encodeLinkSegment(segment),
+        )
+        .join("/");
+}
+
+export function formatImageLink(alt: string, destination: string): string {
+    const escaped = alt.replace(/[\\[\]]/g, (char) => `\\${char}`);
+    return `![${escaped}](${destination})`;
+}
