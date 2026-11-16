@@ -36,7 +36,7 @@ Refs: #16 (issue), #27 (spec PR, merged). Branch: `feat/manage-notes-and-folders
 | 5     | 5.1  | core + platform: `WorkspaceTrash` port, `deleteNotes`, in-memory trash, adapters, tests | dispatch | done   |         |
 | 5     | 5.2  | rust: `move_to_trash` command, `trash` dependency, Rust tests                          | dispatch | done   |         |
 | 5     | 5.3  | app UI: `deleteNotes` action, confirm dialog, context menu, i18n, unit tests           | dispatch | done   |         |
-| 5     | 5.4  | Playwright e2e for delete (AC-04.2, AC-04.12) and the selection menu (AC-04.11)        | dispatch | todo   |         |
+| 5     | 5.4  | Playwright e2e for delete (AC-04.2, AC-04.12) and the selection menu (AC-04.11)        | dispatch | done   |         |
 | 5     | 5.5  | Docs: spec status, lesson, run log                                                     | inline   | todo   |         |
 
 ## Goal

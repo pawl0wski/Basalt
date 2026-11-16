@@ -558,16 +558,15 @@ test.describe("moving several notes at once (AC-04.13)", () => {
 });
 
 test.describe("context menu with a selection (AC-04.11)", () => {
-    test("is not shown for a note of a multi-selection", async ({ page }) => {
+    test("offers Delete N notes for a note of a multi-selection", async ({
+        page,
+    }) => {
         await openWorkspaceWith(page, "/work/W", FILES);
         await ctrlClick(page, "Ideas");
         await ctrlClick(page, "Todo");
 
         await row(page, "Ideas").click({ button: "right" });
-        await row(page, "Ideas").focus();
-        await page.keyboard.press("Shift+F10");
-
-        await expect(page.getByRole("menu")).toHaveCount(0);
+        await expect(page.getByRole("menuitem")).toHaveText(["Delete 2 notes"]);
         await expect(selectedRows(page)).toHaveText(["Ideas", "Todo"]);
     });
 
@@ -580,7 +579,10 @@ test.describe("context menu with a selection (AC-04.11)", () => {
 
         await row(page, "Notes").click({ button: "right" });
 
-        await expect(page.getByRole("menuitem")).toHaveText(["Rename"]);
+        await expect(page.getByRole("menuitem")).toHaveText([
+            "Rename",
+            "Delete",
+        ]);
         await expect(selectedRows(page)).toHaveCount(0);
     });
 
@@ -592,6 +594,9 @@ test.describe("context menu with a selection (AC-04.11)", () => {
 
         await row(page, "Ideas").click({ button: "right" });
 
-        await expect(page.getByRole("menuitem")).toHaveText(["Rename"]);
+        await expect(page.getByRole("menuitem")).toHaveText([
+            "Rename",
+            "Delete",
+        ]);
     });
 });
