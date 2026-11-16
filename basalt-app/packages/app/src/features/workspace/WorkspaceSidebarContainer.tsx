@@ -15,7 +15,8 @@ export function WorkspaceSidebarContainer() {
     const root = useStore(workspaceStore, (state) => state.root);
     const watchMode = useStore(workspaceStore, (state) => state.watchMode);
     const { tree, activeNote, listError, createError } = useStore(notesStore);
-    const { expanded, focusedId, dragging, dropTarget } = useStore(treeStore);
+    const { expanded, focusedId, dragging, dropTarget, selected } =
+        useStore(treeStore);
     const nodes = useMemo(() => toTreeNodes(tree, expanded), [tree, expanded]);
 
     return (
@@ -44,12 +45,15 @@ export function WorkspaceSidebarContainer() {
             onOpenNote={(id) => {
                 const node = findTreeNode(tree, id);
                 if (node?.kind === "note") {
-                    void notesActions.openNote(node.path, { focus: true });
+                    void treeActions.openNote(node.path);
                 }
             }}
             onToggleFolder={treeActions.toggleFolder}
             onFocusChange={treeActions.focusRow}
             onContextMenuRequest={treeActions.requestMenu}
+            selectedIds={selected}
+            onSelectionChange={treeActions.changeSelection}
+            onClearSelection={treeActions.clearSelection}
             draggingIds={dragging}
             dropTarget={dropTarget}
             onDragStart={treeActions.dragStart}

@@ -2,7 +2,7 @@ import { toWorkspacePath } from "@basalt/core";
 import { describe, expect, it } from "vitest";
 import { createNotesStore } from "../notes/notes-store";
 import { connectTreeStore } from "./tree-wiring";
-import { createTreeStore, toggleFolder } from "./tree-store";
+import { createTreeStore, toggleFolder, toggleSelected } from "./tree-store";
 
 function path(value: string) {
     const parsed = toWorkspacePath(value);
@@ -49,5 +49,30 @@ describe("connectTreeStore", () => {
         stop();
         notes.setState({ activeNote: path("a/c.md") });
         expect(tree.getState().expanded.size).toBe(0);
+    });
+
+    it("drops selected notes that leave the notes list and keeps the rest", () => {
+        const { tree, notes } = setup();
+        notes.setState({
+            notes: [
+                { path: path("a.md"), name: "a" },
+                { path: path("b.md"), name: "b" },
+            ],
+        });
+        toggleSelected(tree, "a.md");
+        toggleSelected(tree, "b.md");
+
+        notes.setState({ notes: [{ path: path("b.md"), name: "b" }] });
+
+        expect([...tree.getState().selected]).toEqual(["b.md"]);
+    });
+
+    it("leaves the selection alone when the notes list is unchanged", () => {
+        const { tree, notes } = setup();
+        toggleSelected(tree, "gone.md");
+
+        notes.setState({ listError: null });
+
+        expect([...tree.getState().selected]).toEqual(["gone.md"]);
     });
 });

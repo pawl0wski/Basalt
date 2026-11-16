@@ -63,3 +63,9 @@ Spec phases A–D. Core use cases and port `rename`; ui Tree, ContextMenu, dialo
 - C-5 gap: the "unreadable folder inline error row" is not supported. `WorkspaceFileSystem.list()` returns one flat recursive listing and does not report per-folder read errors, so the tree cannot tell which folder failed. Supporting it needs a change to the port (partial results with per-directory errors). The ui `Tree` already renders a folder `error`.
 - ui change in Phase 3: `Dialog` and `NameDialog` gained `onCloseAutoFocus` so focus returns to the tree row after the dialog closes.
 - Focus gotcha (e2e only, jsdom cannot reproduce): Radix restores focus to the previous element after a context menu closes. After choosing an item this stole focus from the new dialog input and from the editor of a new note; focus is now restored only when the menu is dismissed without choosing.
+
+## Phase 4 notes
+
+- The context menu is not shown for a selection of 2 or more notes. Its only entry (AC-04.11 "Delete N notes") is blocked on C-1. Right-clicking a selected note of a multi-selection does nothing; right-clicking an unselected note clears the selection and shows that note's menu (covered by unit tests). A selection of one note shows the normal note menu.
+- `AppError` gained an optional structured `detail` (`move-collision`, `move-stopped`) so the C-8 messages are localised (`tree.move.*`); the English `message` stays for logs.
+- Move failures reuse the sidebar `createError` alert (cleared by the next successful move or create).

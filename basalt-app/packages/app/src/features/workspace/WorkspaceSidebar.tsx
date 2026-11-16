@@ -8,6 +8,7 @@ import {
     Tree,
     type TreeDropTarget,
     type TreeNode,
+    type TreeSelectionChange,
 } from "@basalt/ui";
 
 export type WorkspaceSidebarTexts = {
@@ -39,6 +40,9 @@ export type WorkspaceSidebarProps = {
         id: string | null,
         point: { x: number; y: number },
     ) => void;
+    selectedIds: ReadonlySet<string>;
+    onSelectionChange: (change: TreeSelectionChange) => void;
+    onClearSelection: () => void;
     draggingIds: ReadonlySet<string>;
     dropTarget: TreeDropTarget | null;
     onDragStart: (id: string) => void;
@@ -64,6 +68,9 @@ export function WorkspaceSidebar({
     onNewNote,
     onRetry,
     onContextMenuRequest,
+    selectedIds,
+    onSelectionChange,
+    onClearSelection,
     draggingIds,
     dropTarget,
     onDragStart,
@@ -123,6 +130,9 @@ export function WorkspaceSidebar({
                     nodes={nodes}
                     activeId={activeId}
                     focusedId={focusedId}
+                    selectedIds={selectedIds}
+                    onSelectionChange={onSelectionChange}
+                    onClearSelection={onClearSelection}
                     draggingIds={draggingIds}
                     dropTarget={dropTarget}
                     onDragStart={onDragStart}

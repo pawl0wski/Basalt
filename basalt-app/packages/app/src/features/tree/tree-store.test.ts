@@ -2,6 +2,7 @@ import { toWorkspacePath } from "@basalt/core";
 import { describe, expect, it } from "vitest";
 import {
     closeDialog,
+    clearSelection,
     closeMenu,
     createTreeStore,
     endDrag,
@@ -9,6 +10,8 @@ import {
     openMenu,
     openNewFolderDialog,
     openRenameDialog,
+    pruneSelection,
+    selectRange,
     setDialogError,
     setDialogName,
     setDialogPending,
@@ -16,6 +19,7 @@ import {
     setFocusedRow,
     startDrag,
     toggleFolder,
+    toggleSelected,
 } from "./tree-store";
 
 function path(value: string) {
@@ -211,5 +215,105 @@ describe("drag state", () => {
         expect(store.getState().dropTarget).toEqual({ type: "root" });
         setDropTarget(store, null);
         expect(store.getState().dropTarget).toBeNull();
+    });
+});
+
+describe("selection", () => {
+    const visible = ["a.md", "b.md", "c.md", "d.md"];
+
+    it("toggles a note in and out and remembers the last toggled note as anchor", () => {
+        const store = createTreeStore();
+
+        toggleSelected(store, "a.md");
+        toggleSelected(store, "c.md");
+        expect([...store.getState().selected]).toEqual(["a.md", "c.md"]);
+        expect(store.getState().anchorId).toBe("c.md");
+
+        toggleSelected(store, "a.md");
+        expect([...store.getState().selected]).toEqual(["c.md"]);
+    });
+
+    it("selects the notes between the anchor and the target in either direction", () => {
+        const store = createTreeStore();
+
+        selectRange(store, "c.md", "a.md", visible);
+        expect([...store.getState().selected]).toEqual([
+            "a.md",
+            "b.md",
+            "c.md",
+        ]);
+        expect(store.getState().anchorId).toBe("a.md");
+
+        selectRange(store, "a.md", "c.md", visible);
+        expect([...store.getState().selected]).toEqual([
+            "a.md",
+            "b.md",
+            "c.md",
+        ]);
+        expect(store.getState().anchorId).toBe("c.md");
+    });
+
+    it("replaces the previous range so extending back shrinks it", () => {
+        const store = createTreeStore();
+        selectRange(store, "d.md", "a.md", visible);
+
+        selectRange(store, "b.md", "a.md", visible);
+
+        expect([...store.getState().selected]).toEqual(["a.md", "b.md"]);
+    });
+
+    it("selects only the target when there is no anchor or the anchor is not visible", () => {
+        const store = createTreeStore();
+
+        selectRange(store, "b.md", null, visible);
+        expect([...store.getState().selected]).toEqual(["b.md"]);
+        expect(store.getState().anchorId).toBe("b.md");
+
+        selectRange(store, "c.md", "hidden/x.md", visible);
+        expect([...store.getState().selected]).toEqual(["c.md"]);
+    });
+
+    it("ignores a target that is not a visible note", () => {
+        const store = createTreeStore();
+        toggleSelected(store, "a.md");
+        const before = store.getState();
+
+        selectRange(store, "folder", "a.md", visible);
+
+        expect(store.getState()).toBe(before);
+    });
+
+    it("clears the selection and the anchor, and leaves an empty state untouched", () => {
+        const store = createTreeStore();
+        const empty = store.getState();
+        clearSelection(store);
+        expect(store.getState()).toBe(empty);
+
+        toggleSelected(store, "a.md");
+        clearSelection(store);
+
+        expect(store.getState().selected.size).toBe(0);
+        expect(store.getState().anchorId).toBeNull();
+    });
+
+    it("prunes notes that no longer exist and the anchor with them", () => {
+        const store = createTreeStore();
+        toggleSelected(store, "a.md");
+        toggleSelected(store, "b.md");
+
+        pruneSelection(store, (id) => id === "a.md");
+
+        expect([...store.getState().selected]).toEqual(["a.md"]);
+        expect(store.getState().anchorId).toBeNull();
+    });
+
+    it("prune keeps the same state when everything still exists", () => {
+        const store = createTreeStore();
+        toggleSelected(store, "a.md");
+        const before = store.getState();
+
+        pruneSelection(store, () => true);
+
+        expect(store.getState()).toBe(before);
     });
 });

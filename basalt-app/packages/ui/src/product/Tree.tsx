@@ -213,13 +213,13 @@ function Tree({
                 const next = rows[index + (event.key === "ArrowDown" ? 1 : -1)];
                 event.preventDefault();
                 if (!next) return;
-                moveFocus(next.node.id);
                 if (event.shiftKey && next.node.kind === "note")
                     onSelectionChange?.({
                         mode: "extend",
                         id: next.node.id,
                         visibleNoteIds,
                     });
+                moveFocus(next.node.id);
                 return;
             }
             case "Home":

@@ -9,7 +9,12 @@ import {
     parentFolder,
 } from "./tree-nodes";
 import {
+    clearSelection,
     closeDialog,
+    pruneSelection,
+    selectRange,
+    setSelection,
+    toggleSelected,
     endDrag,
     setDropTarget,
     startDrag,
@@ -43,6 +48,15 @@ export type TreeActions = {
     dropTargetChange(target: DropTarget | null): void;
     hoverOpen(id: string): void;
     drop(target: DropTarget): Promise<void>;
+    changeSelection(change: SelectionChange): void;
+    clearSelection(): void;
+    openNote(path: WorkspacePath): Promise<void>;
+};
+
+export type SelectionChange = {
+    readonly mode: "toggle" | "range" | "extend";
+    readonly id: string;
+    readonly visibleNoteIds: readonly string[];
 };
 
 export function createTreeActions(options: {
@@ -121,7 +135,35 @@ export function createTreeActions(options: {
 
     return {
         dragStart: (id) => {
-            startDrag(store, new Set([id]));
+            const { selected } = store.getState();
+            if (!selected.has(id)) clearSelection(store);
+            startDrag(store, selected.has(id) ? selected : new Set([id]));
+        },
+        changeSelection(change) {
+            const { anchorId, focusedId } = store.getState();
+            if (change.mode === "toggle") {
+                toggleSelected(store, change.id);
+                return;
+            }
+            const fallback =
+                change.mode === "extend" &&
+                focusedId !== null &&
+                change.visibleNoteIds.includes(focusedId)
+                    ? focusedId
+                    : (notesStore.getState().activeNote ?? null);
+            selectRange(
+                store,
+                change.id,
+                anchorId ?? fallback,
+                change.visibleNoteIds,
+            );
+        },
+        clearSelection: () => {
+            clearSelection(store);
+        },
+        async openNote(path) {
+            clearSelection(store);
+            await notes.openNote(path, { focus: true });
         },
         dragEnd: () => {
             endDrag(store);
@@ -146,11 +188,26 @@ export function createTreeActions(options: {
         },
         async drop(target) {
             const paths = [...store.getState().dragging] as WorkspacePath[];
+            const selected = store.getState().selected;
             endDrag(store);
             const destination = destinationOf(target);
             if (destination === false || !changesFolder(paths, destination))
                 return;
             const moved = await notes.moveNotes(paths, destination);
+            const moves = moved.ok ? moved.value : [];
+            if (selected.size > 0) {
+                const renamed = new Map<string, string>(
+                    moves.map((move) => [move.from, move.to]),
+                );
+                const following = [...selected].map(
+                    (id) => renamed.get(id) ?? id,
+                );
+                setSelection(store, new Set(following), following[0] ?? null);
+                const existing = new Set<string>(
+                    notesStore.getState().notes.map((note) => note.path),
+                );
+                pruneSelection(store, (id) => existing.has(id));
+            }
             if (!moved.ok || moved.value.length === 0) return;
             if (destination !== null)
                 expandFolders(store, [
@@ -173,6 +230,14 @@ export function createTreeActions(options: {
             const node = findTreeNode(currentTree(), id);
             if (!node) return;
             setFocusedRow(store, id);
+            if (node.kind === "note") {
+                const { selected } = store.getState();
+                if (!selected.has(id)) clearSelection(store);
+                else if (selected.size > 1) {
+                    closeMenu(store);
+                    return;
+                }
+            }
             openMenu(store, {
                 target: { kind: node.kind, path: node.path },
                 point,

@@ -31,6 +31,8 @@ export type DropTarget =
 export type TreeState = {
     readonly expanded: ReadonlySet<string>;
     readonly focusedId: string | null;
+    readonly selected: ReadonlySet<string>;
+    readonly anchorId: string | null;
     readonly dragging: ReadonlySet<string>;
     readonly dropTarget: DropTarget | null;
     readonly menu: TreeMenu | null;
@@ -43,6 +45,8 @@ export function emptyTreeState(): TreeState {
     return {
         expanded: new Set(),
         focusedId: null,
+        selected: new Set(),
+        anchorId: null,
         dragging: new Set(),
         dropTarget: null,
         menu: null,
@@ -162,4 +166,55 @@ export function setDropTarget(
 ): void {
     if (sameDropTarget(store.getState().dropTarget, target)) return;
     store.setState({ dropTarget: target });
+}
+
+export function setSelection(
+    store: TreeStore,
+    selected: ReadonlySet<string>,
+    anchorId: string | null,
+): void {
+    store.setState({ selected, anchorId });
+}
+
+export function clearSelection(store: TreeStore): void {
+    const { selected, anchorId } = store.getState();
+    if (selected.size === 0 && anchorId === null) return;
+    store.setState({ selected: new Set(), anchorId: null });
+}
+
+export function toggleSelected(store: TreeStore, id: string): void {
+    const next = new Set(store.getState().selected);
+    if (!next.delete(id)) next.add(id);
+    store.setState({ selected: next, anchorId: id });
+}
+
+export function selectRange(
+    store: TreeStore,
+    id: string,
+    anchorId: string | null,
+    visibleNoteIds: readonly string[],
+): void {
+    const from = anchorId === null ? -1 : visibleNoteIds.indexOf(anchorId);
+    const to = visibleNoteIds.indexOf(id);
+    if (to === -1) return;
+    if (from === -1) {
+        store.setState({ selected: new Set([id]), anchorId: id });
+        return;
+    }
+    const [low, high] = from < to ? [from, to] : [to, from];
+    store.setState({
+        selected: new Set(visibleNoteIds.slice(low, high + 1)),
+        anchorId: visibleNoteIds[from],
+    });
+}
+
+export function pruneSelection(
+    store: TreeStore,
+    exists: (id: string) => boolean,
+): void {
+    const { selected, anchorId } = store.getState();
+    const kept = [...selected].filter(exists);
+    const anchor = anchorId !== null && exists(anchorId) ? anchorId : null;
+    if (kept.length === selected.size && anchor === anchorId) return;
+    store.setState({ selected: new Set(kept), anchorId: anchor });
 }

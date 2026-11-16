@@ -441,3 +441,134 @@ describe("dragging notes in the tree", () => {
         expect(await paths(fs)).toEqual(["a.md", "docs", "docs/A.md"]);
     });
 });
+
+describe("selecting several notes in the tree", () => {
+    beforeAll(async () => {
+        await initI18n();
+    });
+
+    const files = { "a.md": "", "b.md": "", "c.md": "", "d.md": "" };
+
+    it("marks the tree multiselectable and highlights Ctrl+clicked notes without opening them", async () => {
+        const user = userEvent.setup();
+        await openApp(files);
+
+        await user.keyboard("{Control>}");
+        await user.click(row("a"));
+        await user.click(row("c"));
+        await user.keyboard("{/Control}");
+
+        expect(screen.getByRole("tree")).toHaveAttribute(
+            "aria-multiselectable",
+            "true",
+        );
+        expect(row("a")).toHaveAttribute("aria-selected", "true");
+        expect(row("b")).toHaveAttribute("aria-selected", "false");
+        expect(row("c")).toHaveAttribute("aria-selected", "true");
+        expect(screen.queryByRole("tab")).toBeNull();
+    });
+
+    it("selects the range with Shift+click, extends with Shift+Arrow and clears with Escape", async () => {
+        const user = userEvent.setup();
+        await openApp(files);
+        await user.keyboard("{Control>}");
+        await user.click(row("a"));
+        await user.keyboard("{/Control}{Shift>}");
+        await user.click(row("c"));
+        await user.keyboard("{/Shift}");
+        expect(
+            screen
+                .getAllByRole("treeitem")
+                .map((item) => item.getAttribute("aria-selected")),
+        ).toEqual(["true", "true", "true", "false"]);
+
+        row("c").focus();
+        await user.keyboard("{Shift>}{ArrowDown}{/Shift}");
+        expect(row("d")).toHaveAttribute("aria-selected", "true");
+
+        await user.keyboard("{Escape}");
+        expect(
+            screen
+                .getAllByRole("treeitem")
+                .map((item) => item.getAttribute("aria-selected")),
+        ).toEqual(["false", "false", "false", "false"]);
+    });
+
+    it("a plain click opens one note and clears the selection", async () => {
+        const user = userEvent.setup();
+        await openApp(files);
+        await user.keyboard("{Control>}");
+        await user.click(row("a"));
+        await user.click(row("b"));
+        await user.keyboard("{/Control}");
+
+        await user.click(row("c"));
+
+        expect(await screen.findByRole("tab", { name: "c" })).toBeVisible();
+        expect(row("a")).toHaveAttribute("aria-selected", "false");
+        expect(row("b")).toHaveAttribute("aria-selected", "false");
+    });
+
+    it("never selects a folder", async () => {
+        const user = userEvent.setup();
+        await openApp({ "docs/x.md": "", "a.md": "" });
+
+        await user.keyboard("{Control>}");
+        await user.click(row("docs"));
+        await user.keyboard("{/Control}");
+
+        expect(row("docs")).not.toHaveAttribute("aria-selected");
+        expect(row("docs")).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("opens no context menu on a note of a multi-selection but opens the menu of an unselected note", async () => {
+        const user = userEvent.setup();
+        await openApp(files);
+        await user.keyboard("{Control>}");
+        await user.click(row("a"));
+        await user.click(row("b"));
+        await user.keyboard("{/Control}");
+
+        fireEvent.contextMenu(row("a"));
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(screen.queryByRole("menu")).toBeNull();
+
+        fireEvent.contextMenu(row("c"));
+        await screen.findByRole("menu");
+        expect(row("a")).toHaveAttribute("aria-selected", "false");
+        expect(menuItems().map((item) => item.textContent)).toEqual([
+            en.tree.menu.rename,
+        ]);
+    });
+
+    it("dragging a selected note moves the whole selection", async () => {
+        const user = userEvent.setup();
+        const { fs } = await openApp({ ...files, "docs/x.md": "" });
+        await user.keyboard("{Control>}");
+        await user.click(row("a"));
+        await user.click(row("b"));
+        await user.keyboard("{/Control}");
+        const dataTransfer = {
+            setData: vi.fn(),
+            types: [],
+            files: [],
+            dropEffect: "",
+            effectAllowed: "",
+        };
+
+        fireEvent.dragStart(row("a"), { dataTransfer });
+        expect(row("b")).toHaveAttribute("data-dragging", "true");
+        fireEvent.drop(row("docs"), { dataTransfer });
+
+        await vi.waitFor(async () => {
+            expect(await paths(fs)).toEqual([
+                "c.md",
+                "d.md",
+                "docs",
+                "docs/a.md",
+                "docs/b.md",
+                "docs/x.md",
+            ]);
+        });
+    });
+});

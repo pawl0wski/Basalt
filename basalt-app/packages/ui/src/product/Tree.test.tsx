@@ -431,6 +431,24 @@ describe("Tree selection", () => {
         expect(onToggleFolder).toHaveBeenCalledWith("projects/2026");
     });
 
+    it("reports the extend before it reports the focus change so the previous row is still known", async () => {
+        const user = userEvent.setup();
+        const calls: string[] = [];
+        render(
+            <Focusable
+                activeId="Ideas.md"
+                onSelectionChange={() => calls.push("selection")}
+                onFocusChange={() => calls.push("focus")}
+            />,
+        );
+        await user.tab();
+        calls.length = 0;
+
+        await user.keyboard("{Shift>}{ArrowDown}{/Shift}");
+
+        expect(calls.slice(0, 2)).toEqual(["selection", "focus"]);
+    });
+
     it("extends the selection with Shift+Arrow onto a note but not onto a folder", async () => {
         const user = userEvent.setup();
         const onSelectionChange = vi.fn();
