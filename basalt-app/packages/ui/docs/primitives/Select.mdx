@@ -21,12 +21,12 @@ A select lets the user choose one value from a list of about 4 to 12 options, su
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| Two options. | Switch or [Checkbox](?path=/docs/primitives-checkbox--docs). |
-| Three or fewer options the user should compare at once. | RadioGroup (Batch 3). |
-| The user types to find an item. | A search field with results. It is not in the current plan; see "What is missing". |
-| Free text. | [Input](?path=/docs/primitives-input--docs). |
+| Situation                                               | Use instead                                                                        |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Two options.                                            | Switch or [Checkbox](?path=/docs/primitives-checkbox--docs).                       |
+| Three or fewer options the user should compare at once. | RadioGroup (Batch 3).                                                              |
+| The user types to find an item.                         | A search field with results. It is not in the current plan; see "What is missing". |
+| Free text.                                              | [Input](?path=/docs/primitives-input--docs).                                       |
 
 ## 4. Anatomy
 
@@ -45,14 +45,14 @@ One variant. It is a styled native `select` (proposal, no new dependency). The o
 
 <Canvas of={SelectStories.States} />
 
-| State | What the user sees | Notes |
-|---|---|---|
-| Default | `border-control` outline. | |
-| Hover | No change. | Proposal. |
-| Focus | 2 px `focus-ring` outline. | |
-| Invalid | `status-danger` border plus an error message in a Field. | |
-| Disabled | `text-muted` on `state-hover`. Say why in the hint. | Proposal (open question 3). |
-| Loading | Not supported. | |
+| State    | What the user sees                                       | Notes                       |
+| -------- | -------------------------------------------------------- | --------------------------- |
+| Default  | `border-control` outline.                                |                             |
+| Hover    | No change.                                               | Proposal.                   |
+| Focus    | 2 px `focus-ring` outline.                               |                             |
+| Invalid  | `status-danger` border plus an error message in a Field. |                             |
+| Disabled | `text-muted` on `state-hover`. Say why in the hint.      | Proposal (open question 3). |
+| Loading  | Not supported.                                           |                             |
 
 <Canvas of={SelectStories.WithError} />
 
@@ -78,26 +78,29 @@ The select fills its container; limit the container (`max-w-prose`). On touch de
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `children` | `<option>` elements | required | The options. |
-| `value`, `defaultValue`, `onChange` | native | | Same as a `select`. |
-| `aria-invalid` | `boolean` | set by Field | Error style. |
-| `disabled` | `boolean` | `false` | Blocks interaction. |
-| ...rest | `SelectHTMLAttributes` | | Passed to the `select`. |
+| Prop                                | Type                   | Default      | Description             |
+| ----------------------------------- | ---------------------- | ------------ | ----------------------- |
+| `children`                          | `<option>` elements    | required     | The options.            |
+| `value`, `defaultValue`, `onChange` | native                 |              | Same as a `select`.     |
+| `aria-invalid`                      | `boolean`              | set by Field | Error style.            |
+| `disabled`                          | `boolean`              | `false`      | Blocks interaction.     |
+| ...rest                             | `SelectHTMLAttributes` |              | Passed to the `select`. |
 
 ## 11. Code
 
 ```tsx
 import { Field, Select } from "@basalt/ui";
 
-<Field label="Interface text size" hint="Applies to menus and settings, not to notes.">
+<Field
+    label="Interface text size"
+    hint="Applies to menus and settings, not to notes."
+>
     <Select defaultValue="system">
         <option value="system">System default</option>
         <option value="small">Small</option>
         <option value="large">Large</option>
     </Select>
-</Field>
+</Field>;
 ```
 
 ## 12. Do and don't

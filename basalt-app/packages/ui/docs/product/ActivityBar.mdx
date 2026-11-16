@@ -17,11 +17,11 @@ The narrow column at the left edge of the window that switches between the secti
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| Actions on a note or the list (new note, sort). | [IconButton](?path=/docs/primitives-iconbutton--docs) in the header of the panel. |
-| Sibling views of one object. | [Tabs](?path=/docs/primitives-tabs--docs). |
-| A count or a status on an icon. | Not built, see [What is missing](?path=/docs/design-system-what-is-missing--docs). |
+| Situation                                       | Use instead                                                                        |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Actions on a note or the list (new note, sort). | [IconButton](?path=/docs/primitives-iconbutton--docs) in the header of the panel.  |
+| Sibling views of one object.                    | [Tabs](?path=/docs/primitives-tabs--docs).                                         |
+| A count or a status on an icon.                 | Not built, see [What is missing](?path=/docs/design-system-what-is-missing--docs). |
 
 ## 4. Anatomy
 
@@ -30,12 +30,12 @@ The narrow column at the left edge of the window that switches between the secti
 3. Active section: the icon is `icon-active`, and the button has `aria-current="page"`.
 4. Footer: the sections pinned to the bottom (Settings).
 
-| Section | Icon | Accessible name |
-|---|---|---|
-| Notes | `Files` | Notes |
-| Search | `Search` | Search |
-| Bookmarks | `Bookmark` | Bookmarks |
-| Settings (footer) | `Settings` | Settings |
+| Section           | Icon       | Accessible name |
+| ----------------- | ---------- | --------------- |
+| Notes             | `Files`    | Notes           |
+| Search            | `Search`   | Search          |
+| Bookmarks         | `Bookmark` | Bookmarks       |
+| Settings (footer) | `Settings` | Settings        |
 
 ## 5. Variants
 
@@ -47,12 +47,12 @@ One layout. No section is active in a window where none applies.
 
 <Canvas of={ActivityBarStories.States} />
 
-| State | What the user sees |
-|---|---|
-| Default | `icon-default` icon. |
-| Hover | `icon-active` icon on `state-hover`. |
-| Focus | 2 px `focus-ring`. |
-| Active | `icon-active` icon. No fill, so that hover still reads on top of it. |
+| State   | What the user sees                                                   |
+| ------- | -------------------------------------------------------------------- |
+| Default | `icon-default` icon.                                                 |
+| Hover   | `icon-active` icon on `state-hover`.                                 |
+| Focus   | 2 px `focus-ring`.                                                   |
+| Active  | `icon-active` icon. No fill, so that hover still reads on top of it. |
 
 The matrix repeats the component, so the "unique landmark" accessibility rule is switched off on that one story. The real screen has one.
 
@@ -72,20 +72,28 @@ Fixed 48 px. Desktop only.
 
 ## 10. API
 
-| Prop | Type | Description |
-|---|---|---|
-| `items` | `{ id, label, icon }[]` | Sections from the top. |
-| `footerItems` | `{ id, label, icon }[]` | Sections pinned to the bottom. |
-| `activeId` | `string` | The current section. |
-| `onSelect` | `(id: string) => void` | Called with the id of the clicked section. |
-| `className` | `string` | |
+| Prop          | Type                    | Description                                |
+| ------------- | ----------------------- | ------------------------------------------ |
+| `items`       | `{ id, label, icon }[]` | Sections from the top.                     |
+| `footerItems` | `{ id, label, icon }[]` | Sections pinned to the bottom.             |
+| `activeId`    | `string`                | The current section.                       |
+| `onSelect`    | `(id: string) => void`  | Called with the id of the clicked section. |
+| `className`   | `string`                |                                            |
 
 ## 11. Code
 
 ```tsx
 <ActivityBar
-    items={[{ id: "notes", label: "Notes", icon: <Files aria-hidden="true" /> }]}
-    footerItems={[{ id: "settings", label: "Settings", icon: <Settings aria-hidden="true" /> }]}
+    items={[
+        { id: "notes", label: "Notes", icon: <Files aria-hidden="true" /> },
+    ]}
+    footerItems={[
+        {
+            id: "settings",
+            label: "Settings",
+            icon: <Settings aria-hidden="true" />,
+        },
+    ]}
     activeId="notes"
     onSelect={openSection}
 />

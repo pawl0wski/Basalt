@@ -21,11 +21,11 @@ A switch turns a setting on or off and the change takes effect at once, for exam
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
+| Situation                                                                       | Use instead                                        |
+| ------------------------------------------------------------------------------- | -------------------------------------------------- |
 | The value is saved later with a button, or is one of several options in a form. | [Checkbox](?path=/docs/primitives-checkbox--docs). |
-| More than two values. | Select or RadioGroup. |
-| An action, not a state. | [Button](?path=/docs/primitives-button--docs). |
+| More than two values.                                                           | Select or RadioGroup.                              |
+| An action, not a state.                                                         | [Button](?path=/docs/primitives-button--docs).     |
 
 ## 4. Anatomy
 
@@ -45,13 +45,13 @@ One variant. The accent (`action-primary`) is used on switches (R01.2, tokens.md
 
 <Canvas of={SwitchStories.States} />
 
-| State | What the user sees | Notes |
-|---|---|---|
-| Off / On | Track color and thumb position. Position is the second signal next to color (WCAG 1.4.1). | |
-| Hover | On: `action-primary-hover`. Off: no change. | Proposal. A lighter off track would not keep 3:1 with the thumb. |
-| Focus | 2 px `focus-ring` outline, 2 px offset. | |
-| Disabled | `state-selected` track, `text-muted` label. | Proposal (open question 3). |
-| Loading | Not supported. If saving can fail, show the result with [StatusIndicator](?path=/docs/primitives-statusindicator--docs) or an Alert. | |
+| State    | What the user sees                                                                                                                   | Notes                                                            |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| Off / On | Track color and thumb position. Position is the second signal next to color (WCAG 1.4.1).                                            |                                                                  |
+| Hover    | On: `action-primary-hover`. Off: no change.                                                                                          | Proposal. A lighter off track would not keep 3:1 with the thumb. |
+| Focus    | 2 px `focus-ring` outline, 2 px offset.                                                                                              |                                                                  |
+| Disabled | `state-selected` track, `text-muted` label.                                                                                          | Proposal (open question 3).                                      |
+| Loading  | Not supported. If saving can fail, show the result with [StatusIndicator](?path=/docs/primitives-statusindicator--docs) or an Alert. |                                                                  |
 
 Switches never stand on `surface-raised`: `action-primary` on it is 2.80:1 (tokens.md rule 15). The thumb on the off track is 3:1 or better (measured in `contrast.test.ts`).
 
@@ -80,25 +80,32 @@ The row wraps long labels and keeps its height. The switch stays on the same lin
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `label` | `ReactNode` | | Visible label. Use `aria-label` if there is no visible label. |
-| `checked` | `boolean` | | Controlled value. |
-| `defaultChecked` | `boolean` | `false` | Initial value when uncontrolled. |
-| `onCheckedChange` | `(checked: boolean) => void` | | Called with the requested value. |
-| `disabled` | `boolean` | `false` | Blocks interaction. |
-| `type` | `"button" \| "submit" \| "reset"` | `"button"` | Button type. |
+| Prop              | Type                              | Default    | Description                                                   |
+| ----------------- | --------------------------------- | ---------- | ------------------------------------------------------------- |
+| `label`           | `ReactNode`                       |            | Visible label. Use `aria-label` if there is no visible label. |
+| `checked`         | `boolean`                         |            | Controlled value.                                             |
+| `defaultChecked`  | `boolean`                         | `false`    | Initial value when uncontrolled.                              |
+| `onCheckedChange` | `(checked: boolean) => void`      |            | Called with the requested value.                              |
+| `disabled`        | `boolean`                         | `false`    | Blocks interaction.                                           |
+| `type`            | `"button" \| "submit" \| "reset"` | `"button"` | Button type.                                                  |
 
 ## 11. Code
 
 ```tsx
 import { Switch } from "@basalt/ui";
 
-<Switch label="Sync notes between devices" checked={sync} onCheckedChange={setSync} />
+<Switch
+    label="Sync notes between devices"
+    checked={sync}
+    onCheckedChange={setSync}
+/>;
 ```
 
 ```tsx
-<CardRow title="Sync status" description="Shows Synced, Syncing or an error in words.">
+<CardRow
+    title="Sync status"
+    description="Shows Synced, Syncing or an error in words."
+>
     <Switch aria-label="Sync status" defaultChecked />
 </CardRow>
 ```
@@ -108,11 +115,18 @@ import { Switch } from "@basalt/ui";
 <Unstyled>
     <DoDont
         good={{
-            children: <Switch label="Sync notes between devices" defaultChecked />,
+            children: (
+                <Switch label="Sync notes between devices" defaultChecked />
+            ),
             reason: "The change applies at once, which is what a switch promises.",
         }}
         bad={{
-            children: <Switch label="Enable sync (applies after Save)" defaultChecked />,
+            children: (
+                <Switch
+                    label="Enable sync (applies after Save)"
+                    defaultChecked
+                />
+            ),
             reason: "A switch that waits for Save is a checkbox in disguise.",
         }}
     />

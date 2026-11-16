@@ -22,12 +22,12 @@ An empty state tells the user why a place is empty and what to do next, such as 
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| Loading. | [Skeleton](?path=/docs/primitives-skeleton--docs). |
-| The load failed. | [ErrorState](?path=/docs/primitives-errorstate--docs). |
-| A field with no value. | The field's placeholder or hint. |
-| A note with no text. | The editor itself. |
+| Situation              | Use instead                                            |
+| ---------------------- | ------------------------------------------------------ |
+| Loading.               | [Skeleton](?path=/docs/primitives-skeleton--docs).     |
+| The load failed.       | [ErrorState](?path=/docs/primitives-errorstate--docs). |
+| A field with no value. | The field's placeholder or hint.                       |
+| A note with no text.   | The editor itself.                                     |
 
 Two different empty cases get two different messages: "nothing is here yet" (action: create) and "nothing matches your filter" (action: clear the filter).
 
@@ -76,14 +76,14 @@ The block fills the width at 320 px (text wraps) and stops at 65 characters on w
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `title` | `ReactNode` | required | What is empty. |
-| `description` | `ReactNode` | | Why and what next. |
-| `action` | `ReactNode` | | Button that solves it. |
-| `icon` | `ReactNode` | | Decorative icon. |
-| `headingAs` | `"h2" \| "h3" \| "h4"` | `"h2"` | Heading level. |
-| `role` | `"alert" \| "status"` | | Live region role, for dynamic cases. |
+| Prop          | Type                   | Default  | Description                          |
+| ------------- | ---------------------- | -------- | ------------------------------------ |
+| `title`       | `ReactNode`            | required | What is empty.                       |
+| `description` | `ReactNode`            |          | Why and what next.                   |
+| `action`      | `ReactNode`            |          | Button that solves it.               |
+| `icon`        | `ReactNode`            |          | Decorative icon.                     |
+| `headingAs`   | `"h2" \| "h3" \| "h4"` | `"h2"`   | Heading level.                       |
+| `role`        | `"alert" \| "status"`  |          | Live region role, for dynamic cases. |
 
 ## 11. Code
 
@@ -94,7 +94,7 @@ import { Button, EmptyState } from "@basalt/ui";
     title="No notes yet"
     description="Notes you create are saved as Markdown files in your workspace folder."
     action={<Button>New note</Button>}
-/>
+/>;
 ```
 
 ## 12. Do and don't

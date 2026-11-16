@@ -17,11 +17,11 @@ A persistent message above the editor when something stops the open note from sa
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
+| Situation                              | Use instead                                                     |
+| -------------------------------------- | --------------------------------------------------------------- |
 | The save fails while leaving the note. | [SaveFailedDialog](?path=/docs/product-savefaileddialog--docs). |
-| A short confirmation. | Toast. |
-| An error for the whole view. | [ErrorState](?path=/docs/primitives-errorstate--docs). |
+| A short confirmation.                  | Toast.                                                          |
+| An error for the whole view.           | [ErrorState](?path=/docs/primitives-errorstate--docs).          |
 
 ## 4. Anatomy
 
@@ -29,13 +29,13 @@ An [Alert](?path=/docs/primitives-alert--docs) with a title, a message and one o
 
 ## 5. Variants (kinds)
 
-| Kind | Alert variant | Actions | Source |
-|---|---|---|---|
-| `conflict` | warning | Keep my version, Load version from disk | E01-S01 edge cases (G3) |
-| `deleted` | warning | Save again here, Close note | E01-S01 edge cases |
-| `permission-denied` | danger (`role="alert"`) | Retry | E01-S01 AC3 |
-| `too-large` | info | none | E01-S01 (5 MiB) |
-| `not-utf8` | info | none | E01-S01 |
+| Kind                | Alert variant           | Actions                                 | Source                  |
+| ------------------- | ----------------------- | --------------------------------------- | ----------------------- |
+| `conflict`          | warning                 | Keep my version, Load version from disk | E01-S01 edge cases (G3) |
+| `deleted`           | warning                 | Save again here, Close note             | E01-S01 edge cases      |
+| `permission-denied` | danger (`role="alert"`) | Retry                                   | E01-S01 AC3             |
+| `too-large`         | info                    | none                                    | E01-S01 (5 MiB)         |
+| `not-utf8`          | info                    | none                                    | E01-S01                 |
 
 <Canvas of={NoteBannerStories.Deleted} />
 <Canvas of={NoteBannerStories.PermissionDenied} />
@@ -70,7 +70,11 @@ A discriminated union on `kind`; each kind requires only its own callbacks: `con
 ```tsx
 import { NoteBanner } from "@basalt/ui";
 
-<NoteBanner kind="conflict" onKeepMine={overwrite} onLoadFromDisk={reloadFromDisk} />
+<NoteBanner
+    kind="conflict"
+    onKeepMine={overwrite}
+    onLoadFromDisk={reloadFromDisk}
+/>;
 ```
 
 ## 12. Do and don't

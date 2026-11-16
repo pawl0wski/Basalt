@@ -17,10 +17,10 @@ A dialog that asks what to do with unsaved text when leaving a note failed to sa
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| A save fails while the user stays in the note. | [NoteBanner](?path=/docs/product-notebanner--docs). |
-| Confirming a deletion. | [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs). |
+| Situation                                      | Use instead                                                  |
+| ---------------------------------------------- | ------------------------------------------------------------ |
+| A save fails while the user stays in the note. | [NoteBanner](?path=/docs/product-notebanner--docs).          |
+| Confirming a deletion.                         | [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs). |
 
 ## 4. Anatomy
 
@@ -60,7 +60,13 @@ Buttons stack at 320 px with the main action on top, as in [Dialog](?path=/docs/
 ## 11. Code
 
 ```tsx
-<SaveFailedDialog open={failed} noteName={note.name} onRetry={retry} onDiscard={discard} onCancel={stay} />
+<SaveFailedDialog
+    open={failed}
+    noteName={note.name}
+    onRetry={retry}
+    onDiscard={discard}
+    onCancel={stay}
+/>
 ```
 
 ## 12. Do and don't

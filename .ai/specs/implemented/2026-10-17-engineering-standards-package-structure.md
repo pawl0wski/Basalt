@@ -474,3 +474,7 @@ These references inform the guidelines above; Basalt's requirements are the rule
 - GitHub Actions, running jobs in a container: <https://docs.github.com/en/actions/using-jobs/running-jobs-in-a-container>
 - Tauri prerequisites for Alpine Linux (musl/static-library considerations): <https://v2.tauri.app/start/prerequisites/>
 - Official Node.js Alpine image and musl compatibility notes: <https://hub.docker.com/_/node>
+
+## Addendum (2026-11-16): file-kind registry
+
+`@basalt/core` has a file-kind registry (`FILE_KINDS`, `fileKindOf`; longest extension wins) introduced by E01-S03. `isMarkdownPath` is `fileKindOf(path) === "markdown"`. New kinds are added there, not by scattering extension checks.

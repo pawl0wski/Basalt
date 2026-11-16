@@ -17,10 +17,10 @@ The window's own title bar: the left panel toggle, the tabs of the open notes, "
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| Sibling views of one object (settings sections). | [Tabs](?path=/docs/primitives-tabs--docs). |
-| Navigation between app sections. | [ActivityBar](?path=/docs/product-activitybar--docs). |
+| Situation                                        | Use instead                                           |
+| ------------------------------------------------ | ----------------------------------------------------- |
+| Sibling views of one object (settings sections). | [Tabs](?path=/docs/primitives-tabs--docs).            |
+| Navigation between app sections.                 | [ActivityBar](?path=/docs/product-activitybar--docs). |
 
 ## 4. Anatomy
 
@@ -36,11 +36,11 @@ A toggle for an open panel has `icon-active` and `aria-expanded`.
 
 ## 5. Variants
 
-| Variant | When |
-|---|---|
-| With tabs | A note is open. |
-| No note open | No tabs. The toggles, "New note" and the window buttons stay. |
-| Without window buttons | The platform draws them. |
+| Variant                | When                                                          |
+| ---------------------- | ------------------------------------------------------------- |
+| With tabs              | A note is open.                                               |
+| No note open           | No tabs. The toggles, "New note" and the window buttons stay. |
+| Without window buttons | The platform draws them.                                      |
 
 <Canvas of={TitleBarStories.NoNoteOpen} />
 <Canvas of={TitleBarStories.WithoutWindowButtons} />
@@ -49,13 +49,13 @@ A toggle for an open panel has `icon-active` and `aria-expanded`.
 
 <Canvas of={TitleBarStories.States} />
 
-| State of a tab | What the user sees |
-|---|---|
-| Inactive | Transparent, `text-muted`. |
-| Hover | `state-hover` fill, `text-ui` name. |
-| Focus | 2 px `focus-ring` on the name, or on the close button. |
-| Open | `surface-editor` fill, `text-note` name, bottom indicator. |
-| Not saved | A dot in place of the close button. The close button comes back on hover and on keyboard focus. The name carries "not saved" for screen readers. |
+| State of a tab | What the user sees                                                                                                                               |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Inactive       | Transparent, `text-muted`.                                                                                                                       |
+| Hover          | `state-hover` fill, `text-ui` name.                                                                                                              |
+| Focus          | 2 px `focus-ring` on the name, or on the close button.                                                                                           |
+| Open           | `surface-editor` fill, `text-note` name, bottom indicator.                                                                                       |
+| Not saved      | A dot in place of the close button. The close button comes back on hover and on keyboard focus. The name carries "not saved" for screen readers. |
 
 <Canvas of={TitleBarStories.UnsavedNote} />
 
@@ -84,16 +84,16 @@ Long names are cut with an ellipsis (`LongNoteName`). Desktop only.
 
 ## 10. API
 
-| Prop | Type | Description |
-|---|---|---|
-| `tabs` | `{ id, name, unsaved? }[]` | The open notes. |
-| `activeTabId` | `string` | The open note. |
-| `onSelectTab`, `onCloseTab` | `(id) => void` | |
-| `onNewNote` | `() => void` | |
-| `onToggleSidebar`, `onToggleSidePanel` | `() => void` | |
-| `sidebarOpen`, `sidePanelOpen` | `boolean` | Marks the toggles active and sets `aria-expanded`. |
-| `windowControls` | `{ onMinimize, onToggleMaximize, onClose }` | Draws the window buttons. |
-| `className` | `string` | |
+| Prop                                   | Type                                        | Description                                        |
+| -------------------------------------- | ------------------------------------------- | -------------------------------------------------- |
+| `tabs`                                 | `{ id, name, unsaved? }[]`                  | The open notes.                                    |
+| `activeTabId`                          | `string`                                    | The open note.                                     |
+| `onSelectTab`, `onCloseTab`            | `(id) => void`                              |                                                    |
+| `onNewNote`                            | `() => void`                                |                                                    |
+| `onToggleSidebar`, `onToggleSidePanel` | `() => void`                                |                                                    |
+| `sidebarOpen`, `sidePanelOpen`         | `boolean`                                   | Marks the toggles active and sets `aria-expanded`. |
+| `windowControls`                       | `{ onMinimize, onToggleMaximize, onClose }` | Draws the window buttons.                          |
+| `className`                            | `string`                                    |                                                    |
 
 ## 11. Code
 

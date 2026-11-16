@@ -21,12 +21,12 @@ A radio group lets the user choose exactly one option from a short list, with ev
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| More than about five options. | [Select](?path=/docs/primitives-select--docs). |
-| Independent options. | [Checkbox](?path=/docs/primitives-checkbox--docs). |
-| An immediate on/off setting. | [Switch](?path=/docs/primitives-switch--docs). |
-| Navigation between views. | [Tabs](?path=/docs/primitives-tabs--docs). |
+| Situation                     | Use instead                                        |
+| ----------------------------- | -------------------------------------------------- |
+| More than about five options. | [Select](?path=/docs/primitives-select--docs).     |
+| Independent options.          | [Checkbox](?path=/docs/primitives-checkbox--docs). |
+| An immediate on/off setting.  | [Switch](?path=/docs/primitives-switch--docs).     |
+| Navigation between views.     | [Tabs](?path=/docs/primitives-tabs--docs).         |
 
 ## 4. Anatomy
 
@@ -46,13 +46,13 @@ One variant, vertical. A horizontal layout is not needed yet.
 
 <Canvas of={RadioGroupStories.States} />
 
-| State | What the user sees | Notes |
-|---|---|---|
-| Unchecked / Checked | Empty circle, or filled `action-primary` circle with a dot. The dot is the second signal next to color (WCAG 1.4.1). | |
-| Hover | Unchecked: border `text-muted`. Checked: `action-primary-hover`. | Proposal. |
-| Focus | 2 px `focus-ring` outline on the focused radio. | |
-| Disabled | `state-hover` fill and `text-muted` label. | Proposal (open question 3). |
-| Invalid | `aria-invalid` on the group; show the message next to the group. | |
+| State               | What the user sees                                                                                                   | Notes                       |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| Unchecked / Checked | Empty circle, or filled `action-primary` circle with a dot. The dot is the second signal next to color (WCAG 1.4.1). |                             |
+| Hover               | Unchecked: border `text-muted`. Checked: `action-primary-hover`.                                                     | Proposal.                   |
+| Focus               | 2 px `focus-ring` outline on the focused radio.                                                                      |                             |
+| Disabled            | `state-hover` fill and `text-muted` label.                                                                           | Proposal (open question 3). |
+| Invalid             | `aria-invalid` on the group; show the message next to the group.                                                     |                             |
 
 Radios never stand on `surface-raised` (tokens.md rule 15: `action-primary` is 2.80:1 on it).
 
@@ -80,14 +80,14 @@ Rows wrap long labels and keep the control aligned to the first line.
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `legend` | `ReactNode` | required | Group name. |
-| `options` | `{ value, label, description?, disabled? }[]` | required | Choices. |
-| `value`, `defaultValue`, `onValueChange` | | | Controlled or uncontrolled value. |
-| `name` | `string` | | For form submission. |
-| `disabled` | `boolean` | `false` | Disables the group. |
-| `aria-invalid` | `boolean` | | Marks the group invalid. |
+| Prop                                     | Type                                          | Default  | Description                       |
+| ---------------------------------------- | --------------------------------------------- | -------- | --------------------------------- |
+| `legend`                                 | `ReactNode`                                   | required | Group name.                       |
+| `options`                                | `{ value, label, description?, disabled? }[]` | required | Choices.                          |
+| `value`, `defaultValue`, `onValueChange` |                                               |          | Controlled or uncontrolled value. |
+| `name`                                   | `string`                                      |          | For form submission.              |
+| `disabled`                               | `boolean`                                     | `false`  | Disables the group.               |
+| `aria-invalid`                           | `boolean`                                     |          | Marks the group invalid.          |
 
 ## 11. Code
 
@@ -99,10 +99,14 @@ import { RadioGroup } from "@basalt/ui";
     value={mode}
     onValueChange={setMode}
     options={[
-        { value: "next-to-note", label: "Next to the note", description: "Moving a note moves its images." },
+        {
+            value: "next-to-note",
+            label: "Next to the note",
+            description: "Moving a note moves its images.",
+        },
         { value: "shared", label: "One shared folder" },
     ]}
-/>
+/>;
 ```
 
 ## 12. Do and don't

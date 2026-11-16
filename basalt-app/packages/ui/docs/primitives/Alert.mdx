@@ -22,12 +22,12 @@ An alert shows a message about the current view that stays on the screen until t
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| The error belongs to one field. | The error message of a [Field](?path=/docs/primitives-field--docs). |
-| A short result that disappears ("Note saved"). | Toast (Batch 3). |
-| A decision before a destructive step. | ConfirmDialog (Batch 3). |
-| Only the sync state. | [StatusIndicator](?path=/docs/primitives-statusindicator--docs). |
+| Situation                                      | Use instead                                                         |
+| ---------------------------------------------- | ------------------------------------------------------------------- |
+| The error belongs to one field.                | The error message of a [Field](?path=/docs/primitives-field--docs). |
+| A short result that disappears ("Note saved"). | Toast (Batch 3).                                                    |
+| A decision before a destructive step.          | ConfirmDialog (Batch 3).                                            |
+| Only the sync state.                           | [StatusIndicator](?path=/docs/primitives-statusindicator--docs).    |
 
 ## 4. Anatomy
 
@@ -39,11 +39,11 @@ An alert shows a message about the current view that stays on the screen until t
 
 ## 5. Variants
 
-| Variant | Use it for | Icon color | Role |
-|---|---|---|---|
-| `info` | Standing information. | `icon-default` | `status` (polite) |
-| `warning` | Something needs attention but nothing is lost. | `status-warning` | `status` (polite) |
-| `danger` | Something failed or cannot work. | `status-danger` | `alert` (assertive) |
+| Variant   | Use it for                                     | Icon color       | Role                |
+| --------- | ---------------------------------------------- | ---------------- | ------------------- |
+| `info`    | Standing information.                          | `icon-default`   | `status` (polite)   |
+| `warning` | Something needs attention but nothing is lost. | `status-warning` | `status` (polite)   |
+| `danger`  | Something failed or cannot work.               | `status-danger`  | `alert` (assertive) |
 
 The layout of the alert is a proposal; the sources define the status colors only (tokens.md `status-warning`, `status-danger`). Colors are used on the icon, never as the background (tokens.md: status colors are not for large surfaces).
 
@@ -55,11 +55,11 @@ The layout of the alert is a proposal; the sources define the status colors only
 
 An alert has no interactive state of its own. It is either shown or not. Its action button has the Button states.
 
-| State | Notes |
-|---|---|
-| Shown | The only state. Remove the alert when the cause is gone. |
-| Dismissed | Not supported. A dismiss button is added when a use needs it (YAGNI). |
-| Hover, focus, pressed, disabled, loading | Not applicable. |
+| State                                    | Notes                                                                 |
+| ---------------------------------------- | --------------------------------------------------------------------- |
+| Shown                                    | The only state. Remove the alert when the cause is gone.              |
+| Dismissed                                | Not supported. A dismiss button is added when a use needs it (YAGNI). |
+| Hover, focus, pressed, disabled, loading | Not applicable.                                                       |
 
 ## 7. Behavior and accessibility
 
@@ -87,14 +87,14 @@ The alert fills its container. At 320 px text wraps and the action sits below th
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `variant` | `"info" \| "warning" \| "danger"` | `"info"` | Meaning and announcement. |
-| `role` | `"alert" \| "status"` | by variant | Overrides the announcement, for example `alert` on a warning banner that blocks saving. |
-| `title` | `ReactNode` | | Short heading. |
-| `children` | `ReactNode` | required | Message. |
-| `action` | `ReactNode` | | Button or link. |
-| `className` | `string` | | Layout only. |
+| Prop        | Type                              | Default    | Description                                                                             |
+| ----------- | --------------------------------- | ---------- | --------------------------------------------------------------------------------------- |
+| `variant`   | `"info" \| "warning" \| "danger"` | `"info"`   | Meaning and announcement.                                                               |
+| `role`      | `"alert" \| "status"`             | by variant | Overrides the announcement, for example `alert` on a warning banner that blocks saving. |
+| `title`     | `ReactNode`                       |            | Short heading.                                                                          |
+| `children`  | `ReactNode`                       | required   | Message.                                                                                |
+| `action`    | `ReactNode`                       |            | Button or link.                                                                         |
+| `className` | `string`                          |            | Layout only.                                                                            |
 
 ## 11. Code
 
@@ -103,7 +103,7 @@ import { Alert, Button } from "@basalt/ui";
 
 <Alert variant="danger" title="Could not save the note">
     The folder is read-only. Choose a folder you can write to.
-</Alert>
+</Alert>;
 ```
 
 ```tsx
@@ -124,7 +124,8 @@ import { Alert, Button } from "@basalt/ui";
             children: (
                 <div className="w-full">
                     <Alert variant="danger" title="Could not save the note">
-                        The folder is read-only. Choose a folder you can write to.
+                        The folder is read-only. Choose a folder you can write
+                        to.
                     </Alert>
                 </div>
             ),

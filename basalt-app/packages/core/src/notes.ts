@@ -1,3 +1,4 @@
+import { fileKindOf } from "./file-kinds";
 import { err, ok, type Result } from "./result";
 import type { FileEntry, FileKind, WorkspaceFileSystem } from "./ports";
 import {
@@ -48,7 +49,7 @@ const CRLF_COUNT = /\r\n/g;
 const LONE_LF_COUNT = /(?<!\r)\n/g;
 
 export function isMarkdownPath(path: string): boolean {
-    return path.toLowerCase().endsWith(EXTENSION);
+    return fileKindOf(path) === "markdown";
 }
 
 function isDotEntry(path: string): boolean {

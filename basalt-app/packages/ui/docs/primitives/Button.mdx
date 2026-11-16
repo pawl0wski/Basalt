@@ -22,12 +22,12 @@ A button starts an action the user has decided to take, such as saving a note, c
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| The action only moves the user to another page or section. | [TextLink](?path=/docs/primitives-textlink--docs) |
-| The control has an icon and no visible text. | [IconButton](?path=/docs/primitives-iconbutton--docs) |
-| The control turns a setting on or off. | Switch or Checkbox (Switch is planned in Batch 2) |
-| The label is a state, not an action ("Synced"). | StatusIndicator (planned in Batch 2) |
+| Situation                                                  | Use instead                                           |
+| ---------------------------------------------------------- | ----------------------------------------------------- |
+| The action only moves the user to another page or section. | [TextLink](?path=/docs/primitives-textlink--docs)     |
+| The control has an icon and no visible text.               | [IconButton](?path=/docs/primitives-iconbutton--docs) |
+| The control turns a setting on or off.                     | Switch or Checkbox (Switch is planned in Batch 2)     |
+| The label is a state, not an action ("Synced").            | StatusIndicator (planned in Batch 2)                  |
 
 ## 4. Anatomy
 
@@ -37,12 +37,12 @@ A button starts an action the user has decided to take, such as saving a note, c
 
 ## 5. Variants
 
-| Variant | Use it for | Look | Source |
-|---|---|---|---|
-| `primary` | The one main action of a view. At most one per view. | `action-primary` fill, `text-on-accent` label. | R01.2, R02.3, R02.7 |
-| `secondary` | Other actions next to the main one. | `button-secondary-bg` fill, 1 px `border-divider`. | R01.5, tokens.md `button-secondary-bg` |
-| `ghost` | Low-emphasis actions such as "Cancel" and actions inside toolbars. | No fill, `state-hover` on hover. | R01.12 |
-| `destructive` | Actions that delete data. | No fill, `status-danger` label. Never a danger background (tokens.md: `status-danger` is not for button backgrounds). | tokens.md `status-danger` |
+| Variant       | Use it for                                                         | Look                                                                                                                  | Source                                 |
+| ------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `primary`     | The one main action of a view. At most one per view.               | `action-primary` fill, `text-on-accent` label.                                                                        | R01.2, R02.3, R02.7                    |
+| `secondary`   | Other actions next to the main one.                                | `button-secondary-bg` fill, 1 px `border-divider`.                                                                    | R01.5, tokens.md `button-secondary-bg` |
+| `ghost`       | Low-emphasis actions such as "Cancel" and actions inside toolbars. | No fill, `state-hover` on hover.                                                                                      | R01.12                                 |
+| `destructive` | Actions that delete data.                                          | No fill, `status-danger` label. Never a danger background (tokens.md: `status-danger` is not for button backgrounds). | tokens.md `status-danger`              |
 
 Sizes: `default` is 28 px. `lg` is 36 px (`activity-button` token) and is a proposal for a single prominent action such as the welcome screen (open question 2).
 
@@ -56,14 +56,14 @@ Compatibility: `default` and `outline` are temporary aliases of `primary` and `s
 
 <Canvas of={ButtonStories.States} />
 
-| State | What the user sees | Notes |
-|---|---|---|
-| Default | Variant colors. | |
-| Hover | Fill changes to `action-primary-hover`, `state-selected` (secondary) or `state-hover` (ghost, destructive). No scaling and no opacity change. | R01.12 |
-| Focus | 2 px `focus-ring` outline with a 2 px offset, shown for keyboard focus only. | Focus appearance is a proposal accepted in the token specification. |
-| Pressed | Same as hover. There is no separate pressed style. | Proposal: no source defines one. |
-| Disabled | `text-muted` label on `state-hover`, `not-allowed` cursor. | Proposal (open question 3): no disabled token exists in the sources. |
-| Loading | Not a state of this component. The caller disables the button and changes the label ("Saving..."). | Proposal. |
+| State    | What the user sees                                                                                                                            | Notes                                                                |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Default  | Variant colors.                                                                                                                               |                                                                      |
+| Hover    | Fill changes to `action-primary-hover`, `state-selected` (secondary) or `state-hover` (ghost, destructive). No scaling and no opacity change. | R01.12                                                               |
+| Focus    | 2 px `focus-ring` outline with a 2 px offset, shown for keyboard focus only.                                                                  | Focus appearance is a proposal accepted in the token specification.  |
+| Pressed  | Same as hover. There is no separate pressed style.                                                                                            | Proposal: no source defines one.                                     |
+| Disabled | `text-muted` label on `state-hover`, `not-allowed` cursor.                                                                                    | Proposal (open question 3): no disabled token exists in the sources. |
+| Loading  | Not a state of this component. The caller disables the button and changes the label ("Saving...").                                            | Proposal.                                                            |
 
 A disabled button does not say why it is unavailable. Put the reason in text next to it, or leave the button enabled and explain the problem when the user presses it (WCAG 3.3.1). Do not rely on `title` for the reason.
 
@@ -94,22 +94,22 @@ A disabled button does not say why it is unavailable. Put the reason in text nex
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `variant` | `"primary" \| "secondary" \| "ghost" \| "destructive"` (also `"default" \| "outline"`, deprecated aliases) | `"primary"` | Visual emphasis. |
-| `size` | `"default" \| "lg"` | `"default"` | 28 px or 36 px. `lg` is a proposal. |
-| `asChild` | `boolean` | `false` | Render the child element with the button's styles. |
-| `type` | `"button" \| "submit" \| "reset"` | `"button"` | Not forwarded when `asChild` is set. |
-| `disabled` | `boolean` | `false` | Blocks interaction and dims the label. |
-| `className` | `string` | | Layout only (width, margins). Do not use it to change colors. |
-| ...rest | `ButtonHTMLAttributes` | | Passed to the element. |
+| Prop        | Type                                                                                                       | Default     | Description                                                   |
+| ----------- | ---------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------- |
+| `variant`   | `"primary" \| "secondary" \| "ghost" \| "destructive"` (also `"default" \| "outline"`, deprecated aliases) | `"primary"` | Visual emphasis.                                              |
+| `size`      | `"default" \| "lg"`                                                                                        | `"default"` | 28 px or 36 px. `lg` is a proposal.                           |
+| `asChild`   | `boolean`                                                                                                  | `false`     | Render the child element with the button's styles.            |
+| `type`      | `"button" \| "submit" \| "reset"`                                                                          | `"button"`  | Not forwarded when `asChild` is set.                          |
+| `disabled`  | `boolean`                                                                                                  | `false`     | Blocks interaction and dims the label.                        |
+| `className` | `string`                                                                                                   |             | Layout only (width, margins). Do not use it to change colors. |
+| ...rest     | `ButtonHTMLAttributes`                                                                                     |             | Passed to the element.                                        |
 
 ## 11. Code
 
 ```tsx
 import { Button } from "@basalt/ui";
 
-<Button>Save note</Button>
+<Button>Save note</Button>;
 ```
 
 ```tsx

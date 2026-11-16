@@ -17,10 +17,10 @@ The dialog where the owner names a new note. Source: E01-S01 UI/UX ("dialog with
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| Renaming (E01-S04). | A rename dialog built from the same parts. |
-| A longer form. | The [Form pattern](?path=/docs/patterns-form--docs). |
+| Situation           | Use instead                                          |
+| ------------------- | ---------------------------------------------------- |
+| Renaming (E01-S04). | A rename dialog built from the same parts.           |
+| A longer form.      | The [Form pattern](?path=/docs/patterns-form--docs). |
 
 ## 4. Anatomy
 
@@ -28,12 +28,12 @@ A [Dialog](?path=/docs/primitives-dialog--docs) with a [Field](?path=/docs/primi
 
 ## 5. Variants (states of the data)
 
-| State | What the user sees |
-|---|---|
-| Suggested name | "Untitled", selected, ready to overwrite. |
-| Name taken | Inline error, field invalid, Create disabled. |
-| Invalid characters | Inline error naming the characters. |
-| Creating | Create reads "Creating…" and is disabled; a second submit is ignored. |
+| State              | What the user sees                                                    |
+| ------------------ | --------------------------------------------------------------------- |
+| Suggested name     | "Untitled", selected, ready to overwrite.                             |
+| Name taken         | Inline error, field invalid, Create disabled.                         |
+| Invalid characters | Inline error naming the characters.                                   |
+| Creating           | Create reads "Creating…" and is disabled; a second submit is ignored. |
 
 <Canvas of={NewNoteDialogStories.NameAlreadyExists} />
 <Canvas of={NewNoteDialogStories.InvalidCharacters} />

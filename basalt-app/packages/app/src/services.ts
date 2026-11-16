@@ -12,6 +12,10 @@ import {
     createLeaveStore,
     type LeaveStore,
 } from "./features/leave/leave-store";
+import {
+    createImageHub,
+    type ImageHub,
+} from "./features/attachments/image-hub";
 import { createSettingsWriter } from "./features/settings/settings-writer";
 import { createWorkspaceActions } from "./features/workspace/workspace-actions";
 import {
@@ -33,6 +37,7 @@ export type Services = {
     readonly leaveStore: LeaveStore;
     readonly leaveActions: LeaveActions;
     readonly windowChrome: WindowChrome;
+    readonly images: ImageHub;
 };
 
 export type ServicesOptions = {
@@ -63,12 +68,14 @@ export function createServices(
         untitledName: options.untitledName,
     });
     const leaveStore = createLeaveStore();
+    const images = createImageHub();
     const workspaceActions = createWorkspaceActions({
         store: workspaceStore,
         notes: notesActions,
         access: platform.access,
         picker: platform.picker,
         settings,
+        images,
         watchSchedule: options.watchSchedule ?? timeoutScheduler,
         watchDebounceMs: WATCH_DEBOUNCE_MS,
         onFlushBlocked: (error) => {
@@ -96,5 +103,6 @@ export function createServices(
         leaveStore,
         leaveActions,
         windowChrome: platform.windowChrome,
+        images,
     };
 }

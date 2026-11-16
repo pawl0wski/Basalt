@@ -116,7 +116,8 @@
         "too-large": "This note is too large to open.",
         "not-utf8": "This file is not a UTF-8 text file and cannot be opened.",
         "unavailable": "The workspace folder is not available. Check that it still exists.",
-        "unknown": "Something went wrong. Nothing was changed."
+        "unknown": "Something went wrong. Nothing was changed.",
+        "unsupported": "This file format is not supported."
     },
     "saveStatus": {
         "saved": "Saved",
@@ -128,5 +129,24 @@
         "retry": "Retry",
         "discard": "Discard changes",
         "cancel": "Cancel"
+    },
+    "attachments": {
+        "placeholder": {
+            "loading": "Loading image…",
+            "missing": "Image not found: {path}",
+            "unreadable": "Image could not be read",
+            "unsupported": "Format not supported",
+            "tooLarge": "Image is too large (over 20 MiB or 100 megapixels)",
+            "remote": "Remote images are not loaded",
+            "invalid": "Invalid image link",
+            "broken": "Image could not be displayed",
+            "unsupportedScheme": "This image link type is not supported"
+        },
+        "notice": {
+            "skippedOne": "1 file was not added: {reason}",
+            "skippedMany": "{count} files were not added: {reason}",
+            "tooLarge": "the image is over 20 MiB or 100 megapixels.",
+            "dismiss": "Dismiss notice"
+        }
     }
 }

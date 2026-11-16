@@ -15,24 +15,24 @@ Narrowing a long list to what the user is looking for, while always showing how 
 
 ## Rules
 
-| Rule | Source |
-|---|---|
-| The result count is always visible and announced politely (`role="status"`): "Showing 1 of 7 notes". | Proposal (design brief) |
-| An active filter is visible and removable in one action ("Clear filter"). | Proposal |
+| Rule                                                                                                                    | Source                  |
+| ----------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| The result count is always visible and announced politely (`role="status"`): "Showing 1 of 7 notes".                    | Proposal (design brief) |
+| An active filter is visible and removable in one action ("Clear filter").                                               | Proposal                |
 | Two different empty states: no match for the filter (action: clear the filter) and nothing exists yet (action: create). | Proposal (design brief) |
-| The filter field has a visible label. | WCAG 3.3.2 |
-| The filter is local and instant; no "Apply" button. | Proposal |
+| The filter field has a visible label.                                                                                   | WCAG 3.3.2              |
+| The filter is local and instant; no "Apply" button.                                                                     | Proposal                |
 
 ## States (each is a story)
 
-| State | Story |
-|---|---|
-| All notes | Unfiltered |
+| State                          | Story                                    |
+| ------------------------------ | ---------------------------------------- |
+| All notes                      | Unfiltered                               |
 | Filtered, with count and clear | Filtering shows the count and a way back |
-| No match | No results for the filter |
-| Nothing exists yet | Nothing here yet |
-| Loading | Loading |
-| Many notes | Many notes (400, filtered) |
+| No match                       | No results for the filter                |
+| Nothing exists yet             | Nothing here yet                         |
+| Loading                        | Loading                                  |
+| Many notes                     | Many notes (400, filtered)               |
 
 <Canvas of={ListStories.NoResultsForTheFilter} />
 <Canvas of={ListStories.NothingHereYet} />

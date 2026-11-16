@@ -18,12 +18,12 @@ A popover shows a small panel with controls next to the button that opened it, s
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
-| A name for an icon. | [Tooltip](?path=/docs/primitives-tooltip--docs). |
-| A list of actions. | [Menu](?path=/docs/primitives-menu--docs). |
-| A task that needs the user's full attention. | [Dialog](?path=/docs/primitives-dialog--docs). |
-| A long form. | A page. |
+| Situation                                    | Use instead                                      |
+| -------------------------------------------- | ------------------------------------------------ |
+| A name for an icon.                          | [Tooltip](?path=/docs/primitives-tooltip--docs). |
+| A list of actions.                           | [Menu](?path=/docs/primitives-menu--docs).       |
+| A task that needs the user's full attention. | [Dialog](?path=/docs/primitives-dialog--docs).   |
+| A long form.                                 | A page.                                          |
 
 ## 4. Anatomy
 
@@ -39,11 +39,11 @@ One variant. `align` aligns the panel to the trigger.
 
 ## 6. States
 
-| State | Notes |
-|---|---|
-| Closed / Open | Opens on click or Enter, closes on Escape, outside click or by the trigger. |
-| Hover, focus, pressed | Belong to the trigger and the controls inside. |
-| Loading, error | Show them inside the panel with the standard components. |
+| State                 | Notes                                                                       |
+| --------------------- | --------------------------------------------------------------------------- |
+| Closed / Open         | Opens on click or Enter, closes on Escape, outside click or by the trigger. |
+| Hover, focus, pressed | Belong to the trigger and the controls inside.                              |
+| Loading, error        | Show them inside the panel with the standard components.                    |
 
 Switches and checkboxes do not stand on `surface-raised` (tokens.md rule 15); radios follow the same rule, so keep the panel for items that are labelled buttons, or put the group on a card.
 
@@ -68,22 +68,25 @@ The panel is at most 300 px wide, flips and shifts to stay in the viewport at 32
 
 ## 10. API
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `trigger` | `ReactNode` | required | Element that opens it. |
-| `label` | `string` | required | Accessible name of the panel. |
-| `children` | `ReactNode` | required | Content. |
-| `align` | `"start" \| "center" \| "end"` | `"start"` | Alignment. |
-| `open`, `defaultOpen`, `onOpenChange` | | | Controlled or uncontrolled state. |
+| Prop                                  | Type                           | Default   | Description                       |
+| ------------------------------------- | ------------------------------ | --------- | --------------------------------- |
+| `trigger`                             | `ReactNode`                    | required  | Element that opens it.            |
+| `label`                               | `string`                       | required  | Accessible name of the panel.     |
+| `children`                            | `ReactNode`                    | required  | Content.                          |
+| `align`                               | `"start" \| "center" \| "end"` | `"start"` | Alignment.                        |
+| `open`, `defaultOpen`, `onOpenChange` |                                |           | Controlled or uncontrolled state. |
 
 ## 11. Code
 
 ```tsx
 import { Button, Popover } from "@basalt/ui";
 
-<Popover label="Accent color" trigger={<Button variant="secondary">Accent color</Button>}>
+<Popover
+    label="Accent color"
+    trigger={<Button variant="secondary">Accent color</Button>}
+>
     <AccentPicker />
-</Popover>
+</Popover>;
 ```
 
 ## 12. Do and don't

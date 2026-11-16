@@ -113,6 +113,11 @@ export function createTauriWorkspaceFileSystem(
             }
         },
 
+        async readBytes(path) {
+            const bytes = await attempt(() => readFile(paths.toNative(path)));
+            return bytes.ok ? ok(bytes.value) : bytes;
+        },
+
         async writeTextAtomic(path, text) {
             const parent = await ensureParent(path);
             if (!parent.ok) return parent;
@@ -125,18 +130,45 @@ export function createTauriWorkspaceFileSystem(
             );
         },
 
-        async createExclusive(path, text) {
+        async createExclusive(path, content) {
             const parent = await ensureParent(path);
             if (!parent.ok) return parent;
             const native = paths.toNative(path);
             const existed = (await attempt(() => lstat(native))).ok;
             const written = await attempt(() =>
-                writeFile(native, encoder.encode(text), { createNew: true }),
+                writeFile(
+                    native,
+                    typeof content === "string"
+                        ? encoder.encode(content)
+                        : content,
+                    { createNew: true },
+                ),
             );
             if (!written.ok && written.error.code === "unknown" && !existed) {
                 await attempt(() => remove(native));
             }
             return written;
+        },
+
+        async readDir(path) {
+            const listed = await attempt(() => readDir(paths.toNative(path)));
+            if (!listed.ok) return listed;
+            const entries: FileEntry[] = [];
+            for (const dirent of listed.value) {
+                const child = paths.toWorkspace(
+                    paths.toNative(`${path}/${dirent.name}`),
+                );
+                if (child !== null) {
+                    entries.push({ path: child, kind: kindOf(dirent) });
+                }
+            }
+            return ok(entries);
+        },
+
+        async mkdir(path) {
+            return attempt(() =>
+                mkdir(paths.toNative(path), { recursive: true }),
+            );
         },
 
         async watch(onEvent) {

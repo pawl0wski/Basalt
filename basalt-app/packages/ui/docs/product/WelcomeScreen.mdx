@@ -17,8 +17,8 @@ The first screen when no workspace is open. It has one action: open a folder as 
 
 ## 3. When not to use
 
-| Situation | Use instead |
-|---|---|
+| Situation                      | Use instead                                                       |
+| ------------------------------ | ----------------------------------------------------------------- |
 | A workspace is open but empty. | The empty list in [NoteList](?path=/docs/product-notelist--docs). |
 
 ## 4. Anatomy
@@ -31,9 +31,9 @@ The block is left-aligned, not centered on the page (A01).
 
 ## 5. Variants
 
-| Variant | Source |
-|---|---|
-| Default | E01-S01 |
+| Variant                      | Source                                                           |
+| ---------------------------- | ---------------------------------------------------------------- |
+| Default                      | E01-S01                                                          |
 | After the workspace was lost | E01-S01 edge cases ("welcome screen with an explanatory notice") |
 
 <Canvas of={WelcomeScreenStories.WorkspaceLost} />
@@ -63,7 +63,10 @@ The column is at most 65 characters wide and fits down to 320 px; the window is 
 ## 11. Code
 
 ```tsx
-<WelcomeScreen onOpenWorkspace={pickFolder} notice={lost ? message : undefined} />
+<WelcomeScreen
+    onOpenWorkspace={pickFolder}
+    notice={lost ? message : undefined}
+/>
 ```
 
 ## 12. Do and don't

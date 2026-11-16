@@ -15,21 +15,21 @@ Showing one object, here a note, with the most important information and the mai
 
 ## Rules
 
-| Rule | Source |
-|---|---|
-| The title is the first heading of the content; the header does not repeat it as another heading. | Proposal |
-| The path and the save state are visible in the header; secondary actions are in a [Menu](?path=/docs/primitives-menu--docs). | Proposal |
-| A destructive action is last in the menu and opens a [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs). | Proposal |
-| The note column is at most 700 px wide and centered. | R01.8, owner decision |
+| Rule                                                                                                                                                                    | Source                  |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| The title is the first heading of the content; the header does not repeat it as another heading.                                                                        | Proposal                |
+| The path and the save state are visible in the header; secondary actions are in a [Menu](?path=/docs/primitives-menu--docs).                                            | Proposal                |
+| A destructive action is last in the menu and opens a [ConfirmDialog](?path=/docs/primitives-confirmdialog--docs).                                                       | Proposal                |
+| The note column is at most 700 px wide and centered.                                                                                                                    | R01.8, owner decision   |
 | When the object does not exist or cannot be opened, replace the view with an [ErrorState](?path=/docs/primitives-errorstate--docs) that says why and offers a way back. | Proposal (design brief) |
 
 ## States (each is a story)
 
-| State | Story |
-|---|---|
-| Ready | Ready |
-| The note no longer exists | Note does not exist |
-| The note cannot be opened (no permission) | No access |
+| State                                     | Story               |
+| ----------------------------------------- | ------------------- |
+| Ready                                     | Ready               |
+| The note no longer exists                 | Note does not exist |
+| The note cannot be opened (no permission) | No access           |
 
 <Canvas of={DetailStories.NoteDoesNotExist} />
 <Canvas of={DetailStories.NoAccess} />

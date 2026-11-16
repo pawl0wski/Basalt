@@ -15,27 +15,27 @@ Collecting a value from the user, checking it, sending it and showing the result
 
 ## Rules
 
-| Rule | Source |
-|---|---|
-| Every field has a visible label; the placeholder is never the label. | WCAG 3.3.2, [Field](?path=/docs/primitives-field--docs) |
-| Validate when the user leaves a field and when the form is submitted, not while typing the first time. Once a field has an error, re-check on every change. | Proposal (design brief) |
-| After a failed submit, move focus to the first field with an error. | WCAG 3.3.1, proposal |
-| The typed data stays after an error. | E01-S01 ("The editor text is never cleared by an error") |
-| While sending, disable the submit button and the fields and ignore a second submit. | Proposal |
-| Show success only after the result is confirmed, not before. | Proposal |
-| An error about one field goes under that field; an error about the whole form goes in an [Alert](?path=/docs/primitives-alert--docs) above the form. | Proposal |
+| Rule                                                                                                                                                        | Source                                                   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Every field has a visible label; the placeholder is never the label.                                                                                        | WCAG 3.3.2, [Field](?path=/docs/primitives-field--docs)  |
+| Validate when the user leaves a field and when the form is submitted, not while typing the first time. Once a field has an error, re-check on every change. | Proposal (design brief)                                  |
+| After a failed submit, move focus to the first field with an error.                                                                                         | WCAG 3.3.1, proposal                                     |
+| The typed data stays after an error.                                                                                                                        | E01-S01 ("The editor text is never cleared by an error") |
+| While sending, disable the submit button and the fields and ignore a second submit.                                                                         | Proposal                                                 |
+| Show success only after the result is confirmed, not before.                                                                                                | Proposal                                                 |
+| An error about one field goes under that field; an error about the whole form goes in an [Alert](?path=/docs/primitives-alert--docs) above the form.        | Proposal                                                 |
 
 ## States (each is a story)
 
-| State | Story |
-|---|---|
-| Success after confirmation | Success |
-| Error shown when leaving the field | Validates on leaving the field |
-| Failed submit moves focus to the first error | Failed submit focuses first error |
-| Field error returned by the server (name taken) | Field error from the server |
-| Server error, input kept | Server error keeps the input |
-| Folder unavailable (replaces "no network" for a local-first app) | Folder unavailable |
-| Waiting, second submit blocked | Pending blocks a second submit |
+| State                                                            | Story                             |
+| ---------------------------------------------------------------- | --------------------------------- |
+| Success after confirmation                                       | Success                           |
+| Error shown when leaving the field                               | Validates on leaving the field    |
+| Failed submit moves focus to the first error                     | Failed submit focuses first error |
+| Field error returned by the server (name taken)                  | Field error from the server       |
+| Server error, input kept                                         | Server error keeps the input      |
+| Folder unavailable (replaces "no network" for a local-first app) | Folder unavailable                |
+| Waiting, second submit blocked                                   | Pending blocks a second submit    |
 
 <Controls of={FormStories.Success} />
 
