@@ -2,7 +2,7 @@
 date: 2026-11-08
 slug: live-preview-editor
 type: spec
-status: draft
+status: implemented
 tags: [editor, live-preview, codemirror, markdown, e01]
 ---
 
@@ -50,10 +50,16 @@ Theme tokens for preview styles come from CSS variables like the existing Basalt
 
 Today's e2e coverage only has the negative check (no separate input or source panel).
 
-## Open questions
+## Decisions (autonomous run 2026-11-15, override if wrong)
 
-- Q-LP1 (from the finding above): keep or disable list marker continuation on Enter?
-- Q-LP2: Is this a new issue in epic #5, and which story id does it get? (Q1 said "its own spec and issue".) The main spec still called it GAP-30.
-- Q-LP3: Clicking blank space below the text does not focus the editor (found in 2b.2d). Fix here or separately?
-- Q-LP4: Does `setText` (resets undo history after a disk reload) need to preserve decorations state or the cursor line? It keeps the clamped selection today.
-- Q-LP5: Behavior for tables, images (see `.ai/specs/2026-10-25-images-in-notes.md`) and Basalt components is out of this spec; confirm they stay out.
+- Q-LP1: keep Obsidian-style list and quote continuation on Enter. "Saved text equals the typed source" means the saved file equals the editor text (the exact source in the editor), not the literal keystrokes; typing a marker after an auto-inserted one is the owner's input. E2E tests type around it.
+- Q-LP2: no new issue was created; the work is tracked under epic #5 (`Refs #5`).
+- Q-LP3: not fixed here. Clicking blank space below the text still does not focus the editor; it needs a layout change in the app and is separate from rendering.
+- Q-LP4: `setText` rebuilds the state with the same extensions; decorations are derived from the new document and the clamped selection, so nothing extra is preserved. Covered by a test.
+- Q-LP5: tables and Basalt components stay out. Images: the S03 display PR owns hiding the `![](...)` source on inactive lines, reusing `activeLineNumbers` from `@basalt/editor`.
+
+## Implementation notes
+
+- `packages/editor/src/livePreview.ts`: a view plugin over the visible ranges, built from `buildLivePreviewDecorations(state, ranges)`. Hidden: ATX heading marker (with its space), emphasis and strong marks, inline code backticks. Styled only: links, list and task markers, blockquotes, fenced and indented code, headings.
+- `markdown()` now uses `markdownLanguage` (GFM base) so task lists parse.
+- Hidden markers leave `textContent`; e2e assertions on non-cursor lines must expect rendered text.

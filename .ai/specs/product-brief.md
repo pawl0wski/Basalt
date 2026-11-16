@@ -44,7 +44,7 @@ Next: implementation planning, owned by the owner; the whiteboard format (D04, A
 - What makes it different: privacy through self-hosting and E2EE, and affordability versus Obsidian; a team hypothesis, see A02. `[ASSUMPTION]` workshop brief section 6
 
 | reference | what it does well | where it falls short for our users | checked on | link |
-|---|---|---|---|---|
+| --------- | ----------------- | ---------------------------------- | ---------- | ---- |
 
 Benchmarks deferred: no decision depends on them now.
 
@@ -73,36 +73,36 @@ Deferred: no flow material exists, and none is invented.
 
 ## Business rules
 
-| Id | Rule | Applies to | Source | Status | Review by | Required path to change | Owner | Supersedes |
-|---|---|---|---|---|---|---|---|---|
+| Id  | Rule | Applies to | Source | Status | Review by | Required path to change | Owner | Supersedes |
+| --- | ---- | ---------- | ------ | ------ | --------- | ----------------------- | ----- | ---------- |
 
 No business rules have been confirmed yet.
 
 ## Non-goals
 
-| Id | We are not building | Why | Owner | Status | Review by | Required path to change | Source | Supersedes |
-|---|---|---|---|---|---|---|---|---|
-| N01 | iOS and web versions in the MVP | Workshop scope | pending | proposal | unknown | owner approves | `[DOCUMENT]` workshop brief section 7 | none |
-| N02 | Basalt Cloud work now | Far future; design only with it in mind | Jakub Pawłowski | active | when owner decides to host for others | owner approves a superseding row | `[DOCUMENT]` D03 | none |
-| N03 | README features beyond offline-first (plugins, graph, tags, backlinks, themes) | README is out of date | Jakub Pawłowski | active | unknown | owner approves a superseding row | `[DOCUMENT]` D03 | none |
+| Id  | We are not building                                                            | Why                                     | Owner           | Status   | Review by                             | Required path to change          | Source                                | Supersedes |
+| --- | ------------------------------------------------------------------------------ | --------------------------------------- | --------------- | -------- | ------------------------------------- | -------------------------------- | ------------------------------------- | ---------- |
+| N01 | iOS and web versions in the MVP                                                | Workshop scope                          | pending         | proposal | unknown                               | owner approves                   | `[DOCUMENT]` workshop brief section 7 | none       |
+| N02 | Basalt Cloud work now                                                          | Far future; design only with it in mind | Jakub Pawłowski | active   | when owner decides to host for others | owner approves a superseding row | `[DOCUMENT]` D03                      | none       |
+| N03 | README features beyond offline-first (plugins, graph, tags, backlinks, themes) | README is out of date                   | Jakub Pawłowski | active   | unknown                               | owner approves a superseding row | `[DOCUMENT]` D03                      | none       |
 
 ## Decisions
 
-| Id | Date | Decision | Why | Owner | Status | Review by | Required path to change | Source | Supersedes |
-|---|---|---|---|---|---|---|---|---|---|
-| D01 | 2026-10-18 | Implement the workshop MVP | Owner wants to build it; no alternative weighed | Jakub Pawłowski | superseded by D05 | n/a | n/a | `[DOCUMENT]` decisions/D01 | none |
-| D02 | 2026-10-18 | Built primarily for its owner; adoption by others is a bonus | Stated by owner | Jakub Pawłowski | active | if owner pursues Cloud or promotion | owner approves a superseding row | `[DOCUMENT]` decisions/D02 | none |
-| D03 | 2026-10-18 | README ignored except offline-first; AI via OpenAI-compatible API; Cloud far future; no stop condition; success is owner's use | Stated by owner | Jakub Pawłowski | active | unknown | owner approves a superseding row | `[DOCUMENT]` decisions/D03 | none |
-| D04 | 2026-10-18 | Whiteboard format candidate: draw.io format | Owner's tentative idea; no alternative weighed | pending | proposal | when whiteboard work starts | owner approves | `[DOCUMENT]` decisions/D04 | none |
-| D05 | 2026-10-18 | MVP = notes, images, self-hosted sync, E2EE, offline-first; PDF Should have; whiteboards Later | Format for whiteboards undecided; offline-first agent-proposed, owner accepted | Jakub Pawłowski | active | unknown | owner approves a superseding row | `[DOCUMENT]` decisions/D05 | D01 (scope) |
+| Id  | Date       | Decision                                                                                                                       | Why                                                                            | Owner           | Status            | Review by                           | Required path to change          | Source                     | Supersedes  |
+| --- | ---------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | --------------- | ----------------- | ----------------------------------- | -------------------------------- | -------------------------- | ----------- |
+| D01 | 2026-10-18 | Implement the workshop MVP                                                                                                     | Owner wants to build it; no alternative weighed                                | Jakub Pawłowski | superseded by D05 | n/a                                 | n/a                              | `[DOCUMENT]` decisions/D01 | none        |
+| D02 | 2026-10-18 | Built primarily for its owner; adoption by others is a bonus                                                                   | Stated by owner                                                                | Jakub Pawłowski | active            | if owner pursues Cloud or promotion | owner approves a superseding row | `[DOCUMENT]` decisions/D02 | none        |
+| D03 | 2026-10-18 | README ignored except offline-first; AI via OpenAI-compatible API; Cloud far future; no stop condition; success is owner's use | Stated by owner                                                                | Jakub Pawłowski | active            | unknown                             | owner approves a superseding row | `[DOCUMENT]` decisions/D03 | none        |
+| D04 | 2026-10-18 | Whiteboard format candidate: draw.io format                                                                                    | Owner's tentative idea; no alternative weighed                                 | pending         | proposal          | when whiteboard work starts         | owner approves                   | `[DOCUMENT]` decisions/D04 | none        |
+| D05 | 2026-10-18 | MVP = notes, images, self-hosted sync, E2EE, offline-first; PDF Should have; whiteboards Later                                 | Format for whiteboards undecided; offline-first agent-proposed, owner accepted | Jakub Pawłowski | active            | unknown                             | owner approves a superseding row | `[DOCUMENT]` decisions/D05 | D01 (scope) |
 
 ## Riskiest assumptions
 
-| Id | Assumption | Importance | Evidence today | If false | Smallest test | Owner | By when | Result |
-|---|---|---|---|---|---|---|---|---|
-| A01 | The draw.io format can store freehand stylus strokes `[ASSUMPTION]` owner's idea | medium | none checked | pick another format for Later whiteboards | open a sample file with strokes in draw.io | Jakub Pawłowski | before whiteboard work | untested |
-| A02 | Other people share the owner's problems and would use Basalt `[ASSUMPTION]` team belief | low for now | one account from the owner | adoption goals are dropped; MVP unaffected (D02) | conversations with other Obsidian users, only if adoption becomes a goal | Jakub Pawłowski | unknown | accepted untested (D02) |
-| A03 | Obsidian Sync costs 100 USD per year `[ASSUMPTION]` owner's figure | low | not checked against a pricing page | price argument changes | check the pricing page and record the date | Jakub Pawłowski | unknown | untested |
+| Id  | Assumption                                                                              | Importance  | Evidence today                     | If false                                         | Smallest test                                                            | Owner           | By when                | Result                  |
+| --- | --------------------------------------------------------------------------------------- | ----------- | ---------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------ | --------------- | ---------------------- | ----------------------- |
+| A01 | The draw.io format can store freehand stylus strokes `[ASSUMPTION]` owner's idea        | medium      | none checked                       | pick another format for Later whiteboards        | open a sample file with strokes in draw.io                               | Jakub Pawłowski | before whiteboard work | untested                |
+| A02 | Other people share the owner's problems and would use Basalt `[ASSUMPTION]` team belief | low for now | one account from the owner         | adoption goals are dropped; MVP unaffected (D02) | conversations with other Obsidian users, only if adoption becomes a goal | Jakub Pawłowski | unknown                | accepted untested (D02) |
+| A03 | Obsidian Sync costs 100 USD per year `[ASSUMPTION]` owner's figure                      | low         | not checked against a pricing page | price argument changes                           | check the pricing page and record the date                               | Jakub Pawłowski | unknown                | untested                |
 
 ## Kill criteria
 
@@ -114,11 +114,11 @@ None; no synthetic walkthrough was run.
 
 ## Open questions
 
-| Id | Question | Blocking | Who can answer | Status |
-|---|---|---|---|---|
-| Q01 | How do sharing links and real-time collaboration work under E2EE, on self-hosted servers and Cloud? | no (Should have) | owner | open |
-| Q02 | Is the OpenAI-compatible API integration Nice to have or Should have? | no | owner | open |
-| Q03 | Whiteboard storage format (D04, A01) | no for MVP; yes for Later whiteboard work | owner | open |
+| Id  | Question                                                                                            | Blocking                                  | Who can answer | Status |
+| --- | --------------------------------------------------------------------------------------------------- | ----------------------------------------- | -------------- | ------ |
+| Q01 | How do sharing links and real-time collaboration work under E2EE, on self-hosted servers and Cloud? | no (Should have)                          | owner          | open   |
+| Q02 | Is the OpenAI-compatible API integration Nice to have or Should have?                               | no                                        | owner          | open   |
+| Q03 | Whiteboard storage format (D04, A01)                                                                | no for MVP; yes for Later whiteboard work | owner          | open   |
 
 ## Definition of Ready addendum (own)
 
