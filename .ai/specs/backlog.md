@@ -37,4 +37,4 @@ Last filed: 2026-11-16
 | E04     | #38   | Mobile-ready interface                                          | —    | #5         | no      |
 | E05     | #31   | Extended Markdown compatibility                                 | —    | #5         | no      |
 
-E04 and E05 are parked as epics; their stories will be filed after their specs are written. The table above records the Epic 01 test findings; each issue has its own open questions and no spec yet.
+E04 and E05 are parked as epics; their stories will be filed after their specs are written. The table above records the Epic 01 test findings; every E01 finding now has a spec: E01-S05 and E01-S06 (2026-11-16), E01-S07–E01-S12 (2026-11-17), all under `.ai/specs/`.
