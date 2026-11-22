@@ -2,6 +2,7 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { EditorState, type Extension } from "@codemirror/state";
 import { EditorView, dropCursor, keymap } from "@codemirror/view";
+import { emphasisKeymap } from "./formatting";
 import { createFileInput, type FileInputOptions } from "./fileInput";
 import { createImagePreview, type ImageOptions } from "./imagePreview";
 import { livePreview } from "./livePreview";
@@ -41,7 +42,7 @@ export function createMarkdownEditor(
     const baseExtensions: Extension[] = [
         markdown({ base: markdownLanguage }),
         history(),
-        keymap.of([...defaultKeymap, ...historyKeymap]),
+        keymap.of([...emphasisKeymap, ...defaultKeymap, ...historyKeymap]),
         EditorView.lineWrapping,
         basaltTheme,
         livePreview,

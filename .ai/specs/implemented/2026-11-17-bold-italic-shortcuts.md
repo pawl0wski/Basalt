@@ -2,7 +2,7 @@
 date: 2026-11-17
 slug: bold-italic-shortcuts
 type: spec
-status: draft
+status: implemented
 tags: [editor, shortcuts, markdown, bold, italic, e01]
 ---
 
