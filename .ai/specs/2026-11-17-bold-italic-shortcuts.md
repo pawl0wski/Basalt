@@ -16,28 +16,28 @@ The owner (the only confirmed user, D02) formats notes today by typing Markdown 
 
 ## 📝 Decisions (owner)
 
-| Id  | Topic              | Decision                                                                                                                                       |
-| --- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| D-1 | Shortcuts in E01   | Ctrl+B and Ctrl+I are expected in E01; they are part of the Epic 01 test findings (owner, 2026-11-16; backlog E01-S11, issue #37).              |
-| D-2 | Scope              | Shortcuts only: no formatting toolbar, no other shortcuts and no rich-text editing (issue #37, 2026-11-16).                                    |
+| Id  | Topic            | Decision                                                                                                                           |
+| --- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| D-1 | Shortcuts in E01 | Ctrl+B and Ctrl+I are expected in E01; they are part of the Epic 01 test findings (owner, 2026-11-16; backlog E01-S11, issue #37). |
+| D-2 | Scope            | Shortcuts only: no formatting toolbar, no other shortcuts and no rich-text editing (issue #37, 2026-11-16).                        |
 
 ## 📝 Acceptance criteria
 
 The issue's five criteria are refined below; the derived ones make the decisions explicit. Screen ids refer to the screen map.
 
-| Id       | Criterion                                                                                                                                                                                                                   | Screen |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| AC-11.1  | Given selected text, when the owner presses Ctrl/Cmd+B, then the selection is wrapped in `**` and the line renders bold in live preview once the cursor leaves it; pressing again removes the markers.                        | s03    |
-| AC-11.2  | Given no selection, when the owner presses Ctrl/Cmd+I, then the `*` markers are inserted and the cursor is between them; pressing again (with the cursor still between them) removes them.                                    | s03    |
-| AC-11.3  | Given an IME composition in progress (`compositionstart` to `compositionend`), then the shortcut does nothing and the text is unchanged.                                                                                    | s03    |
-| AC-11.4  | Given Undo after the shortcut, then the change is undone in one step (text and selection restored) and never merges with preceding typing; Redo reapplies it as one step.                                                    | s03    |
-| AC-11.5  | Given a saved note, then the file contains the Markdown markers and nothing else changes; the note is plain Markdown.                                                                                                       | s03    |
-| AC-11.6  | The platform modifier is used: Ctrl on Windows/Linux, Cmd on macOS (`Mod-b`/`Mod-i`). Shift, Alt or other modifier combinations are not bound.                                                                               | s03    |
-| AC-11.7  | Given several selections, one press toggles every selection in one transaction; one Undo reverts them all.                                                                                                                   | s03    |
-| AC-11.8  | Given nested emphasis, Ctrl/Cmd+B on `***text***` leaves `*text*` and Ctrl/Cmd+I leaves `**text**`; bolding `*text*` or italicising `**text**` produces `***text***` (bold + italic).                                       | s03    |
-| AC-11.9  | Given a whitespace-only selection, the shortcut does nothing: no markers, no transaction, no undo entry.                                                                                                                    | s03    |
-| AC-11.10 | Given a selection that already includes its markers (`**text**` selected, or the cursor between the empty pair `**\|**`), one press removes them and keeps the inner text selected (or the cursor in place).                | s03    |
-| AC-11.11 | The shortcut works only while the editor has focus: with focus in the tree, a tab or a dialog, Ctrl/Cmd+B and Ctrl/Cmd+I do nothing.                                                                                        | s03    |
+| Id       | Criterion                                                                                                                                                                                                    | Screen |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| AC-11.1  | Given selected text, when the owner presses Ctrl/Cmd+B, then the selection is wrapped in `**` and the line renders bold in live preview once the cursor leaves it; pressing again removes the markers.       | s03    |
+| AC-11.2  | Given no selection, when the owner presses Ctrl/Cmd+I, then the `*` markers are inserted and the cursor is between them; pressing again (with the cursor still between them) removes them.                   | s03    |
+| AC-11.3  | Given an IME composition in progress (`compositionstart` to `compositionend`), then the shortcut does nothing and the text is unchanged.                                                                     | s03    |
+| AC-11.4  | Given Undo after the shortcut, then the change is undone in one step (text and selection restored) and never merges with preceding typing; Redo reapplies it as one step.                                    | s03    |
+| AC-11.5  | Given a saved note, then the file contains the Markdown markers and nothing else changes; the note is plain Markdown.                                                                                        | s03    |
+| AC-11.6  | The platform modifier is used: Ctrl on Windows/Linux, Cmd on macOS (`Mod-b`/`Mod-i`). Shift, Alt or other modifier combinations are not bound.                                                               | s03    |
+| AC-11.7  | Given several selections, one press toggles every selection in one transaction; one Undo reverts them all.                                                                                                   | s03    |
+| AC-11.8  | Given nested emphasis, Ctrl/Cmd+B on `***text***` leaves `*text*` and Ctrl/Cmd+I leaves `**text**`; bolding `*text*` or italicising `**text**` produces `***text***` (bold + italic).                        | s03    |
+| AC-11.9  | Given a whitespace-only selection, the shortcut does nothing: no markers, no transaction, no undo entry.                                                                                                     | s03    |
+| AC-11.10 | Given a selection that already includes its markers (`**text**` selected, or the cursor between the empty pair `**\|**`), one press removes them and keeps the inner text selected (or the cursor in place). | s03    |
+| AC-11.11 | The shortcut works only while the editor has focus: with focus in the tree, a tab or a dialog, Ctrl/Cmd+B and Ctrl/Cmd+I do nothing.                                                                         | s03    |
 
 ## 📝 Not doing
 
@@ -108,19 +108,19 @@ export type EmphasisMarker = "**" | "*";
 
 /** One range's toggle plan; `range` is in the coordinates after `changes`. */
 export type EmphasisEdit = {
-    readonly changes: readonly {
-        readonly from: number;
-        readonly to: number;
-        readonly insert: string;
-    }[];
-    readonly range: TextRange;
+  readonly changes: readonly {
+    readonly from: number;
+    readonly to: number;
+    readonly insert: string;
+  }[];
+  readonly range: TextRange;
 };
 
 /** Returns null for a whitespace-only selection; never throws; pure. */
 export function computeEmphasisToggle(
-    text: string,
-    range: TextRange,
-    marker: EmphasisMarker,
+  text: string,
+  range: TextRange,
+  marker: EmphasisMarker,
 ): EmphasisEdit | null;
 
 export const toggleBold: Command;
@@ -147,29 +147,29 @@ Prototype: `prototypes/workspace-basic/` (screen map `prototypes/e01-screen-map.
 
 ## 📝 Edge cases & failure scenarios
 
-| Scenario                                                                      | Behaviour                                                                                                                   |
-| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Whitespace-only selection (`" "`, `"\n\n"`)                                   | No-op: no transaction, no undo entry.                                                                                       |
-| Selection with leading or trailing whitespace (`" text "`)                    | Wrapped exactly as selected (`** text **`); CommonMark may not render it as emphasis. Undo reverts.                         |
-| Nested emphasis (`***text***`)                                                | Ctrl/Cmd+B → `*text*`; Ctrl/Cmd+I → `**text**`; each press is one undo step.                                                |
-| Bolding italic (`*text*`) or italicising bold (`**text**`)                    | Wraps: `***text***` (bold + italic).                                                                                        |
-| Selection includes its own markers (`**text**` selected)                      | Markers removed; the inner text stays selected.                                                                             |
-| Markers on one side only (`**text`, `text**`)                                 | Wrapped (`****text**`); unusual input, Undo reverts.                                                                        |
-| Cursor between the empty pair (`**\|**`, `*\|*`)                              | Markers removed; the press toggles off.                                                                                     |
-| Cursor inside a non-empty span (`**bo\|ld**`)                                 | Empty markers are inserted at the cursor (`**bo****ld**`); the enclosing span is not detected. Documented rough edge.       |
-| Escaped markers (`\*text\*`)                                                  | Escaped runs do not count as emphasis; the selection is wrapped and the backslashes stay as they are.                        |
-| Underscore emphasis (`__text__`, `_text_`)                                    | Not detected; the shortcut wraps in asterisks (`**__text__**`).                                                             |
-| Selection inside or spanning a code block or inline code                      | Same textual rules; markers are inserted literally (no context check).                                                      |
-| Several selections                                                             | Every range toggles in one transaction; one Undo reverts them all.                                                          |
-| Selections whose marker runs overlap (adjacent spans with no separator)       | The later range is left unchanged so the merged changeset stays valid; the main range always toggles.                       |
-| IME composition in progress                                                    | The command is a no-op from `compositionstart` to `compositionend`; CodeMirror also ignores key events while composing.     |
-| Read-only editor state                                                         | No change, no undo entry; `false` is returned.                                                                              |
-| Editor not focused (tree, tab bar, dialog)                                     | The editor keymap does not see the event and the app keymap does not bind `b`/`i`: nothing happens.                         |
-| Empty document                                                                 | `**\|**` (bold) or `*\|*` (italic); pressing again returns to empty.                                                        |
-| Selection spanning lines                                                       | Wrapped at the selection boundaries (`**a\nb**`); CommonMark renders the emphasis across the line break.                    |
-| Undo after several presses                                                     | Each press is its own history event (`isolateHistory`); Undo steps back one press at a time, Redo reapplies.                |
-| Toggle immediately after typing                                                | The toggle never groups with the typing: Undo removes only the toggle, the next Undo removes the typing.                     |
-| Ctrl/Cmd+Shift+B, Alt combinations, or a non-US layout producing another `key` | Not bound; CodeMirror leaves the event to the next handler.                                                                 |
+| Scenario                                                                       | Behaviour                                                                                                               |
+| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Whitespace-only selection (`" "`, `"\n\n"`)                                    | No-op: no transaction, no undo entry.                                                                                   |
+| Selection with leading or trailing whitespace (`" text "`)                     | Wrapped exactly as selected (`** text **`); CommonMark may not render it as emphasis. Undo reverts.                     |
+| Nested emphasis (`***text***`)                                                 | Ctrl/Cmd+B → `*text*`; Ctrl/Cmd+I → `**text**`; each press is one undo step.                                            |
+| Bolding italic (`*text*`) or italicising bold (`**text**`)                     | Wraps: `***text***` (bold + italic).                                                                                    |
+| Selection includes its own markers (`**text**` selected)                       | Markers removed; the inner text stays selected.                                                                         |
+| Markers on one side only (`**text`, `text**`)                                  | Wrapped (`****text**`); unusual input, Undo reverts.                                                                    |
+| Cursor between the empty pair (`**\|**`, `*\|*`)                               | Markers removed; the press toggles off.                                                                                 |
+| Cursor inside a non-empty span (`**bo\|ld**`)                                  | Empty markers are inserted at the cursor (`**bo****ld**`); the enclosing span is not detected. Documented rough edge.   |
+| Escaped markers (`\*text\*`)                                                   | Escaped runs do not count as emphasis; the selection is wrapped and the backslashes stay as they are.                   |
+| Underscore emphasis (`__text__`, `_text_`)                                     | Not detected; the shortcut wraps in asterisks (`**__text__**`).                                                         |
+| Selection inside or spanning a code block or inline code                       | Same textual rules; markers are inserted literally (no context check).                                                  |
+| Several selections                                                             | Every range toggles in one transaction; one Undo reverts them all.                                                      |
+| Selections whose marker runs overlap (adjacent spans with no separator)        | The later range is left unchanged so the merged changeset stays valid; the main range always toggles.                   |
+| IME composition in progress                                                    | The command is a no-op from `compositionstart` to `compositionend`; CodeMirror also ignores key events while composing. |
+| Read-only editor state                                                         | No change, no undo entry; `false` is returned.                                                                          |
+| Editor not focused (tree, tab bar, dialog)                                     | The editor keymap does not see the event and the app keymap does not bind `b`/`i`: nothing happens.                     |
+| Empty document                                                                 | `**\|**` (bold) or `*\|*` (italic); pressing again returns to empty.                                                    |
+| Selection spanning lines                                                       | Wrapped at the selection boundaries (`**a\nb**`); CommonMark renders the emphasis across the line break.                |
+| Undo after several presses                                                     | Each press is its own history event (`isolateHistory`); Undo steps back one press at a time, Redo reapplies.            |
+| Toggle immediately after typing                                                | The toggle never groups with the typing: Undo removes only the toggle, the next Undo removes the typing.                |
+| Ctrl/Cmd+Shift+B, Alt combinations, or a non-US layout producing another `key` | Not bound; CodeMirror leaves the event to the next handler.                                                             |
 
 ## 📝 Risks & impact review
 
@@ -195,18 +195,18 @@ Prototype: `prototypes/workspace-basic/` (screen map `prototypes/e01-screen-map.
 
 The issue's open questions and the spec-internal ones resolved without a gate (autonomous run, 2026-11-17). Override before merge if a different call is wanted.
 
-| #    | Question                                                                                  | Chosen answer                                                                                                                                                    | Rationale                                                                                                                         |
-| ---- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| RA-1 | Toggle the selection or always wrap it? (issue)                                           | Toggle: the second press unwraps.                                                                                                                                | The issue's acceptance criteria say "pressing again removes the markers"; matches Obsidian and Markdown All in One.                |
-| RA-2 | With no selection, word under the cursor or empty markers? (issue)                        | Empty markers, cursor between them.                                                                                                                              | The issue's acceptance criteria settle it; word expansion is a larger behaviour and stays out.                                    |
-| RA-3 | Nested bold/italic? (issue)                                                               | Marker-run parity: bold active for runs ≥ 2, italic for odd runs; `***x***` + B → `*x*`, + I → `**x**`.                                                          | Smallest rule that keeps both toggles symmetric on nested emphasis; matches CommonMark's `***`.                                  |
-| RA-4 | Whitespace-only selection? (issue)                                                        | No-op, no undo entry.                                                                                                                                            | `** **` is not emphasis in CommonMark, so wrapping would not make it render bold (AC-11.1).                                       |
-| RA-5 | Selection that already includes its markers?                                              | Unwrap; the inner text stays selected.                                                                                                                           | Matches Markdown All in One's `isWrapped` check; avoids `****text****` on a triple-click selection.                              |
-| RA-6 | Cursor inside a non-empty emphasis span (`**bo\|ld**`)?                                   | Insert the empty pair at the cursor; no span detection. ⚠ NEEDS HUMAN CONFIRMATION                                                                                | The AC's no-selection rule read literally; a span-unwrap or cursor-exit behaviour is also defensible and some editors do that.   |
-| RA-7 | Conflicts with app-level shortcuts now or in E02? (issue)                                 | None: the app keymap binds only `o`/`s`/`n`, and E02 (sync) defines no editor shortcuts. The only shadowed binding is CodeMirror's `Mod-i` → `selectParentSyntax`. | Checked `features/keymap/keymap.ts` and the backlog; keeping `Mod-b`/`Mod-i` reserved while the editor is focused is the requirement. |
-| RA-8 | Underscore emphasis detection?                                                             | No; only `**`/`*` are produced or detected.                                                                                                                       | The issue's scope names `**`/`*`; underscore support is a separate decision.                                                      |
-| RA-9 | Context awareness (code blocks, links, quotes)?                                            | No; the command is textual and deterministic.                                                                                                                     | Matches the reference implementations and keeps the command parser-free; E01-S10/E05 territory.                                    |
-| RA-10 | Where the keymap lives?                                                                   | Inside `createMarkdownEditor` in `@basalt/editor`, before `defaultKeymap`.                                                                                        | The editor owns its keyboard behaviour; no app wiring and one place to test precedence.                                            |
+| #     | Question                                                           | Chosen answer                                                                                                                                                      | Rationale                                                                                                                             |
+| ----- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| RA-1  | Toggle the selection or always wrap it? (issue)                    | Toggle: the second press unwraps.                                                                                                                                  | The issue's acceptance criteria say "pressing again removes the markers"; matches Obsidian and Markdown All in One.                   |
+| RA-2  | With no selection, word under the cursor or empty markers? (issue) | Empty markers, cursor between them.                                                                                                                                | The issue's acceptance criteria settle it; word expansion is a larger behaviour and stays out.                                        |
+| RA-3  | Nested bold/italic? (issue)                                        | Marker-run parity: bold active for runs ≥ 2, italic for odd runs; `***x***` + B → `*x*`, + I → `**x**`.                                                            | Smallest rule that keeps both toggles symmetric on nested emphasis; matches CommonMark's `***`.                                       |
+| RA-4  | Whitespace-only selection? (issue)                                 | No-op, no undo entry.                                                                                                                                              | `** **` is not emphasis in CommonMark, so wrapping would not make it render bold (AC-11.1).                                           |
+| RA-5  | Selection that already includes its markers?                       | Unwrap; the inner text stays selected.                                                                                                                             | Matches Markdown All in One's `isWrapped` check; avoids `****text****` on a triple-click selection.                                   |
+| RA-6  | Cursor inside a non-empty emphasis span (`**bo\|ld**`)?            | Insert the empty pair at the cursor; no span detection. ⚠ NEEDS HUMAN CONFIRMATION                                                                                 | The AC's no-selection rule read literally; a span-unwrap or cursor-exit behaviour is also defensible and some editors do that.        |
+| RA-7  | Conflicts with app-level shortcuts now or in E02? (issue)          | None: the app keymap binds only `o`/`s`/`n`, and E02 (sync) defines no editor shortcuts. The only shadowed binding is CodeMirror's `Mod-i` → `selectParentSyntax`. | Checked `features/keymap/keymap.ts` and the backlog; keeping `Mod-b`/`Mod-i` reserved while the editor is focused is the requirement. |
+| RA-8  | Underscore emphasis detection?                                     | No; only `**`/`*` are produced or detected.                                                                                                                        | The issue's scope names `**`/`*`; underscore support is a separate decision.                                                          |
+| RA-9  | Context awareness (code blocks, links, quotes)?                    | No; the command is textual and deterministic.                                                                                                                      | Matches the reference implementations and keeps the command parser-free; E01-S10/E05 territory.                                       |
+| RA-10 | Where the keymap lives?                                            | Inside `createMarkdownEditor` in `@basalt/editor`, before `defaultKeymap`.                                                                                         | The editor owns its keyboard behaviour; no app wiring and one place to test precedence.                                               |
 
 ## 📋 Phasing
 

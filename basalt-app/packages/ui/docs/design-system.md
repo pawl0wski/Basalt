@@ -22,43 +22,43 @@ Focused, graphite, own, tool-like, orderly. Not generic, loud, childish, functio
 
 ## Components (import from `@basalt/ui`)
 
-| Component                   | Import                          | Use it for                                                                  | Do not use it for                      |
-| --------------------------- | ------------------------------- | --------------------------------------------------------------------------- | -------------------------------------- |
-| Button                      | `Button`                        | Starting an action: variants `primary`, `secondary`, `ghost`, `destructive` | Navigation, icon-only controls         |
-| IconButton                  | `IconButton`                    | Frequent known action as an icon; `aria-label` required, shown as a tooltip | Rare or unfamiliar actions             |
-| TextLink                    | `TextLink`                      | Going to another place; `inline` is underlined                              | Actions that change data               |
-| Input                       | `Input`                         | One line of text, inside a Field                                            | Fixed lists, many lines                |
-| Field, Label                | `Field`, `Label`                | Label, control, hint and error joined (ARIA included)                       | Checkbox and Switch                    |
-| Checkbox                    | `Checkbox`                      | Option saved with a form                                                    | Immediate on/off                       |
-| Select                      | `Select`                        | One value from about 4 to 12                                                | Two or three options                   |
-| Switch                      | `Switch`                        | On/off applied at once                                                      | Options saved later                    |
-| RadioGroup                  | `RadioGroup`                    | One of two to five visible options                                          | Long lists                             |
-| Card, CardRow               | `Card`, `CardRow`               | A group of settings rows under one heading                                  | A single control, a card in a card     |
-| StatusIndicator             | `StatusIndicator`               | Sync state in words (`synced`, `syncing`, `conflict`, `error`)              | One-off results                        |
-| Alert                       | `Alert`                         | Message that stays until fixed (`info`, `warning`, `danger`)                | Field errors, passing results          |
-| Skeleton                    | `Skeleton`                      | Placeholder while loading                                                   | Failed loads, empty places             |
-| ScrollArea                  | `ScrollArea`                    | A named region whose content can be taller than its box                     | Page scroll, content that always fits  |
-| Tooltip                     | `Tooltip`                       | Name or shortcut of an icon                                                 | Information needed to finish a task    |
-| Dialog                      | `Dialog`                        | Short focused task                                                          | Yes/no questions, long forms           |
-| ConfirmDialog               | `ConfirmDialog`                 | Confirming something hard to undo; focus on Cancel                          | Things that can be undone with a Toast |
-| Menu                        | `Menu`                          | Three or more actions on one object                                         | One or two actions                     |
-| Popover                     | `Popover`                       | A few controls next to a trigger                                            | A name for an icon                     |
-| Toast                       | `ToastProvider`, `useToast`     | A short result with an optional Undo                                        | Errors that need action                |
-| Tabs                        | `Tabs`                          | Sibling views of one object                                                 | Steps, separate pages                  |
-| EmptyState                  | `EmptyState`                    | Why a place is empty and the next step                                      | Loading, failures                      |
-| ErrorState                  | `ErrorState`                    | A view that could not be shown                                              | Problems the view survives             |
-| NoteList                    | `NoteList`                      | The flat note list (listbox)                                                | Form choices                           |
-| NoteSidebar                 | `NoteSidebar`                   | Left column of an open workspace                                            | The welcome screen                     |
-| AppShell                    | `AppShell`                      | The window regions: title bar, activity bar, panels, status bar             | Building your own shell in a screen    |
-| TitleBar                    | `TitleBar`                      | Panel toggles, open-note tabs, new note, window buttons                     | Sibling views of one object (Tabs)     |
-| ActivityBar                 | `ActivityBar`                   | Switching between the app sections (Notes, Search, Bookmarks, Settings)     | Actions on a note                      |
-| SidePanel                   | `SidePanel`                     | The right panel: a titled frame with search and close, content in a slot    | The left note column (NoteSidebar)     |
-| SaveStatus, StatusBar       | `SaveStatus`, `StatusBar`       | Save state and counts in the bottom bar                                     | Sync state                             |
-| NoteBanner                  | `NoteBanner`                    | Why the open note cannot save or open                                       | Failures while leaving the note        |
-| SaveFailedDialog            | `SaveFailedDialog`              | What to do with text that could not be saved                                | Failures while staying in the note     |
-| NewNoteDialog               | `NewNoteDialog`                 | Naming a new note                                                           | Renaming                               |
-| ImagePlaceholder, NoteImage | `ImagePlaceholder`, `NoteImage` | An image in a note, or why it cannot be shown                               | Whole-note errors                      |
-| WelcomeScreen               | `WelcomeScreen`                 | The screen with no workspace: one action                                    | An empty workspace                     |
+| Component                   | Import                          | Use it for                                                                                   | Do not use it for                      |
+| --------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Button                      | `Button`                        | Starting an action: variants `primary`, `secondary`, `ghost`, `destructive`                  | Navigation, icon-only controls         |
+| IconButton                  | `IconButton`                    | Frequent known action as an icon; `aria-label` required, shown as a tooltip                  | Rare or unfamiliar actions             |
+| TextLink                    | `TextLink`                      | Going to another place; `inline` is underlined                                               | Actions that change data               |
+| Input                       | `Input`                         | One line of text, inside a Field                                                             | Fixed lists, many lines                |
+| Field, Label                | `Field`, `Label`                | Label, control, hint and error joined (ARIA included)                                        | Checkbox and Switch                    |
+| Checkbox                    | `Checkbox`                      | Option saved with a form                                                                     | Immediate on/off                       |
+| Select                      | `Select`                        | One value from about 4 to 12                                                                 | Two or three options                   |
+| Switch                      | `Switch`                        | On/off applied at once                                                                       | Options saved later                    |
+| RadioGroup                  | `RadioGroup`                    | One of two to five visible options                                                           | Long lists                             |
+| Card, CardRow               | `Card`, `CardRow`               | A group of settings rows under one heading                                                   | A single control, a card in a card     |
+| StatusIndicator             | `StatusIndicator`               | Sync state in words (`synced`, `syncing`, `conflict`, `error`)                               | One-off results                        |
+| Alert                       | `Alert`                         | Message that stays until fixed (`info`, `warning`, `danger`)                                 | Field errors, passing results          |
+| Skeleton                    | `Skeleton`                      | Placeholder while loading                                                                    | Failed loads, empty places             |
+| ScrollArea                  | `ScrollArea`                    | A named region whose content can be taller than its box                                      | Page scroll, content that always fits  |
+| Tooltip                     | `Tooltip`                       | Name or shortcut of an icon                                                                  | Information needed to finish a task    |
+| Dialog                      | `Dialog`                        | Short focused task                                                                           | Yes/no questions, long forms           |
+| ConfirmDialog               | `ConfirmDialog`                 | Confirming something hard to undo; focus on Cancel                                           | Things that can be undone with a Toast |
+| Menu                        | `Menu`                          | Three or more actions on one object                                                          | One or two actions                     |
+| Popover                     | `Popover`                       | A few controls next to a trigger                                                             | A name for an icon                     |
+| Toast                       | `ToastProvider`, `useToast`     | A short result with an optional Undo                                                         | Errors that need action                |
+| Tabs                        | `Tabs`                          | Sibling views of one object                                                                  | Steps, separate pages                  |
+| EmptyState                  | `EmptyState`                    | Why a place is empty and the next step                                                       | Loading, failures                      |
+| ErrorState                  | `ErrorState`                    | A view that could not be shown                                                               | Problems the view survives             |
+| NoteList                    | `NoteList`                      | The flat note list (listbox)                                                                 | Form choices                           |
+| NoteSidebar                 | `NoteSidebar`                   | Left column of an open workspace                                                             | The welcome screen                     |
+| AppShell                    | `AppShell`                      | The window regions: title bar, activity bar, panels, status bar                              | Building your own shell in a screen    |
+| TitleBar                    | `TitleBar`                      | Panel toggles, open-note tabs, new note, window buttons                                      | Sibling views of one object (Tabs)     |
+| ActivityBar                 | `ActivityBar`                   | Switching between the app sections (Notes, Search, Bookmarks, Settings)                      | Actions on a note                      |
+| SidePanel                   | `SidePanel`                     | The right panel: a titled frame with search and close, content in a slot                     | The left note column (NoteSidebar)     |
+| SaveStatus, StatusBar       | `SaveStatus`, `StatusBar`       | Word count (and later sync state) in the bottom bar; the unsaved state lives on the note tab | Sync state                             |
+| NoteBanner                  | `NoteBanner`                    | Why the open note cannot save or open                                                        | Failures while leaving the note        |
+| SaveFailedDialog            | `SaveFailedDialog`              | What to do with text that could not be saved                                                 | Failures while staying in the note     |
+| NewNoteDialog               | `NewNoteDialog`                 | Naming a new note                                                                            | Renaming                               |
+| ImagePlaceholder, NoteImage | `ImagePlaceholder`, `NoteImage` | An image in a note, or why it cannot be shown                                                | Whole-note errors                      |
+| WelcomeScreen               | `WelcomeScreen`                 | The screen with no workspace: one action                                                     | An empty workspace                     |
 
 Patterns (proposals, see Storybook): Form, List with filters, Detail view, Delete confirmation.
 

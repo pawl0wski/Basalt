@@ -18,26 +18,26 @@ The owner (the only confirmed user, D02) tested epic E01 and found the scrolling
 
 ## 📝 Decisions (owner)
 
-| Id  | Topic             | Decision                                                                                                                                                                                                                     |
-| --- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D-1 | Prototype first   | Scrollbars and nested scrolling get their own issue and a prototype before implementation (owner, 2026-11-16). The prototype settles the scrollbar style, the notice placement and the macOS overlay behavior.                  |
+| Id  | Topic             | Decision                                                                                                                                                                                                                       |
+| --- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| D-1 | Prototype first   | Scrollbars and nested scrolling get their own issue and a prototype before implementation (owner, 2026-11-16). The prototype settles the scrollbar style, the notice placement and the macOS overlay behavior.                 |
 | D-2 | Style (prototype) | To be recorded from the Phase 0 prototype before Phase 1 starts. The spec's default (thin, always visible on Windows/Linux; the platform overlay on macOS) is the prototype's starting point, not a substitute for its review. |
 
 ## 📝 Acceptance criteria
 
 The issue's five criteria are refined below; the derived ones make the model explicit. Screen ids refer to the screen map.
 
-| Id      | Criterion                                                                                                                                                                                                                                                                     | Screen          |
-| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
-| AC-09.1 | Given a long tree and an informational message in the sidebar (the watcher-fallback notice or a failed-move error), then the tree region is the only scroller in the sidebar, the message sits in the fixed slot above it, and no second scrollbar appears inside the sidebar. | s09             |
-| AC-09.2 | Given a long note, then the editor scrolls inside its own region (`.cm-scroller`) and the app shell does not scroll; the rightmost scrollbar belongs to the editor.                                                                                                             | s03             |
-| AC-09.3 | Given a failed move or rename, then the error appears in the sidebar's fixed notice slot and does not introduce an extra scrollbar next to the tree; the tree keeps its scroll position.                                                                                        | s14             |
-| AC-09.4 | Given Windows, Linux and macOS, then scrollbars follow the design tokens where the platform draws them (size, thumb, hover, track) and remain usable with mouse, trackpad and keyboard; macOS keeps the platform overlay behavior.                                            | s09, s03        |
-| AC-09.5 | Given a narrow window (at least 320 px), then every region keeps its defined scroll owner and no horizontal scrolling appears; long names truncate.                                                                                                                            | s02, s03, s09   |
-| AC-09.6 | The shell never scrolls: `main` has no scrollbar at any content size and the window fills the viewport (the `window.spec.ts` assertion holds).                                                                                                                                | s02, s03        |
-| AC-09.7 | Each region has exactly one scroll owner per the matrix: sidebar tree, editor, side panel, welcome view; dialogs, menus, popovers and toasts are portaled and own their scroll; no region nests a second scroller.                                                              | s02, s03, s09, s10, s13 |
-| AC-09.8 | When a notice, banner or error appears or disappears, the scroll owner does not change; no scrollbar is added to or removed from the shell; the region keeps its width and its scrollbar stays at the region's edge.                                                           | s03, s09, s14   |
-| AC-09.9 | Keyboard: the focused tree row is scrolled into view by the browser, the editor scrolls with the keyboard while focused, and the welcome view's scroller is reachable with Tab (inset focus ring).                                                                              | s02, s03, s09   |
+| Id      | Criterion                                                                                                                                                                                                                                                                      | Screen                  |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- |
+| AC-09.1 | Given a long tree and an informational message in the sidebar (the watcher-fallback notice or a failed-move error), then the tree region is the only scroller in the sidebar, the message sits in the fixed slot above it, and no second scrollbar appears inside the sidebar. | s09                     |
+| AC-09.2 | Given a long note, then the editor scrolls inside its own region (`.cm-scroller`) and the app shell does not scroll; the rightmost scrollbar belongs to the editor.                                                                                                            | s03                     |
+| AC-09.3 | Given a failed move or rename, then the error appears in the sidebar's fixed notice slot and does not introduce an extra scrollbar next to the tree; the tree keeps its scroll position.                                                                                       | s14                     |
+| AC-09.4 | Given Windows, Linux and macOS, then scrollbars follow the design tokens where the platform draws them (size, thumb, hover, track) and remain usable with mouse, trackpad and keyboard; macOS keeps the platform overlay behavior.                                             | s09, s03                |
+| AC-09.5 | Given a narrow window (at least 320 px), then every region keeps its defined scroll owner and no horizontal scrolling appears; long names truncate.                                                                                                                            | s02, s03, s09           |
+| AC-09.6 | The shell never scrolls: `main` has no scrollbar at any content size and the window fills the viewport (the `window.spec.ts` assertion holds).                                                                                                                                 | s02, s03                |
+| AC-09.7 | Each region has exactly one scroll owner per the matrix: sidebar tree, editor, side panel, welcome view; dialogs, menus, popovers and toasts are portaled and own their scroll; no region nests a second scroller.                                                             | s02, s03, s09, s10, s13 |
+| AC-09.8 | When a notice, banner or error appears or disappears, the scroll owner does not change; no scrollbar is added to or removed from the shell; the region keeps its width and its scrollbar stays at the region's edge.                                                           | s03, s09, s14           |
+| AC-09.9 | Keyboard: the focused tree row is scrolled into view by the browser, the editor scrolls with the keyboard while focused, and the welcome view's scroller is reachable with Tab (inset focus ring).                                                                             | s02, s03, s09           |
 
 ## 📝 Not doing
 
@@ -63,16 +63,16 @@ One rule, applied to every region: **a region that can be taller than its box ow
 
 Scroll-owner matrix (the target; "current" is the code today):
 
-| Region                        | Scroll owner (the only scroller)                                                       | Current                                                                                          | Target                                                                                  |
-| ----------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| Workspace tree / sidebar      | `NoteSidebar`'s content region (`div.min-h-none.flex-1.overflow-y-auto`)                | the same region also holds the operation error `Alert`                                           | the tree is its only content; notices move to the fixed slot above it                    |
-| Editor                        | CodeMirror's `.cm-scroller` (`packages/editor/src/theme.ts:14`)                         | `AppShell`'s `main` also scrolls                                                                 | `main` stops scrolling; the column is `h-full`; `.cm-scroller` is the only scroller      |
-| Main shell                    | none                                                                                    | `main` has `overflow-y-auto`                                                                     | `main` becomes `overflow-hidden`; no page scroll                                         |
-| Welcome / no-note view        | the view's own root                                                                    | `main` scrolls                                                                                   | the welcome view root becomes the scroller (works at a short or narrow viewport)         |
-| Right side panel              | `SidePanel`'s content region (`div.min-h-none.flex-1.overflow-y-auto`)                  | not used in the app yet (E01 has no outline panel)                                               | unchanged; it already follows the model                                                  |
-| Dialogs, menus, popovers, toasts | the overlay itself (Radix portal)                                                    | portaled outside the shell (`Dialog`, `Menu`, `ContextMenu`, `Popover`, `Toast`)                 | unchanged; an overlay never creates a shell scroll region                                |
-| Title bar tabs                | none (`ul.overflow-hidden` + the "Show all open notes" menu)                            | already the overflow-menu model                                                                  | unchanged                                                                                |
-| Title bar, activity bar, status bar | none (fixed height)                                                              | fixed                                                                                            | unchanged                                                                                |
+| Region                              | Scroll owner (the only scroller)                                         | Current                                                                          | Target                                                                              |
+| ----------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Workspace tree / sidebar            | `NoteSidebar`'s content region (`div.min-h-none.flex-1.overflow-y-auto`) | the same region also holds the operation error `Alert`                           | the tree is its only content; notices move to the fixed slot above it               |
+| Editor                              | CodeMirror's `.cm-scroller` (`packages/editor/src/theme.ts:14`)          | `AppShell`'s `main` also scrolls                                                 | `main` stops scrolling; the column is `h-full`; `.cm-scroller` is the only scroller |
+| Main shell                          | none                                                                     | `main` has `overflow-y-auto`                                                     | `main` becomes `overflow-hidden`; no page scroll                                    |
+| Welcome / no-note view              | the view's own root                                                      | `main` scrolls                                                                   | the welcome view root becomes the scroller (works at a short or narrow viewport)    |
+| Right side panel                    | `SidePanel`'s content region (`div.min-h-none.flex-1.overflow-y-auto`)   | not used in the app yet (E01 has no outline panel)                               | unchanged; it already follows the model                                             |
+| Dialogs, menus, popovers, toasts    | the overlay itself (Radix portal)                                        | portaled outside the shell (`Dialog`, `Menu`, `ContextMenu`, `Popover`, `Toast`) | unchanged; an overlay never creates a shell scroll region                           |
+| Title bar tabs                      | none (`ul.overflow-hidden` + the "Show all open notes" menu)             | already the overflow-menu model                                                  | unchanged                                                                           |
+| Title bar, activity bar, status bar | none (fixed height)                                                      | fixed                                                                            | unchanged                                                                           |
 
 The two reported symptoms are fixed by two placement changes: the sidebar operation error moves from the tree's scroller into `NoteSidebar`'s existing notice slot (the same slot the watcher-fallback notice uses), and `AppShell`'s `main` stops scrolling so the editor's `.cm-scroller` is the rightmost scrollbar.
 
@@ -116,10 +116,10 @@ No new entities and no persisted-format change. The only persistent artifacts ar
 ```ts
 // @basalt/ui — components/ScrollArea.tsx (new optional prop; existing callers unchanged)
 type ScrollAreaProps = {
-    label: string;
-    children: ReactNode;
-    className?: string;
-    type?: "always" | "hover" | "scroll"; // new; default "always" (was Radix's "hover")
+  label: string;
+  children: ReactNode;
+  className?: string;
+  type?: "always" | "hover" | "scroll"; // new; default "always" (was Radix's "hover")
 };
 
 // @basalt/ui — tokens (component.css → theme.css → lib/utils.ts)
@@ -148,25 +148,25 @@ The `ScrollArea` default changes from Radix's `"hover"` to `"always"`; that is a
 
 ## 📝 Edge cases & failure scenarios
 
-| Scenario                                                                 | Behaviour                                                                                                          |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| Failed move or rename (collision, partial move, read-only)               | The error appears in the sidebar's notice slot; the tree keeps its single scrollbar and its scroll position.        |
-| Long tree plus the watcher-fallback notice                               | The notice slot is fixed; the tree scrolls; no second scrollbar in the sidebar.                                    |
-| Long note plus a save/conflict banner                                    | The editor scrolls; the banner stays above the scroller; `main.scrollTop` stays 0.                                 |
-| A notice taller than its region (very short window)                      | The slot is `shrink-0` and takes priority; the region shrinks to its minimum; no second scrollbar is created.      |
-| Narrow window (360 px)                                                   | The sidebar is `w-full`; no horizontal scrolling at ≥320 px; long names truncate.                                  |
-| Below 320 px                                                             | The page's `min-width: 320px` scrolls horizontally by design (documented, unchanged).                              |
-| macOS overlay scrollbars                                                 | They appear on scroll and fade; the app does not force them visible; usability is unchanged.                       |
-| Mouse wheel or trackpad over the sidebar                                 | Scrolls the tree, not the shell.                                                                                   |
-| Mouse wheel or trackpad over the editor                                  | Scrolls the editor, not the shell.                                                                                 |
-| Keyboard in the tree                                                     | Arrow keys move focus; the browser scrolls the focused row into view.                                              |
-| Keyboard in the editor                                                   | PageUp/PageDown and arrow keys scroll the editor while it is focused.                                              |
-| Tab from the title bar in the welcome view                               | Reaches the welcome scroller (inset focus ring) so it can be scrolled with the keyboard.                           |
-| Long dialog or menu content                                              | The overlay scrolls inside itself (Radix); the shell does not scroll.                                              |
-| Toast stack                                                              | The toast viewport is fixed; no shell scroll.                                                                      |
-| The editor's `.cm-scroller` with a very long line                        | Line wrapping is on (S01); no horizontal scrollbar; if wrapping is ever off, the editor scrolls inside itself only. |
-| `prefers-reduced-motion`                                                 | No scroll animation is added; nothing changes.                                                                     |
-| Side panel (future outline)                                              | Already one scroller; no change.                                                                                   |
+| Scenario                                                   | Behaviour                                                                                                           |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Failed move or rename (collision, partial move, read-only) | The error appears in the sidebar's notice slot; the tree keeps its single scrollbar and its scroll position.        |
+| Long tree plus the watcher-fallback notice                 | The notice slot is fixed; the tree scrolls; no second scrollbar in the sidebar.                                     |
+| Long note plus a save/conflict banner                      | The editor scrolls; the banner stays above the scroller; `main.scrollTop` stays 0.                                  |
+| A notice taller than its region (very short window)        | The slot is `shrink-0` and takes priority; the region shrinks to its minimum; no second scrollbar is created.       |
+| Narrow window (360 px)                                     | The sidebar is `w-full`; no horizontal scrolling at ≥320 px; long names truncate.                                   |
+| Below 320 px                                               | The page's `min-width: 320px` scrolls horizontally by design (documented, unchanged).                               |
+| macOS overlay scrollbars                                   | They appear on scroll and fade; the app does not force them visible; usability is unchanged.                        |
+| Mouse wheel or trackpad over the sidebar                   | Scrolls the tree, not the shell.                                                                                    |
+| Mouse wheel or trackpad over the editor                    | Scrolls the editor, not the shell.                                                                                  |
+| Keyboard in the tree                                       | Arrow keys move focus; the browser scrolls the focused row into view.                                               |
+| Keyboard in the editor                                     | PageUp/PageDown and arrow keys scroll the editor while it is focused.                                               |
+| Tab from the title bar in the welcome view                 | Reaches the welcome scroller (inset focus ring) so it can be scrolled with the keyboard.                            |
+| Long dialog or menu content                                | The overlay scrolls inside itself (Radix); the shell does not scroll.                                               |
+| Toast stack                                                | The toast viewport is fixed; no shell scroll.                                                                       |
+| The editor's `.cm-scroller` with a very long line          | Line wrapping is on (S01); no horizontal scrollbar; if wrapping is ever off, the editor scrolls inside itself only. |
+| `prefers-reduced-motion`                                   | No scroll animation is added; nothing changes.                                                                      |
+| Side panel (future outline)                                | Already one scroller; no change.                                                                                    |
 
 ## 📝 Risks & impact review
 
@@ -189,13 +189,13 @@ The `ScrollArea` default changes from Radix's `"hover"` to `"always"`; that is a
 
 ## Resolved assumptions (autonomous defaults)
 
-| #   | Question (issue #35)                                       | Chosen answer                                                                                                                                        | Rationale                                                                                                                                          |
-| --- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q1  | Overlay scrollbars or always-visible thin scrollbars?      | Thin, always visible on Windows/Linux; macOS keeps the platform overlay; the prototype confirms (D-2). ⚠ NEEDS HUMAN CONFIRMATION                     | Matches each platform's convention and the design system's "no controls only on hover"; CSS-only and reversible. The owner reserved this for the prototype (D-1). |
-| Q2  | `ScrollArea` or native scrolling with styled scrollbars?   | Native scrolling with the token treatment for the shell regions; `ScrollArea` stays for overlay-style regions and gains the tokens and `type`.       | Smallest surface: no new focusable regions, no second scrollbar implementation, and CodeMirror cannot be wrapped.                                  |
-| Q3  | Where should inline notices live so they do not create a scroll region? | In a fixed slot of their region, outside the scroller: the sidebar slot under the header (watcher fallback plus operation errors), the editor column above `.cm-scroller`. | Directly fixes AC-09.3; the region keeps one scrollbar and the notice never scrolls away.                                                          |
-| Q4  | Hide scrollbars until hover, or keep them always visible?   | Always visible (thin) where the platform draws app-styled scrollbars. ⚠ NEEDS HUMAN CONFIRMATION                                                      | The design system names "controls only on hover" an anti-pattern; discoverability and mouse/trackpad use. Same decision as Q1, settled by the prototype. |
-| Q5  | How does this model interact with the mobile epic E04?      | Out of scope: the model defines one scroller per region and token-based sizes, so E04 can change the shell layout per breakpoint without reworking scroll ownership. | The issue defers mobile; no mobile work here.                                                                                                      |
+| #   | Question (issue #35)                                                    | Chosen answer                                                                                                                                                              | Rationale                                                                                                                                                         |
+| --- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1  | Overlay scrollbars or always-visible thin scrollbars?                   | Thin, always visible on Windows/Linux; macOS keeps the platform overlay; the prototype confirms (D-2). ⚠ NEEDS HUMAN CONFIRMATION                                          | Matches each platform's convention and the design system's "no controls only on hover"; CSS-only and reversible. The owner reserved this for the prototype (D-1). |
+| Q2  | `ScrollArea` or native scrolling with styled scrollbars?                | Native scrolling with the token treatment for the shell regions; `ScrollArea` stays for overlay-style regions and gains the tokens and `type`.                             | Smallest surface: no new focusable regions, no second scrollbar implementation, and CodeMirror cannot be wrapped.                                                 |
+| Q3  | Where should inline notices live so they do not create a scroll region? | In a fixed slot of their region, outside the scroller: the sidebar slot under the header (watcher fallback plus operation errors), the editor column above `.cm-scroller`. | Directly fixes AC-09.3; the region keeps one scrollbar and the notice never scrolls away.                                                                         |
+| Q4  | Hide scrollbars until hover, or keep them always visible?               | Always visible (thin) where the platform draws app-styled scrollbars. ⚠ NEEDS HUMAN CONFIRMATION                                                                           | The design system names "controls only on hover" an anti-pattern; discoverability and mouse/trackpad use. Same decision as Q1, settled by the prototype.          |
+| Q5  | How does this model interact with the mobile epic E04?                  | Out of scope: the model defines one scroller per region and token-based sizes, so E04 can change the shell layout per breakpoint without reworking scroll ownership.       | The issue defers mobile; no mobile work here.                                                                                                                     |
 
 ## 📋 Phasing
 

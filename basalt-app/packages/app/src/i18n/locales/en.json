@@ -179,10 +179,9 @@
         "unknown": "Something went wrong. Nothing was changed.",
         "unsupported": "This file format is not supported."
     },
-    "saveStatus": {
-        "saved": "Saved",
-        "saving": "Saving…",
-        "notSaved": "Not saved"
+    "statusBar": {
+        "wordsOne": "1 word",
+        "wordsMany": "{count} words"
     },
     "saveFailed": {
         "title": "Could not save \"{name}\"",

@@ -19,28 +19,28 @@ The owner (the only confirmed user, D02) wants the first H1 to be the note's nam
 | Id  | Topic             | Decision                                                                                                                                                                                                        |
 | --- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D-1 | Title rule        | Only the first top-level ATX H1 (`# `) is the title. `##`+ headings and Setext headings (`Title` + `===`) are not titles (2026-11-16).                                                                          |
-| D-2 | Rename timing     | The file renames when the cursor leaves the heading line — Enter, an arrow key, a click elsewhere, leaving the editor or closing the window (2026-11-16).                                                        |
-| D-3 | Empty heading     | A heading left empty or cleared is restored to the note's previous title — its current file name — when the cursor leaves it. A note with no heading at all keeps its file name (2026-11-16).                    |
-| D-4 | Case-only change  | A case-only heading change (`# test` → `# Test`) renames the file, like AC-04.1 (2026-11-16).                                                                                                                    |
-| D-5 | Heading text      | The file name uses the heading's plain text with inline formatting stripped (`# **Test**` → `Test.md`). The app writes plain heading text when it sets the heading itself (new note, tree rename) (2026-11-16).    |
+| D-2 | Rename timing     | The file renames when the cursor leaves the heading line — Enter, an arrow key, a click elsewhere, leaving the editor or closing the window (2026-11-16).                                                       |
+| D-3 | Empty heading     | A heading left empty or cleared is restored to the note's previous title — its current file name — when the cursor leaves it. A note with no heading at all keeps its file name (2026-11-16).                   |
+| D-4 | Case-only change  | A case-only heading change (`# test` → `# Test`) renames the file, like AC-04.1 (2026-11-16).                                                                                                                   |
+| D-5 | Heading text      | The file name uses the heading's plain text with inline formatting stripped (`# **Test**` → `Test.md`). The app writes plain heading text when it sets the heading itself (new note, tree rename) (2026-11-16). |
 | D-6 | Links to the note | A rename rewrites links that point to the renamed note in every note of the workspace, including the renamed note itself (2026-11-16).                                                                          |
-| D-7 | Tree rename       | The tree rename sets the note's first H1 instead of renaming the file directly. A closed note is edited on disk and is not opened; an open note gets the heading set in its editor session (2026-11-16).         |
+| D-7 | Tree rename       | The tree rename sets the note's first H1 instead of renaming the file directly. A closed note is edited on disk and is not opened; an open note gets the heading set in its editor session (2026-11-16).        |
 
 ## 📝 Acceptance criteria
 
 The issue's criteria are refined below; the derived ones make the decisions explicit. Screen ids refer to the screen map.
 
-| Id      | Criterion                                                                                                                                                                                                                                                       | Screen   |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| AC-06.1 | Given a new note, then its content is `# ` and the cursor is in the heading; typing `Test` and leaving the heading creates or renames `Test.md`.                                                                                                                | s04      |
-| AC-06.2 | Given a note named `Untitled`, when the first H1 becomes `Test` and the cursor leaves the heading, then the file becomes `Test.md`, the tab and tree update, and links to it are rewritten.                                                                      | s03, s09 |
+| Id      | Criterion                                                                                                                                                                                                                                                              | Screen   |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| AC-06.1 | Given a new note, then its content is `# ` and the cursor is in the heading; typing `Test` and leaving the heading creates or renames `Test.md`.                                                                                                                       | s04      |
+| AC-06.2 | Given a note named `Untitled`, when the first H1 becomes `Test` and the cursor leaves the heading, then the file becomes `Test.md`, the tab and tree update, and links to it are rewritten.                                                                            | s03, s09 |
 | AC-06.3 | Given a note open in the editor, when the owner renames it in the tree, then its first H1 changes and the file follows. Given a closed note, when the owner renames it in the tree, then the file's first H1 changes and the file follows, and the note is not opened. | s11      |
-| AC-06.4 | Given a heading that is empty, invalid or colliding, then the note keeps its previous filename and text; the owner sees a clear error.                                                                                                                          | s03      |
-| AC-06.5 | Given a note without an H1, then its filename does not change.                                                                                                                                                                                                  | s03      |
-| AC-06.6 | Given a heading left empty or cleared, when the cursor leaves it, then the heading is restored to the note's current file name and no file changes.                                                                                                             | s03      |
-| AC-06.7 | Given a case-only heading change, then the file is renamed.                                                                                                                                                                                                     | s03      |
-| AC-06.8 | Given a rename, then links to the renamed note are rewritten in every note of the workspace, including the renamed note itself.                                                                                                                                 | s03, s09 |
-| AC-06.9 | Given a rename while the note is open, then the editor keeps its cursor and selection; the rename does not reset the view.                                                                                                                                      | s03      |
+| AC-06.4 | Given a heading that is empty, invalid or colliding, then the note keeps its previous filename and text; the owner sees a clear error.                                                                                                                                 | s03      |
+| AC-06.5 | Given a note without an H1, then its filename does not change.                                                                                                                                                                                                         | s03      |
+| AC-06.6 | Given a heading left empty or cleared, when the cursor leaves it, then the heading is restored to the note's current file name and no file changes.                                                                                                                    | s03      |
+| AC-06.7 | Given a case-only heading change, then the file is renamed.                                                                                                                                                                                                            | s03      |
+| AC-06.8 | Given a rename, then links to the renamed note are rewritten in every note of the workspace, including the renamed note itself.                                                                                                                                        | s03, s09 |
+| AC-06.9 | Given a rename while the note is open, then the editor keeps its cursor and selection; the rename does not reset the view.                                                                                                                                             | s03      |
 
 ## 📝 Not doing
 
@@ -153,34 +153,34 @@ Prototype: `prototypes/workspace-basic/` (screen map `prototypes/e01-screen-map.
 
 ## 📝 Edge cases & failure scenarios
 
-| Scenario                                                          | Behaviour                                                                                                          |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Save in flight when the cursor leaves the heading                 | The commit flushes first (`forceSave`); a failed flush cancels the rename and shows the save error.                |
-| Heading equals the current name                                   | No-op: no rename, no error.                                                                                        |
-| Case-only change                                                  | Renamed (D-4); on a case-insensitive file system the display name still changes.                                   |
-| Heading invalid (`a/b`, `a:b`, `con`, > 255 bytes)                | File and text unchanged; the title alert names the problem.                                                        |
-| Heading collides with a sibling (case-only or Unicode form)       | File and text unchanged; the title alert names the collision; the rename retries on the next commit.               |
-| Heading empty or cleared                                          | Restored to the current file name when the cursor leaves (D-3); no rename, no error.                               |
-| No H1 (never had one, or the line was deleted)                    | No rename; the file keeps its name.                                                                                |
-| Setext H1 or `##`+ only                                           | Not a title; no rename.                                                                                            |
-| Heading inside a blockquote, list or code block                   | Not a title (top-level only).                                                                                      |
-| Heading with inline formatting (`# **Test**`)                     | The file name is the plain text (`Test.md`); the heading text is unchanged.                                        |
-| Heading that is an image only (`# ![](img.png)`)                  | Plain text is empty → restore.                                                                                     |
-| Rename while the note is dirty                                    | The commit flushes; a failed save cancels the rename.                                                              |
-| Rename while the file changed on disk (conflict banner)           | The flush reports the conflict and cancels the rename.                                                             |
-| Note deleted externally before the commit                         | `not-found`; the existing deleted-file flow.                                                                       |
-| Rename succeeds, link rewrite fails in some notes                 | The rename stands; the title alert reports how many notes could not be updated.                                    |
-| Open note with unsaved text contains a link to the renamed note   | Its session text is rewritten (no conflict); autosave persists it.                                                 |
-| Closed note contains a link to the renamed note                   | Rewritten on disk; the watcher refresh is a no-op for it.                                                          |
-| Link target remote, invalid or outside the workspace              | Left byte-for-byte (existing rules).                                                                               |
-| Read-only workspace                                               | The rename fails with `permission-denied`; the file and the text keep their state; the message says nothing changed. |
-| Tree rename on a closed note: heading write succeeds, rename fails | The heading is set, the file keeps its name; the next commit retries the rename.                                   |
-| Tree rename on a closed note with no H1                           | `# <name>` is inserted at the top; the file is renamed.                                                            |
-| Tree rename on a closed note that is too large, not UTF-8 or a symlink | The dialog shows the error; nothing changes.                                                                  |
-| Watcher event caused by the rename                                | The existing `busy` marking suppresses the self-inflicted change.                                                  |
-| Cursor on the heading when the note is switched or the window closes | The commit fires on blur, or in the leave flow before the flush on close.                                        |
-| Rename while the owner keeps typing                               | The editor keeps its cursor and selection (AC-06.9); typing continues where it was.                                |
-| Heading text with a trailing dot or space (`# Test.`)             | Rejected by the name rules; the title alert names the problem.                                                     |
+| Scenario                                                               | Behaviour                                                                                                            |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Save in flight when the cursor leaves the heading                      | The commit flushes first (`forceSave`); a failed flush cancels the rename and shows the save error.                  |
+| Heading equals the current name                                        | No-op: no rename, no error.                                                                                          |
+| Case-only change                                                       | Renamed (D-4); on a case-insensitive file system the display name still changes.                                     |
+| Heading invalid (`a/b`, `a:b`, `con`, > 255 bytes)                     | File and text unchanged; the title alert names the problem.                                                          |
+| Heading collides with a sibling (case-only or Unicode form)            | File and text unchanged; the title alert names the collision; the rename retries on the next commit.                 |
+| Heading empty or cleared                                               | Restored to the current file name when the cursor leaves (D-3); no rename, no error.                                 |
+| No H1 (never had one, or the line was deleted)                         | No rename; the file keeps its name.                                                                                  |
+| Setext H1 or `##`+ only                                                | Not a title; no rename.                                                                                              |
+| Heading inside a blockquote, list or code block                        | Not a title (top-level only).                                                                                        |
+| Heading with inline formatting (`# **Test**`)                          | The file name is the plain text (`Test.md`); the heading text is unchanged.                                          |
+| Heading that is an image only (`# ![](img.png)`)                       | Plain text is empty → restore.                                                                                       |
+| Rename while the note is dirty                                         | The commit flushes; a failed save cancels the rename.                                                                |
+| Rename while the file changed on disk (conflict banner)                | The flush reports the conflict and cancels the rename.                                                               |
+| Note deleted externally before the commit                              | `not-found`; the existing deleted-file flow.                                                                         |
+| Rename succeeds, link rewrite fails in some notes                      | The rename stands; the title alert reports how many notes could not be updated.                                      |
+| Open note with unsaved text contains a link to the renamed note        | Its session text is rewritten (no conflict); autosave persists it.                                                   |
+| Closed note contains a link to the renamed note                        | Rewritten on disk; the watcher refresh is a no-op for it.                                                            |
+| Link target remote, invalid or outside the workspace                   | Left byte-for-byte (existing rules).                                                                                 |
+| Read-only workspace                                                    | The rename fails with `permission-denied`; the file and the text keep their state; the message says nothing changed. |
+| Tree rename on a closed note: heading write succeeds, rename fails     | The heading is set, the file keeps its name; the next commit retries the rename.                                     |
+| Tree rename on a closed note with no H1                                | `# <name>` is inserted at the top; the file is renamed.                                                              |
+| Tree rename on a closed note that is too large, not UTF-8 or a symlink | The dialog shows the error; nothing changes.                                                                         |
+| Watcher event caused by the rename                                     | The existing `busy` marking suppresses the self-inflicted change.                                                    |
+| Cursor on the heading when the note is switched or the window closes   | The commit fires on blur, or in the leave flow before the flush on close.                                            |
+| Rename while the owner keeps typing                                    | The editor keeps its cursor and selection (AC-06.9); typing continues where it was.                                  |
+| Heading text with a trailing dot or space (`# Test.`)                  | Rejected by the name rules; the title alert names the problem.                                                       |
 
 ## 📝 Risks & impact review
 

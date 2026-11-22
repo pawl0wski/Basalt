@@ -3,37 +3,37 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { AppStatusBar } from "./AppStatusBar";
 
-const labels = {
-    saved: "Saved",
-    saving: "Saving…",
-    unsaved: "Not saved",
-};
+const format = (count: number) => `${count} words`;
 
 describe("AppStatusBar", () => {
-    it.each([
-        ["saved", "Saved"],
-        ["saving", "Saving…"],
-        ["unsaved", "Not saved"],
-    ] as const)("shows %s as %s", (saveState, text) => {
-        render(<AppStatusBar saveState={saveState} labels={labels} />);
+    it("shows the formatted word count", () => {
+        render(<AppStatusBar wordCount={1204} formatWordCount={format} />);
 
-        expect(screen.getByRole("status")).toHaveTextContent(text);
+        expect(screen.getByText("1204 words")).toBeInTheDocument();
     });
 
-    it("shows only the save state: no counts and no sync wording", () => {
-        const { container } = render(
-            <AppStatusBar saveState="saved" labels={labels} />,
-        );
+    it("shows a zero count", () => {
+        render(<AppStatusBar wordCount={0} formatWordCount={format} />);
 
-        expect(container.textContent).toBe("Saved");
+        expect(screen.getByText("0 words")).toBeInTheDocument();
     });
 
-    it("shows nothing when no note is active", () => {
+    it("renders an empty bar without a count or a save state when there is no count", () => {
         const { container } = render(
-            <AppStatusBar saveState={null} labels={labels} />,
+            <AppStatusBar wordCount={null} formatWordCount={format} />,
         );
 
-        expect(screen.queryByRole("status")).toBeNull();
         expect(container.textContent).toBe("");
+        expect(container.querySelector(".bs-status-bar")).not.toBeNull();
+        expect(screen.queryByRole("status")).toBeNull();
+    });
+
+    it("never renders save-state wording", () => {
+        const { container } = render(
+            <AppStatusBar wordCount={3} formatWordCount={format} />,
+        );
+
+        expect(container.textContent).not.toMatch(/saved|saving/i);
+        expect(screen.queryByRole("status")).toBeNull();
     });
 });

@@ -18,25 +18,25 @@ The owner (the only confirmed user, D02) can add images (S03), but every image r
 
 ## 📝 Decisions (owner)
 
-| Id  | Topic  | Decision                                                                                      |
-| --- | ------ | --------------------------------------------------------------------------------------------- |
-| D-1 | Scope  | Drag-to-resize images is expected in E01 (owner decision, 2026-11-16; recorded in issue #40). |
+| Id  | Topic | Decision                                                                                      |
+| --- | ----- | --------------------------------------------------------------------------------------------- |
+| D-1 | Scope | Drag-to-resize images is expected in E01 (owner decision, 2026-11-16; recorded in issue #40). |
 
 ## 📝 Acceptance criteria
 
 The issue's five criteria are refined below; the derived ones make the bounds, reset and keyboard behavior explicit. Screen ids refer to the screen map.
 
-| Id      | Criterion                                                                                                                                                                                                                                                                                                    | Screen   |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
-| AC-12.1 | Given an image shown in live preview, when the owner hovers it or the cursor is on its line, then a resize handle appears at its bottom-right corner; dragging it changes the displayed width and, on release, the source records `![alt\|W](path)` in one undoable change.                                   | s07      |
-| AC-12.2 | Given a note whose image has a stored width, when the note is reopened, then the image renders at that width (capped by the note column when wider) and the source still carries the suffix.                                                                                                                  | s07      |
-| AC-12.3 | Given a missing image, then the placeholder shows, no handle is offered, and the note bytes are unchanged; when the file appears later, the stored width still applies.                                                                                                                                       | s07      |
-| AC-12.4 | Given a resize, when the owner presses Ctrl/Cmd+Z, then the previous width (or the natural size after the first resize) is restored; redo reapplies it.                                                                                                                                                       | s03      |
-| AC-12.5 | Given the stored syntax in another Markdown editor, then the note is still a valid CommonMark image link; the `\|W` suffix is read as alt text and the image renders at its natural size (documented limitation). In Obsidian the image renders at the stored width.                                          | s07      |
-| AC-12.6 | The width is clamped to 40–2000 px; double-clicking the handle, or Delete/Backspace on the focused handle, removes the suffix and returns the image to its natural size.                                                                                                                                      | s07      |
-| AC-12.7 | The handle is keyboard-operable: it is focusable, has an accessible name and a visible focus ring, and ArrowLeft/ArrowRight (∓10 px), Shift+Arrow (∓50 px), Home (40) and End (2000) adjust the width; each adjustment is one undoable change.                                                                | s03      |
-| AC-12.8 | Given a note that is moved or renamed, then the width survives: `rewriteRelativeLinks` rewrites only the destination, the alt suffix is untouched.                                                                                                                                                            | s11, s14 |
-| AC-12.9 | Given a read-only workspace, when the owner drags the handle, then the resize behaves like typing: the text changes locally, the save fails with the existing read-only error banner, and nothing changes on disk.                                                                                             | s03, s07 |
+| Id      | Criterion                                                                                                                                                                                                                                                                   | Screen   |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| AC-12.1 | Given an image shown in live preview, when the owner hovers it or the cursor is on its line, then a resize handle appears at its bottom-right corner; dragging it changes the displayed width and, on release, the source records `![alt\|W](path)` in one undoable change. | s07      |
+| AC-12.2 | Given a note whose image has a stored width, when the note is reopened, then the image renders at that width (capped by the note column when wider) and the source still carries the suffix.                                                                                | s07      |
+| AC-12.3 | Given a missing image, then the placeholder shows, no handle is offered, and the note bytes are unchanged; when the file appears later, the stored width still applies.                                                                                                     | s07      |
+| AC-12.4 | Given a resize, when the owner presses Ctrl/Cmd+Z, then the previous width (or the natural size after the first resize) is restored; redo reapplies it.                                                                                                                     | s03      |
+| AC-12.5 | Given the stored syntax in another Markdown editor, then the note is still a valid CommonMark image link; the `\|W` suffix is read as alt text and the image renders at its natural size (documented limitation). In Obsidian the image renders at the stored width.        | s07      |
+| AC-12.6 | The width is clamped to 40–2000 px; double-clicking the handle, or Delete/Backspace on the focused handle, removes the suffix and returns the image to its natural size.                                                                                                    | s07      |
+| AC-12.7 | The handle is keyboard-operable: it is focusable, has an accessible name and a visible focus ring, and ArrowLeft/ArrowRight (∓10 px), Shift+Arrow (∓50 px), Home (40) and End (2000) adjust the width; each adjustment is one undoable change.                              | s03      |
+| AC-12.8 | Given a note that is moved or renamed, then the width survives: `rewriteRelativeLinks` rewrites only the destination, the alt suffix is untouched.                                                                                                                          | s11, s14 |
+| AC-12.9 | Given a read-only workspace, when the owner drags the handle, then the resize behaves like typing: the text changes locally, the save fails with the existing read-only error banner, and nothing changes on disk.                                                          | s03, s07 |
 
 ## 📝 Not doing
 
@@ -85,8 +85,8 @@ export const MIN_IMAGE_WIDTH = 40;
 export const MAX_IMAGE_WIDTH = 2000;
 export function clampImageWidth(width: number): number; // round, clamp to [MIN, MAX]
 export function parseImageAlt(alt: string): {
-    readonly text: string;
-    readonly width: number | null;
+  readonly text: string;
+  readonly width: number | null;
 };
 export function formatImageAlt(text: string, width: number | null): string; // strips an existing suffix, appends |W when width !== null
 ```
@@ -94,9 +94,9 @@ export function formatImageAlt(text: string, width: number | null): string; // s
 ```ts
 // @basalt/editor — imagePreview.ts
 export interface ImageOptions {
-    resolve(destination: string): Promise<ImageSource>;
-    release(destination: string): void;
-    labels: { loading: string; broken: string; resize: string }; // resize = the handle's accessible name
+  resolve(destination: string): Promise<ImageSource>;
+  release(destination: string): void;
+  labels: { loading: string; broken: string; resize: string }; // resize = the handle's accessible name
 }
 ```
 
@@ -132,29 +132,29 @@ Takeaway: the resize is an ordinary document edit; persistence, watcher suppress
 
 ## 📝 Edge cases & failure scenarios
 
-| Scenario                                                                 | Behaviour                                                                                                                       |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| Missing image (AC-12.3)                                                  | Placeholder; no handle; bytes unchanged; when the file returns, the stored width applies.                                       |
-| Reference-style image (`![a][ref]`) or HTML `<img>`                      | No widget, no handle; text unchanged (S03 G2).                                                                                  |
-| Query or fragment URL (`![a\|300](x.png#frag)`)                          | The widget resolves and displays it; a resize rewrites only the alt, the destination keeps its `#frag`/`?query`.                 |
-| Image inside a link (`[![a](x.png)](note.md)`)                           | The widget already renders it; the handle edits the inner image's alt, the outer link is untouched.                             |
-| Image inside a table                                                    | No handle (deferred); the source is unchanged.                                                                                  |
-| Image inside a code block                                                | No widget (existing); no handle.                                                                                                |
-| Resize, then move or rename the note (AC-12.8)                           | `rewriteRelativeLinks` rewrites only the destination; the suffix survives.                                                       |
-| Undo after a resize (AC-12.4)                                            | The previous alt (with or without a suffix) is restored; redo reapplies the new width.                                          |
-| Undo after a reset                                                       | The suffix returns.                                                                                                             |
-| Document changes during a drag                                           | The widget is rebuilt, the drag ends, nothing is committed.                                                                     |
-| External edit while the note is clean                                    | The editor reloads the disk text; the widget shows the new width. Dirty: the existing conflict banner.                          |
-| Read-only workspace (AC-12.9)                                            | The text changes locally; the save fails with `permission-denied` and the existing banner; nothing changes on disk.             |
-| Editor created with `readOnly: true`                                     | No handle is rendered.                                                                                                          |
-| Hand-written `\|5000`, `\|0`, `\|abc`, `\|300x200`                       | Not recognized; the whole alt is alt text; the image renders at natural size.                                                   |
-| Escaped pipe in the alt (`![a\\\|b](x.png)`)                             | Not a size separator; the alt is unchanged.                                                                                     |
-| Empty alt with a suffix (`![\|300](x.png)`)                              | Width 300, alt empty; a reset returns to `![](x.png)`.                                                                          |
-| Image wider than the column                                              | Display is capped by `max-width: 100%`; the stored width may be larger; the drag starts from the displayed width.               |
-| Natural width below 40 px                                                | A set width is clamped to 40; reset returns to the natural size.                                                                |
-| Two images, or two images on one line                                   | Each widget has its own handle; dragging one edits only its own alt range.                                                      |
-| Save fails after a resize (conflict, read-only, too large)               | The existing banner shows; the text is never discarded (S01 rule).                                                              |
-| Watcher event caused by the resize                                       | Ignored by content (`baseText` comparison), as for typing.                                                                      |
+| Scenario                                                   | Behaviour                                                                                                           |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Missing image (AC-12.3)                                    | Placeholder; no handle; bytes unchanged; when the file returns, the stored width applies.                           |
+| Reference-style image (`![a][ref]`) or HTML `<img>`        | No widget, no handle; text unchanged (S03 G2).                                                                      |
+| Query or fragment URL (`![a\|300](x.png#frag)`)            | The widget resolves and displays it; a resize rewrites only the alt, the destination keeps its `#frag`/`?query`.    |
+| Image inside a link (`[![a](x.png)](note.md)`)             | The widget already renders it; the handle edits the inner image's alt, the outer link is untouched.                 |
+| Image inside a table                                       | No handle (deferred); the source is unchanged.                                                                      |
+| Image inside a code block                                  | No widget (existing); no handle.                                                                                    |
+| Resize, then move or rename the note (AC-12.8)             | `rewriteRelativeLinks` rewrites only the destination; the suffix survives.                                          |
+| Undo after a resize (AC-12.4)                              | The previous alt (with or without a suffix) is restored; redo reapplies the new width.                              |
+| Undo after a reset                                         | The suffix returns.                                                                                                 |
+| Document changes during a drag                             | The widget is rebuilt, the drag ends, nothing is committed.                                                         |
+| External edit while the note is clean                      | The editor reloads the disk text; the widget shows the new width. Dirty: the existing conflict banner.              |
+| Read-only workspace (AC-12.9)                              | The text changes locally; the save fails with `permission-denied` and the existing banner; nothing changes on disk. |
+| Editor created with `readOnly: true`                       | No handle is rendered.                                                                                              |
+| Hand-written `\|5000`, `\|0`, `\|abc`, `\|300x200`         | Not recognized; the whole alt is alt text; the image renders at natural size.                                       |
+| Escaped pipe in the alt (`![a\\\|b](x.png)`)               | Not a size separator; the alt is unchanged.                                                                         |
+| Empty alt with a suffix (`![\|300](x.png)`)                | Width 300, alt empty; a reset returns to `![](x.png)`.                                                              |
+| Image wider than the column                                | Display is capped by `max-width: 100%`; the stored width may be larger; the drag starts from the displayed width.   |
+| Natural width below 40 px                                  | A set width is clamped to 40; reset returns to the natural size.                                                    |
+| Two images, or two images on one line                      | Each widget has its own handle; dragging one edits only its own alt range.                                          |
+| Save fails after a resize (conflict, read-only, too large) | The existing banner shows; the text is never discarded (S01 rule).                                                  |
+| Watcher event caused by the resize                         | Ignored by content (`baseText` comparison), as for typing.                                                          |
 
 ## 📝 Risks & impact review
 
@@ -179,16 +179,16 @@ Takeaway: the resize is an ordinary document edit; persistence, watcher suppress
 
 The issue's Open questions are resolved below with the most reversible, lowest-blast-radius answers; the derived rows cover decisions the issue left implicit. ⚠ marks a call the owner should confirm before implementation.
 
-| Id  | Question                                     | Chosen answer                                                                                                                                                                                       | Rationale                                                                                                                          |
-| --- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Q1  | Storage syntax for portability               | ⚠ NEEDS HUMAN CONFIRMATION. Obsidian pipe suffix `![alt\|W](destination)`, pixels.                                                                                                                   | Valid CommonMark, matches S03's anticipated syntax and the owner's Obsidian; keeps the `Image` node so the widget, loader and link rewriter stay unchanged. HTML `<img>` would supersede G2 and break move-rewrite. |
-| Q2  | Width only, or width and height              | Width only; the browser keeps the aspect ratio; `\|WxH` is not interpreted.                                                                                                                          | The issue's scope is width; height doubles the syntax and the drag logic.                                                          |
-| Q3  | Touch (E04)                                  | No; pointer (mouse/pen) only, like the tree drag exception.                                                                                                                                          | E04 is parked; adding touch now would guess its interaction model.                                                                 |
-| Q4  | Reference-style images and query/fragment URLs | Reference-style: no widget or handle (S03 G2, unchanged). Query/fragment: the handle works; only the alt is rewritten, the destination keeps its suffix.                                             | Reuses `resolveLinkTarget`'s existing stripping; no new parsing.                                                                   |
-| Q5  | Images inside links or tables                | Inside links: handle available (the widget already renders them). Inside tables: no handle.                                                                                                          | A block widget inside a table row is a pre-existing concern; resizing there needs its own story.                                   |
-| Q6  | Min/max and the reset gesture                | 40–2000 px; double-click or Delete/Backspace resets; Escape cancels a drag.                                                                                                                           | 40 keeps the handle usable; 2000 is a portable upper bound (the column caps display at 700); reset is the inverse of the write.     |
-| Q7  | Undo granularity                             | One transaction per drag release; one per keyboard adjustment.                                                                                                                                       | CodeMirror's history joins only `input.type`/`delete` events, so `input.resize` steps stay separate and predictable.               |
-| Q8  | Read-only workspace and `readOnly` editors   | Read-only workspace: behaves like typing (local text, save-error banner, nothing on disk). `readOnly: true` editor: no handle.                                                                       | Consistent with the existing editor behavior; no new read-only plumbing into the editor.                                           |
+| Id  | Question                                       | Chosen answer                                                                                                                                            | Rationale                                                                                                                                                                                                           |
+| --- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1  | Storage syntax for portability                 | ⚠ NEEDS HUMAN CONFIRMATION. Obsidian pipe suffix `![alt\|W](destination)`, pixels.                                                                       | Valid CommonMark, matches S03's anticipated syntax and the owner's Obsidian; keeps the `Image` node so the widget, loader and link rewriter stay unchanged. HTML `<img>` would supersede G2 and break move-rewrite. |
+| Q2  | Width only, or width and height                | Width only; the browser keeps the aspect ratio; `\|WxH` is not interpreted.                                                                              | The issue's scope is width; height doubles the syntax and the drag logic.                                                                                                                                           |
+| Q3  | Touch (E04)                                    | No; pointer (mouse/pen) only, like the tree drag exception.                                                                                              | E04 is parked; adding touch now would guess its interaction model.                                                                                                                                                  |
+| Q4  | Reference-style images and query/fragment URLs | Reference-style: no widget or handle (S03 G2, unchanged). Query/fragment: the handle works; only the alt is rewritten, the destination keeps its suffix. | Reuses `resolveLinkTarget`'s existing stripping; no new parsing.                                                                                                                                                    |
+| Q5  | Images inside links or tables                  | Inside links: handle available (the widget already renders them). Inside tables: no handle.                                                              | A block widget inside a table row is a pre-existing concern; resizing there needs its own story.                                                                                                                    |
+| Q6  | Min/max and the reset gesture                  | 40–2000 px; double-click or Delete/Backspace resets; Escape cancels a drag.                                                                              | 40 keeps the handle usable; 2000 is a portable upper bound (the column caps display at 700); reset is the inverse of the write.                                                                                     |
+| Q7  | Undo granularity                               | One transaction per drag release; one per keyboard adjustment.                                                                                           | CodeMirror's history joins only `input.type`/`delete` events, so `input.resize` steps stay separate and predictable.                                                                                                |
+| Q8  | Read-only workspace and `readOnly` editors     | Read-only workspace: behaves like typing (local text, save-error banner, nothing on disk). `readOnly: true` editor: no handle.                           | Consistent with the existing editor behavior; no new read-only plumbing into the editor.                                                                                                                            |
 
 ## 📋 Phasing
 
