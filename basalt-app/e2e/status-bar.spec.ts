@@ -111,10 +111,15 @@ test.describe("status bar word count", () => {
         await openWorkspaceWith(page, "/work/W", { "a.md": "one" });
         await option(page, "a").click();
 
-        await expect(
-            page.locator(
-                ".bs-status-bar [aria-live], .bs-status-bar [role=status]",
+        const count = bar(page).getByText("1 word", { exact: true });
+        await expect(count).toBeVisible();
+        expect(
+            await count.evaluate(
+                (element) =>
+                    element.closest(
+                        "[aria-live], [role='status'], [role='alert'], [role='log']",
+                    ) === null,
             ),
-        ).toHaveCount(0);
+        ).toBe(true);
     });
 });

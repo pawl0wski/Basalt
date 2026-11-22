@@ -39,6 +39,12 @@ describe("countWords", () => {
         expect(countWords("2026 zażółć łódź привет")).toBe(4);
     });
 
+    it("counts letter or number tokens with Unicode whitespace and symbol prefixes", () => {
+        expect(countWords("!!!🙂𐐀β\u00a0…٣²\u2028#—\ufeff+漢字")).toBe(3);
+        expect(countWords("🙂—\u2003")).toBe(0);
+        expect(countWords("🙂 …٣")).toBe(1);
+    });
+
     it("does not count punctuation-only and emoji-only tokens", () => {
         expect(countWords("... !!! — 🙂")).toBe(0);
     });

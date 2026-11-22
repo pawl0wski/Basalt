@@ -57,10 +57,13 @@ test.describe("external changes to the open note", () => {
         await openWorkspaceWith(page, "/work/W", { "a.md": "base" });
         await option(page, "a").click();
         await expect(editor(page, "a")).toContainText("base");
+        const statusBar = page.locator(".bs-status-bar");
+        await expect(statusBar).toHaveText("1 word");
 
         await externalWrite(page, "a.md", "from disk");
 
         await expect(editor(page, "a")).toContainText("from disk");
+        await expect(statusBar).toHaveText("2 words");
         await expect(page.getByRole("alert")).toHaveCount(0);
         await expect(savedTab(page)).toBeVisible();
         expect(await readSavedText(page, "a.md")).toBe("from disk");

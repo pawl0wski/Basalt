@@ -14,7 +14,7 @@ Source issue: #36 (E01-S07, epic #5). Depends on: #8 (E01-S01, foundations). Bui
 
 ## 📝 TLDR
 
-The owner (the only confirmed user, D02) tested E01 and reported that the bottom-right status bar duplicates the unsaved state the tab dot already shows, while the bar is the place E02 needs for sync (issue #36, 2026-11-16). This spec (future behavior) removes "Saved" / "Saving…" / "Not saved" from the status bar, keeps the tab dot and its accessible name as the unsaved state, and shows the active note's word count in the bar's leading slot; the count sits at the trailing end, where the E02 sync state will join it. Save failures, conflicts and paused autosave keep their persistent banners and dialogs.
+The owner (the only confirmed user, D02) tested E01 and reported that the bottom-right status bar duplicates the unsaved state the tab dot already shows, while the bar is the place E02 needs for sync (issue #36, 2026-11-16). This change removes "Saved" / "Saving…" / "Not saved" from the status bar, keeps the tab dot and its accessible name as the unsaved state, and shows the active note's word count at the trailing end of the bar. The E02 sync state will share that end. Save failures, conflicts and paused autosave keep their persistent banners and dialogs.
 
 ## 📝 Decisions (owner)
 
@@ -64,7 +64,7 @@ The issue's five criteria are refined below; the derived ones make the decisions
 
 Move the status bar to the Obsidian split — count and sync state at the trailing end, save state on the tab:
 
-1. **Core.** A pure `countWords` helper counts the whitespace-separated tokens of the note text.
+1. **Core.** A pure `countWords` helper counts whitespace-separated tokens that contain a Unicode letter or number.
 2. **App.** The status-bar container derives the count from the active session's text and passes `wordCount`; the save-state rendering and its `save-state.ts` mapping are removed. The tab dot and the tab's accessible name stay as they are.
 3. **UI.** `StatusBar` is used with its `trailing` slot only (the count); the leading slot stays empty; stories and docs are updated to the product usage.
 4. **Rust.** No change.
@@ -83,8 +83,8 @@ Alternatives considered and rejected:
 ## 📝 Architecture
 
 - **`@basalt/core`.** New pure module `text-stats.ts`: `countWords(text)`; exported from `packages/core/src/index.ts`. It is domain text logic, not UI logic, so it lives in `core` next to the other pure helpers; no dependencies, no Markdown parsing. (The prototype has its own `countWords` in `prototypes/workspace-basic/src/model/markdown.ts`; the product helper is independent.)
-- **`@basalt/app`.** `features/status/AppStatusBarContainer.tsx` selects the active session (`openNotes.find((note) => note.path === state.activeNote)`) and passes `wordCount` — `countWords(active.text)` when the session exists and did not fail to open, else `null`. `features/status/AppStatusBar.tsx` renders `<StatusBar wordCount={wordCount} />`; its `saveState`/`labels` props go away, and it stays presentational (props only, no store access), matching the container/presentational split of the standards spec. `features/status/save-state.ts` and `save-state.test.ts` are deleted (their only consumer was the status bar). `features/notes/notes-store.ts` is unchanged: `NoteSession.text` is the count's source and `isDirty` still drives the tab dot. `features/editor/useNoteTabs.ts` is unchanged: the tab already carries `unsaved` and `NoteTab` renders the dot plus the `sr-only` "not saved" text. The `saveStatus.*` keys are removed from `i18n/locales/en.json`.
-- **`@basalt/ui`.** `StatusBar` and `SaveStatus` keep their prop surfaces (no breaking export change); the app stops passing `saveState`. `SaveStatus.stories.tsx`, `docs/product/SaveStatus.mdx`, `docs/product/TitleBar.mdx`, `docs/guide/epics/E01.mdx`, `docs/design-system.md` and the screen stories (`docs/screens/Notes.stories.tsx`, `docs/screens/MainScreen.stories.tsx`) are updated so the bar shows counts and no save state.
+- **`@basalt/app`.** `features/status/AppStatusBarContainer.tsx` selects the active session (`openNotes.find((note) => note.path === state.activeNote)`) and passes `wordCount` — `countWords(active.text)` when the session exists and did not fail to open, else `null` — and formats it with the app’s English translation keys. `features/status/AppStatusBar.tsx` renders the count in the `StatusBar` trailing slot; its `saveState`/`labels` props go away, and it stays presentational (props only, no store access), matching the container/presentational split of the standards spec. `features/status/save-state.ts` and `save-state.test.ts` are deleted (their only consumer was the status bar). `features/notes/notes-store.ts` is unchanged: `NoteSession.text` is the count's source and `isDirty` still drives the tab dot. `features/editor/useNoteTabs.ts` is unchanged: the tab already carries `unsaved` and `NoteTab` renders the dot plus the `sr-only` "not saved" text. The `saveStatus.*` keys are removed from `i18n/locales/en.json`.
+- **`@basalt/ui`.** `StatusBar` and `SaveStatus` keep their prop surfaces (no breaking export change); the app stops passing `saveState`. The E01 guide, design-system documentation and screen stories describe the word count and the tab’s unsaved indicator.
 - **`src-tauri`.** No change: no new command, permission, plugin or dependency.
 
 ## 📝 Data model
@@ -106,7 +106,7 @@ export type AppStatusBarProps = {
 
 Rules:
 
-- `countWords` splits the text on whitespace (`/\s+/`) and counts the tokens that contain at least one Unicode letter or digit (`/[\p{L}\p{N}]/u`); empty, whitespace-only and marker-only text is `0`. Bare markers (`#`, `-`, `>`, `---`, `|`) are not words, a token with inline markers (`**bold**`) counts once (`# Heading` is one word). No Markdown parsing, no CJK special-casing.
+- `countWords` counts each whitespace-delimited token containing a Unicode letter or number. The scan matches the first letter or number and consumes the rest of that token (`/[\p{L}\p{N}]\S*/gu`). Empty, whitespace-only and marker-only text is `0`. Bare markers (`#`, `-`, `>`, `---`, `|`) are not words, a token with inline markers (`**bold**`) counts once (`# Heading` is one word). No Markdown parsing, no CJK special-casing.
 - `AppStatusBar` renders the formatted count in `StatusBar`'s `trailing` slot (the container formats it with the `statusBar.wordsOne` / `statusBar.wordsMany` i18n keys); `null` (no note, or a note that failed to open) renders the bar with no count.
 - `StatusBar`'s `wordCount`, `characterCount`, `saveState` and `trailing` props are unchanged — no breaking change to a `@basalt/ui` export.
 - Removed: `save-state.ts` (`toSaveState`) and the `saveStatus.*` i18n keys; both have no consumers after the change.
@@ -119,7 +119,7 @@ Rules:
 - **Failed open (s03).** No count (there is no text); the open-error message stays in the editor area.
 - **Banners and dialogs (s03, s05).** Unchanged: save failure, conflict, deleted file and paused autosave keep their persistent banner or dialog with actions.
 - **Accessibility.** The count is plain text, not a live region (no per-keystroke announcements); the save-failure banner stays `role="alert"`; the tab name is the accessible unsaved state.
-- **i18n.** `saveStatus.*` is removed; the count wording stays in `StatusBar` (English defaults, as today).
+- **i18n.** `saveStatus.*` is removed; the app formats the count with the English `statusBar.wordsOne` and `statusBar.wordsMany` keys.
 
 Prototype: `prototypes/workspace-basic/` (screen map `prototypes/e01-screen-map.md`; screens s02, s03, s05); not updated.
 
@@ -193,12 +193,12 @@ Each step is testable and leaves the application working. Vitest next to the cod
 
 **Phase A — core (PR A)**
 
-1. `countWords` in `text-stats.ts`: trim, whitespace split, 0 for empty and whitespace-only; tests for empty, whitespace-only, CRLF, tabs, multiple spaces, Unicode and a 5 MiB input; export from `packages/core/src/index.ts`.
+1. `countWords` in `text-stats.ts`: scan whitespace-delimited tokens containing a letter or number, 0 for empty and whitespace-only; tests for empty, whitespace-only, CRLF, tabs, multiple spaces, Unicode and a 5 MiB input; export from `packages/core/src/index.ts`.
 
 **Phase B — the status bar (PR B)**
 
-2. `AppStatusBarContainer` derives the count from the active session (`countWords(active.text)`, `null` when there is no note or the note failed to open) and passes `wordCount`; `AppStatusBar` renders `<StatusBar wordCount={wordCount} />`; delete `save-state.ts` and `save-state.test.ts`; rewrite `AppStatusBar.test.tsx` (the count is shown, `null` renders an empty bar, no save wording). Tests.
+2. `AppStatusBarContainer` derives the count from the active session (`countWords(active.text)`, `null` when there is no note or the note failed to open) and passes `wordCount`; `AppStatusBar` renders the formatted count in the trailing slot of `StatusBar`; delete `save-state.ts` and `save-state.test.ts`; rewrite `AppStatusBar.test.tsx` (the count is shown, `null` renders an empty bar, no save wording). Tests.
 3. Remove the `saveStatus.*` keys from `i18n/locales/en.json`; update `i18n.test.ts`; update `AppSaving.test.tsx`, `ExternalChanges.test.tsx` and `WorkspaceLost.test.tsx` to assert the tab's accessible name ("a not saved") and the count instead of the removed text. Tests.
-4. `@basalt/ui` stories and docs: `SaveStatus.stories.tsx` (the `StatusBar` stories show counts without a save state; the `SaveStatus` stories stay), `docs/product/SaveStatus.mdx`, `docs/product/TitleBar.mdx`, `docs/guide/epics/E01.mdx`, `docs/design-system.md` and the screen stories (`docs/screens/Notes.stories.tsx`, `docs/screens/MainScreen.stories.tsx`); `npm run safety-net` stays green.
+4. `@basalt/ui` stories and docs: update the E01 guide, the design-system documentation and the screen stories. Run `npm run safety-net`.
 5. e2e: rewrite the status-bar tests in `saving.spec.ts` (the tab dot and its accessible name carry the unsaved state; the bar has no save wording), update the `saveState` helpers in `notes-roundtrip.spec.ts` and `external-changes.spec.ts`, and add `status-bar.spec.ts` for AC-07.1–07.8 (the count appears and updates as you type, "0 words" for an empty note, nothing when no note, no save wording, the count survives a paused save).
 6. Update AC-01.11 and AC-01.19 in `.ai/specs/2026-10-24-markdown-notes-and-app-foundations.md`, the UI/UX lines that name the status bar save state ("Status bar" and "Editing and saving") and the "Out of scope" word-count item to the refined wording; run the `SDLC.md` validation gate.
