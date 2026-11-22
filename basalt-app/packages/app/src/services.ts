@@ -1,4 +1,9 @@
 import type { AutosaveScheduler } from "@basalt/core";
+import { createFeedback } from "./features/feedback/feedback";
+import {
+    createFeedbackStore,
+    type FeedbackStore,
+} from "./features/feedback/feedback-store";
 import { createNotesActions } from "./features/notes/notes-actions";
 import {
     createNotesStore,
@@ -50,6 +55,7 @@ export type Services = {
     readonly leaveActions: LeaveActions;
     readonly windowChrome: WindowChrome;
     readonly images: ImageHub;
+    readonly feedbackStore: FeedbackStore;
 };
 
 export type ServicesOptions = {
@@ -74,6 +80,13 @@ export function createServices(
     const notesStore = createNotesStore();
     const treeStore = createTreeStore();
     connectTreeStore({ tree: treeStore, notes: notesStore });
+    const feedbackStore = createFeedbackStore();
+    const feedback = createFeedback({
+        store: feedbackStore,
+        setPersistent: (error) => {
+            notesStore.setState({ createError: error });
+        },
+    });
     const notesActions = createNotesActions({
         store: notesStore,
         settings,
@@ -81,11 +94,13 @@ export function createServices(
         autosaveDelayMs: AUTOSAVE_DELAY_MS,
         untitledName: options.untitledName,
         trash: platform.trash,
+        feedback,
     });
     const treeActions = createTreeActions({
         store: treeStore,
         notesStore,
         notes: notesActions,
+        feedback,
     });
     const leaveStore = createLeaveStore();
     const images = createImageHub();
@@ -129,5 +144,6 @@ export function createServices(
         leaveActions,
         windowChrome: platform.windowChrome,
         images,
+        feedbackStore,
     };
 }

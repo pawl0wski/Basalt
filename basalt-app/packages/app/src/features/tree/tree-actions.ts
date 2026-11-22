@@ -1,4 +1,6 @@
-import type { WorkspacePath } from "@basalt/core";
+import type { AppError, WorkspacePath } from "@basalt/core";
+import { errorSurface } from "../feedback/error-surface";
+import type { Feedback } from "../feedback/feedback";
 import type { NotesActions } from "../notes/notes-actions";
 import type { NotesStore } from "../notes/notes-store";
 import { validateEntryName } from "./entry-name";
@@ -68,8 +70,18 @@ export function createTreeActions(options: {
     readonly store: TreeStore;
     readonly notesStore: NotesStore;
     readonly notes: NotesActions;
+    readonly feedback: Feedback;
 }): TreeActions {
-    const { store, notesStore, notes } = options;
+    const { store, notesStore, notes, feedback } = options;
+
+    function failDialog(error: AppError): void {
+        if (errorSurface(error) === "toast") {
+            feedback.report(error);
+            closeDialog(store);
+            return;
+        }
+        setDialogError(store, error.code);
+    }
 
     function currentTree() {
         return notesStore.getState().tree;
@@ -91,7 +103,7 @@ export function createTreeActions(options: {
         setDialogPending(store, true);
         const renamed = await notes.renameNote(path, name);
         if (!renamed.ok) {
-            setDialogError(store, renamed.error.code);
+            failDialog(renamed.error);
             return;
         }
         setFocusedRow(store, renamed.value);
@@ -112,7 +124,7 @@ export function createTreeActions(options: {
         setDialogPending(store, true);
         const created = await notes.createFolder(parent, name);
         if (!created.ok) {
-            setDialogError(store, created.error.code);
+            failDialog(created.error);
             return;
         }
         expandFolders(store, [
@@ -187,29 +199,30 @@ export function createTreeActions(options: {
             );
             pruneSelection(store, (id) => existing.has(id));
             if (!result.ok) {
-                notesStore.setState({ createError: result.error });
+                feedback.report(result.error);
                 return;
             }
             const { deleted, failed } = result.value;
-            notesStore.setState({
-                createError:
-                    failed.length === 0
-                        ? null
-                        : deleted.length === 0
-                          ? (failed[0]?.error ?? {
-                                code: "unknown",
-                                message: "The notes were not deleted.",
-                            })
-                          : {
-                                code: failed[0]?.error.code ?? "unknown",
-                                message: "Some notes were not deleted.",
-                                detail: {
-                                    kind: "delete-failed",
-                                    failed: failed.length,
-                                    total: paths.length,
-                                },
-                            },
-            });
+            if (failed.length === 0) {
+                notesStore.setState({ createError: null });
+                return;
+            }
+            feedback.report(
+                deleted.length === 0
+                    ? (failed[0]?.error ?? {
+                          code: "unknown",
+                          message: "The notes were not deleted.",
+                      })
+                    : {
+                          code: failed[0]?.error.code ?? "unknown",
+                          message: "Some notes were not deleted.",
+                          detail: {
+                              kind: "delete-failed",
+                              failed: failed.length,
+                              total: paths.length,
+                          },
+                      },
+            );
         },
         dragEnd: () => {
             endDrag(store);

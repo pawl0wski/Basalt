@@ -165,6 +165,10 @@
             "closeNote": "Close note"
         }
     },
+    "toasts": {
+        "regionLabel": "Notifications",
+        "dismissLabel": "Dismiss"
+    },
     "errors": {
         "not-found": "The file or folder could not be found. It may have been moved or deleted.",
         "permission-denied": "The workspace folder is read-only. Nothing was changed.",

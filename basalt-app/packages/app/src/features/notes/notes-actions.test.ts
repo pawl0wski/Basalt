@@ -979,10 +979,10 @@ describe("renaming and moving open notes", () => {
 
             expect(!result.ok && result.error.code).toBe("already-exists");
             expect(!result.ok && result.error.message).toContain("m.md");
-            expect(h.notesStore.getState().createError?.detail).toEqual({
-                kind: "move-collision",
-                name: "m.md",
-            });
+            expect(
+                h.feedbackStore.getState().messages.map((m) => m.error.detail),
+            ).toEqual([{ kind: "move-collision", name: "m.md" }]);
+            expect(h.notesStore.getState().createError).toBeNull();
             expect((await fs.stat(n)).ok).toBe(true);
             expect(tabs(h).paths).toEqual(["n.md", "m.md"]);
         });
@@ -1038,8 +1038,9 @@ describe("renaming and moving open notes", () => {
                 { "n.md": "1", "m.md": "2", "d/M.md": "x" },
                 [],
             );
-            await h.notesActions.moveNotes([m], wsPath("d"));
-            expect(h.notesStore.getState().createError).not.toBeNull();
+            h.notesStore.setState({
+                createError: { code: "permission-denied", message: "x" },
+            });
 
             await h.notesActions.moveNotes([n], wsPath("d"));
 
