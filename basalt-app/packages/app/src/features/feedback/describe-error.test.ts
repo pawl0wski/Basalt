@@ -2,15 +2,15 @@ import { describe, expect, it } from "vitest";
 import { initI18n } from "../../i18n";
 import i18next from "i18next";
 import { beforeAll } from "vitest";
-import { describeMoveError } from "./move-error";
+import { describeOperationError } from "./describe-error";
 
-describe("describeMoveError", () => {
+describe("describeOperationError", () => {
     beforeAll(async () => {
         await initI18n();
     });
 
     it("names the colliding note", () => {
-        const text = describeMoveError(i18next.t, {
+        const text = describeOperationError(i18next.t, {
             code: "already-exists",
             message: "English",
             detail: { kind: "move-collision", name: "Plan.md" },
@@ -22,7 +22,7 @@ describe("describeMoveError", () => {
     });
 
     it("reports the count, the failing note and the localised reason", () => {
-        const text = describeMoveError(i18next.t, {
+        const text = describeOperationError(i18next.t, {
             code: "permission-denied",
             message: "English",
             detail: {
@@ -40,7 +40,7 @@ describe("describeMoveError", () => {
     });
 
     it("says when only the links could not be updated", () => {
-        const text = describeMoveError(i18next.t, {
+        const text = describeOperationError(i18next.t, {
             code: "unknown",
             message: "English",
             detail: {
@@ -59,7 +59,10 @@ describe("describeMoveError", () => {
 
     it("falls back to the message of the error code without a detail", () => {
         expect(
-            describeMoveError(i18next.t, { code: "unknown", message: "x" }),
+            describeOperationError(i18next.t, {
+                code: "unknown",
+                message: "x",
+            }),
         ).toBe("Something went wrong. Nothing was changed.");
     });
 });

@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StrictMode } from "react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
@@ -380,5 +380,64 @@ describe("AppContainer", () => {
                 document.querySelector(".app-sidebar-collapse"),
             ).toHaveAttribute("data-open", "false");
         });
+    });
+
+    it("shows a move collision as a toast and leaves the sidebar without an alert", async () => {
+        const harness = createHarness({
+            workspaces: { [A]: seedFs({ "a.md": "1", "docs/a.md": "2" }) },
+            settings: { version: 1, lastWorkspace: A, workspaces: {} },
+        });
+        renderApp(harness);
+        await screen.findByRole("navigation", {
+            name: en.workspace.sidebarLabel,
+        });
+
+        harness.treeActions.dragStart("a.md");
+        await act(async () => {
+            await harness.treeActions.drop({ type: "folder", id: "docs" });
+        });
+
+        const region = await screen.findByRole("region", {
+            name: new RegExp(en.toasts.regionLabel),
+        });
+        expect(region).toHaveTextContent(
+            '"a.md" already exists in the destination. Nothing was moved.',
+        );
+        const sidebar = screen.getByRole("navigation", {
+            name: en.workspace.sidebarLabel,
+        });
+        expect(within(sidebar).queryByRole("status")).toBeNull();
+    });
+
+    it("keeps a read-only move error in the sidebar and shows no toast", async () => {
+        const harness = createHarness({
+            workspaces: {
+                [A]: seedFs(
+                    { "a.md": "1", "docs/b.md": "2" },
+                    { readOnly: true },
+                ),
+            },
+            settings: { version: 1, lastWorkspace: A, workspaces: {} },
+        });
+        renderApp(harness);
+        const sidebar = await screen.findByRole("navigation", {
+            name: en.workspace.sidebarLabel,
+        });
+
+        harness.treeActions.dragStart("a.md");
+        await act(async () => {
+            await harness.treeActions.drop({ type: "folder", id: "docs" });
+        });
+
+        expect(await within(sidebar).findByRole("status")).toHaveTextContent(
+            en.errors["permission-denied"],
+        );
+        expect(
+            screen
+                .getByRole("region", {
+                    name: new RegExp(en.toasts.regionLabel),
+                })
+                .querySelectorAll("li"),
+        ).toHaveLength(0);
     });
 });

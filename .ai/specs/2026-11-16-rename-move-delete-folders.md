@@ -6,6 +6,8 @@ status: draft
 tags: [folders, tree, rename, move, delete, drag-and-drop, trash, links, e01]
 ---
 
+> **Update 2026-11-22 (E01-S08, informational toasts):** a rename or new-folder collision no longer shows inline in the dialog; the dialog closes and a toast shows the message. See `.ai/specs/2026-11-17-informational-toasts.md` (AC-08.1). Field validation stays inline.
+
 # Rename, move and delete folders (E01-S05)
 
 Prototype: `prototypes/workspace-basic/` (screen map: `prototypes/e01-screen-map.md`). The tree, its context menu and the delete confirmation already exist there; no new screens. Screen ids (s09, s10, …) refer to that map.

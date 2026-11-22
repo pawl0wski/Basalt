@@ -1,7 +1,7 @@
 import type { AppError } from "@basalt/core";
 import type { TFunction } from "i18next";
 
-export function describeMoveError(t: TFunction, error: AppError): string {
+export function describeOperationError(t: TFunction, error: AppError): string {
     const { detail } = error;
     if (detail?.kind === "move-collision") {
         return t("tree.move.collision", { name: detail.name });

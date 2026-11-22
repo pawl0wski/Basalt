@@ -6,6 +6,8 @@ status: implemented
 tags: [notes, folders, tree, rename, delete, move, drag-and-drop, trash, e01]
 ---
 
+> **Update 2026-11-22 (E01-S08, informational toasts):** a rename or new-folder collision no longer shows inline in the dialog; the dialog closes and a toast shows the message. See `.ai/specs/2026-11-17-informational-toasts.md` (AC-08.1). Field validation stays inline.
+
 # Manage notes and folders (E01-S04)
 
 Prototype: `prototypes/workspace-basic/` (screen map: `prototypes/e01-screen-map.md`; review notes: `prototypes/feedback/prototype-feedback-consolidated.md`). Screen ids (s09, s10, …) refer to that map.

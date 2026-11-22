@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useServices } from "../../useServices";
 import { findTreeNode, toTreeNodes } from "../tree/tree-nodes";
 import { TreeOverlaysContainer } from "../tree/TreeOverlaysContainer";
-import { describeMoveError } from "../tree/move-error";
+import { describeOperationError } from "../feedback/describe-error";
 import { folderName } from "./folder-name";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
 
@@ -36,7 +36,9 @@ export function WorkspaceSidebarContainer() {
             activeId={activeNote}
             focusedId={focusedId}
             listError={listError ? t(`errors.${listError.code}`) : null}
-            createError={createError ? describeMoveError(t, createError) : null}
+            createError={
+                createError ? describeOperationError(t, createError) : null
+            }
             notice={
                 watchMode === "focus-fallback"
                     ? t("workspace.watchFallback")

@@ -404,8 +404,26 @@ test.describe("new folder (AC-04.3)", () => {
         await expect(row(page, "Later")).toBeVisible();
     });
 
+    test("a case-only folder collision closes the dialog and shows a toast", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", FILES);
+        const before = await listDirectories(page);
+        await openRootMenu(page);
+        await menuItem(page, "New folder").click();
+        await page
+            .getByRole("textbox", { name: "Folder name" })
+            .fill("PROJECTS");
+        await page.getByRole("button", { name: "Create folder" }).click();
+
+        await expect(page.getByRole("dialog")).toHaveCount(0);
+        await expect(
+            page.getByRole("region", { name: /Notifications/ }),
+        ).toContainText("already exists");
+        expect(await listDirectories(page)).toEqual(before);
+    });
+
     for (const [name, message] of [
-        ["PROJECTS", "A note or folder with this name already exists here."],
         ["a/b", "A name cannot contain / or \\."],
         ["Ideas.", "A name cannot end with a dot or a space."],
     ] as const) {
@@ -522,35 +540,49 @@ test.describe("rename (AC-04.1)", () => {
         );
     });
 
-    for (const [label, name, message] of [
-        ["a case-only collision", "BETA", "already exists here"],
-        ["a Unicode-form-only collision", "Café", "already exists here"],
-        ["a name with a separator", "x/y", "cannot contain"],
+    for (const [label, name] of [
+        ["case-only", "BETA"],
+        ["Unicode-form-only", "Café"],
     ] as const) {
-        test(`rejects ${label} inline and leaves the files unchanged`, async ({
+        test(`a ${label} rename collision closes the dialog and shows a toast`, async ({
             page,
         }) => {
             await openWorkspaceWith(page, "/work/W", {
-                "alpha.md": "",
-                "beta.md": "",
-                "Café.md": "",
+                "alpha.md": "source",
+                "beta.md": "case collision",
+                "Café.md": "Unicode collision",
             });
             const before = await listFiles(page);
             await startRename(page, "alpha");
-
             await page.getByRole("textbox", { name: "Name" }).fill(name);
-
-            await expect(
-                page.getByRole("dialog").getByText(message),
-            ).toBeVisible();
-            await expect(
-                page.getByRole("button", { name: "Rename" }),
-            ).toBeDisabled();
             await page.keyboard.press("Enter");
-            await expect(page.getByRole("dialog")).toBeVisible();
+
+            await expect(page.getByRole("dialog")).toHaveCount(0);
+            await expect(
+                page.getByRole("region", { name: /Notifications/ }),
+            ).toContainText("already exists");
             expect(await listFiles(page)).toEqual(before);
+            expect(await readSavedText(page, "alpha.md")).toBe("source");
         });
     }
+
+    test("rejects a name with a separator inline and leaves the file unchanged", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", { "alpha.md": "source" });
+        await startRename(page, "alpha");
+        const dialog = page.getByRole("dialog");
+
+        await dialog.getByRole("textbox", { name: "Name" }).fill("x/y");
+
+        await expect(dialog.getByText("cannot contain")).toBeVisible();
+        await expect(
+            dialog.getByRole("button", { name: "Rename" }),
+        ).toBeDisabled();
+        await page.keyboard.press("Enter");
+        await expect(dialog).toBeVisible();
+        expect(await listFiles(page)).toEqual(["alpha.md"]);
+    });
 
     test("allows a case-only change of the note's own name", async ({
         page,

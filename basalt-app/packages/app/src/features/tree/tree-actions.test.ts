@@ -3,6 +3,10 @@ import { createHarness, root, seedFs, wsPath } from "../test-harness";
 
 const A = root("/a");
 
+function toasts(h: Awaited<ReturnType<typeof open>>["h"]) {
+    return h.feedbackStore.getState().messages.map((m) => m.error);
+}
+
 async function open(
     files: Record<string, string>,
     options: Parameters<typeof seedFs>[1] = {},
@@ -113,7 +117,7 @@ describe("rename", () => {
     it.each([
         ["a case-only collision", "BETA"],
         ["a Unicode-form-only collision", "Café"],
-    ])("does not rename onto %s and changes nothing", async (_label, name) => {
+    ])("shows a toast for %s and changes nothing", async (_label, name) => {
         const { h, fs } = await open({
             "alpha.md": "1",
             "beta.md": "2",
@@ -126,13 +130,14 @@ describe("rename", () => {
         await h.treeActions.submitDialog();
 
         expect(await paths(fs)).toEqual(before);
-        expect(h.treeStore.getState().dialog).toMatchObject({
-            kind: "rename",
-            pending: false,
-        });
+        expect(h.treeStore.getState().dialog).toBeNull();
+        expect(toasts(h).map((error) => error.code)).toEqual([
+            "already-exists",
+        ]);
+        expect(h.notesStore.getState().createError).toBeNull();
     });
 
-    it("keeps the dialog open with the error code when the rename fails", async () => {
+    it("closes the dialog and queues a toast when the rename fails with an informational error", async () => {
         const { h, fs } = await open({ "alpha.md": "1" });
         h.treeActions.startRename(wsPath("alpha.md"));
         h.treeActions.setName("beta");
@@ -140,10 +145,48 @@ describe("rename", () => {
 
         await h.treeActions.submitDialog();
 
+        expect(h.treeStore.getState().dialog).toBeNull();
+        expect(toasts(h).map((error) => error.code)).toEqual(["not-found"]);
+        expect(h.notesStore.getState().createError).toBeNull();
+    });
+
+    it("closes the dialog and queues one collision toast when the target appears after validation", async () => {
+        const { h, fs } = await open({ "alpha.md": "1" });
+        h.treeActions.startRename(wsPath("alpha.md"));
+        h.treeActions.setName("beta");
+        fs.externalWrite(wsPath("beta.md"), new TextEncoder().encode("x"));
+
+        await h.treeActions.submitDialog();
+
+        expect(h.treeStore.getState().dialog).toBeNull();
+        expect(toasts(h).map((error) => error.code)).toEqual([
+            "already-exists",
+        ]);
+        expect(await paths(fs)).toEqual(["alpha.md", "beta.md"]);
+    });
+
+    it("reports a pending rename collision without closing a replacement dialog", async () => {
+        const { h, fs } = await open({ "alpha.md": "1" });
+        h.treeActions.startRename(wsPath("alpha.md"));
+        h.treeActions.setName("beta");
+        fs.externalWrite(wsPath("beta.md"), new TextEncoder().encode("x"));
+
+        const submit = h.treeActions.submitDialog();
+        h.treeActions.cancelDialog();
+        h.treeActions.startNewFolder(null);
+        h.treeActions.setName("Drafts");
+        await submit;
+
         expect(h.treeStore.getState().dialog).toMatchObject({
-            error: "not-found",
+            kind: "new-folder",
+            name: "Drafts",
             pending: false,
+            error: null,
         });
+        expect(toasts(h).map((error) => error.code)).toEqual([
+            "already-exists",
+        ]);
+        expect(await paths(fs)).toEqual(["alpha.md", "beta.md"]);
     });
 
     it("closes without touching the disk when the name is unchanged", async () => {
@@ -210,7 +253,7 @@ describe("new folder", () => {
     });
 
     it.each(["docs", "DOCS"])(
-        "does not create a folder named %j that collides with a sibling",
+        "shows a toast and creates nothing when a folder named %j already exists",
         async (name) => {
             const { h, fs } = await open({ "docs/x.md": "" });
             const before = await paths(fs);
@@ -220,7 +263,11 @@ describe("new folder", () => {
             await h.treeActions.submitDialog();
 
             expect(await paths(fs)).toEqual(before);
-            expect(h.treeStore.getState().dialog).not.toBeNull();
+            expect(h.treeStore.getState().dialog).toBeNull();
+            expect(toasts(h).map((error) => error.code)).toEqual([
+                "already-exists",
+            ]);
+            expect(h.notesStore.getState().createError).toBeNull();
         },
     );
 
@@ -372,17 +419,17 @@ describe("dragging a note onto a folder", () => {
         expect(await paths(fs)).toEqual(["a.md"]);
     });
 
-    it("shows a collision as the sidebar error and moves nothing", async () => {
+    it("reports a collision as a toast, not a sidebar error, and moves nothing", async () => {
         const { h, fs } = await open({ "a.md": "1", "docs/A.md": "2" });
 
         h.treeActions.dragStart("a.md");
         await h.treeActions.drop({ type: "folder", id: "docs" });
 
         expect(await paths(fs)).toEqual(["a.md", "docs", "docs/A.md"]);
-        expect(h.notesStore.getState().createError?.detail).toEqual({
-            kind: "move-collision",
-            name: "a.md",
-        });
+        expect(toasts(h).map((error) => error.detail)).toEqual([
+            { kind: "move-collision", name: "a.md" },
+        ]);
+        expect(h.notesStore.getState().createError).toBeNull();
         expect(h.treeStore.getState().expanded.has("docs")).toBe(false);
     });
 
@@ -694,6 +741,19 @@ describe("delete", () => {
         );
     });
 
+    it("clears an earlier persistent error after a successful delete", async () => {
+        const { h } = await open({ "a.md": "1" });
+        h.notesStore.setState({
+            createError: { code: "permission-denied", message: "x" },
+        });
+        h.treeActions.requestDelete([wsPath("a.md")]);
+
+        await h.treeActions.confirmDelete();
+
+        expect(h.notesStore.getState().createError).toBeNull();
+        expect(toasts(h)).toEqual([]);
+    });
+
     it("reports how many notes were not deleted on a partial failure", async () => {
         const { h, fs } = await open({
             "a.md": "1",
@@ -710,11 +770,10 @@ describe("delete", () => {
         await h.treeActions.confirmDelete();
 
         expect(await paths(fs)).toEqual(["a.md"]);
-        expect(h.notesStore.getState().createError?.detail).toEqual({
-            kind: "delete-failed",
-            failed: 1,
-            total: 3,
-        });
+        expect(toasts(h).map((error) => error.detail)).toEqual([
+            { kind: "delete-failed", failed: 1, total: 3 },
+        ]);
+        expect(h.notesStore.getState().createError).toBeNull();
     });
 });
 
@@ -805,10 +864,9 @@ describe("dragging a selection (AC-04.13)", () => {
             "docs/B.md",
             "docs/C.md",
         ]);
-        expect(h.notesStore.getState().createError?.detail).toEqual({
-            kind: "move-collision",
-            name: "b.md",
-        });
+        expect(toasts(h).map((error) => error.detail)).toEqual([
+            { kind: "move-collision", name: "b.md" },
+        ]);
         expect(h.notesStore.getState().activeNote).toBe("a.md");
         expect([...h.treeStore.getState().selected].sort()).toEqual([
             "a.md",
@@ -847,7 +905,7 @@ describe("dragging a selection (AC-04.13)", () => {
         h.treeActions.dragStart("a.md");
         await h.treeActions.drop({ type: "folder", id: "docs" });
 
-        expect(h.notesStore.getState().createError?.detail).toMatchObject({
+        expect(toasts(h)[0]?.detail).toMatchObject({
             kind: "move-stopped",
             name: "b.md",
             moved: 1,
