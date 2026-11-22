@@ -360,4 +360,90 @@ test.describe("live preview", () => {
         await expect(page.locator(".cm-lp-task")).toHaveCount(2);
         await expect(page.locator(".cm-lp-task-done")).toHaveCount(1);
     });
+    test("hides fence lines off the active line and shows them on it", async ({
+        page,
+    }) => {
+        const source = "intro\n\n```js\n\nTest\n```\n\nend";
+        await openWorkspaceWith(page, "/work/W", { "a.md": source });
+        await option(page, "a").click();
+        const lines = page.locator(".cm-line");
+        await expect(lines).toHaveCount(8);
+
+        await expect(lines.nth(2)).toHaveText("");
+        await expect(lines.nth(2)).toHaveClass(/cm-lp-codeblock/);
+        await expect(lines.nth(3)).toHaveText("");
+        await expect(lines.nth(4)).toHaveText("Test");
+        await expect(lines.nth(5)).toHaveText("");
+        await expect(editor(page, "a")).not.toContainText("```");
+
+        await lines.nth(2).click();
+        await expect(lines.nth(2)).toHaveText("```js");
+        await expect(lines.nth(5)).toHaveText("");
+
+        await lines.nth(5).click();
+        await expect(lines.nth(5)).toHaveText("```");
+        await expect(lines.nth(2)).toHaveText("");
+
+        await lines.nth(4).click();
+        await expect(lines.nth(2)).toHaveText("");
+        await expect(lines.nth(5)).toHaveText("");
+
+        await expect.poll(() => readOnDisk(page, "a.md")).toBe(source);
+    });
+
+    test("shows the source of every fence line a selection touches", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", {
+            "a.md": "~~~\ncode\n~~~\nend",
+        });
+        await option(page, "a").click();
+        const lines = page.locator(".cm-line");
+        await expect(lines.nth(0)).toHaveText("~~~");
+
+        await lines.nth(3).click();
+        await expect(lines.nth(0)).toHaveText("");
+        await expect(lines.nth(2)).toHaveText("");
+
+        await page.keyboard.press("Shift+ArrowUp");
+        await page.keyboard.press("Shift+ArrowUp");
+        await page.keyboard.press("Shift+ArrowUp");
+        await expect(lines.nth(0)).toHaveText("~~~");
+        await expect(lines.nth(2)).toHaveText("~~~");
+    });
+
+    test("keeps the content of an unclosed fence and recovers its source", async ({
+        page,
+    }) => {
+        const source = "intro\n```\nkept text";
+        await openWorkspaceWith(page, "/work/W", { "a.md": source });
+        await option(page, "a").click();
+        const lines = page.locator(".cm-line");
+
+        await expect(lines.nth(1)).toHaveText("");
+        await expect(lines.nth(2)).toHaveText("kept text");
+
+        await lines.nth(1).click();
+        await expect(lines.nth(1)).toHaveText("```");
+        await expect.poll(() => readOnDisk(page, "a.md")).toBe(source);
+    });
+
+    test("renders escaped characters literally off the active line and keeps the backslashes", async ({
+        page,
+    }) => {
+        const source = "intro\n\\*star\\* and \\`tick\n`code \\*kept`\nend";
+        await openWorkspaceWith(page, "/work/W", { "a.md": source });
+        await option(page, "a").click();
+        const lines = page.locator(".cm-line");
+
+        await expect(lines.nth(1)).toHaveText("*star* and `tick");
+        await expect(lines.nth(2)).toHaveText("code \\*kept");
+
+        await lines.nth(1).click();
+        await expect(lines.nth(1)).toHaveText("\\*star\\* and \\`tick");
+
+        await lines.nth(3).click();
+        await expect(lines.nth(1)).toHaveText("*star* and `tick");
+        await expect.poll(() => readOnDisk(page, "a.md")).toBe(source);
+    });
 });
