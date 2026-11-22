@@ -32,9 +32,9 @@ Risks: e2e tests that assert `.bs-alert` for collisions must change; rename-coll
 
 ### Phase 1: ui
 
-- [ ] 1.1 Toast max stack of 3 and monotonic ids
-- [ ] 1.2 Toast label and dismissLabel props
-- [ ] 1.3 Storybook story for the stack cap
+- [x] 1.1 Toast max stack of 3 and monotonic ids — cdc4672
+- [x] 1.2 Toast label and dismissLabel props — cdc4672
+- [x] 1.3 Storybook story for the stack cap — cdc4672
 
 ### Phase 2: feedback module
 
