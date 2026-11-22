@@ -33,6 +33,7 @@ import {
     setDialogPending,
     setFocusedRow,
     toggleFolder,
+    type TreeDialog,
     type TreeStore,
 } from "./tree-store";
 
@@ -74,65 +75,16 @@ export function createTreeActions(options: {
 }): TreeActions {
     const { store, notesStore, notes, feedback } = options;
 
-    function failDialog(error: AppError): void {
-        if (errorSurface(error) === "toast") {
-            feedback.report(error);
-            closeDialog(store);
-            return;
-        }
-        setDialogError(store, error.code);
+    function failDialog(dialog: TreeDialog | null, error: AppError): void {
+        const showToast = errorSurface(error) === "toast";
+        if (showToast) feedback.report(error);
+        if (store.getState().dialog !== dialog) return;
+        if (showToast) closeDialog(store);
+        else setDialogError(store, error.code);
     }
 
     function currentTree() {
         return notesStore.getState().tree;
-    }
-
-    async function submitRename(
-        path: WorkspacePath,
-        name: string,
-    ): Promise<void> {
-        const parent = parentFolder(path);
-        const problem = validateEntryName({
-            name,
-            kind: "note",
-            parent,
-            siblings: childrenOf(currentTree(), parent),
-            own: path,
-        });
-        if (problem !== null || name === "") return;
-        setDialogPending(store, true);
-        const renamed = await notes.renameNote(path, name);
-        if (!renamed.ok) {
-            failDialog(renamed.error);
-            return;
-        }
-        setFocusedRow(store, renamed.value);
-        closeDialog(store);
-    }
-
-    async function submitNewFolder(
-        parent: WorkspacePath | null,
-        name: string,
-    ): Promise<void> {
-        const problem = validateEntryName({
-            name,
-            kind: "folder",
-            parent,
-            siblings: childrenOf(currentTree(), parent),
-        });
-        if (problem !== null || name === "") return;
-        setDialogPending(store, true);
-        const created = await notes.createFolder(parent, name);
-        if (!created.ok) {
-            failDialog(created.error);
-            return;
-        }
-        expandFolders(store, [
-            ...ancestorFolders(created.value),
-            created.value,
-        ]);
-        setFocusedRow(store, created.value);
-        closeDialog(store);
     }
 
     function destinationOf(target: DropTarget): WorkspacePath | null | false {
@@ -322,16 +274,50 @@ export function createTreeActions(options: {
         async submitDialog() {
             const { dialog } = store.getState();
             if (!dialog || dialog.pending) return;
-            if (dialog.kind === "rename") {
+            const renaming = dialog.kind === "rename";
+            if (renaming) {
                 const node = findTreeNode(currentTree(), dialog.path);
                 if (node?.kind === "note" && node.name === dialog.name) {
                     closeDialog(store);
                     return;
                 }
-                await submitRename(dialog.path, dialog.name);
-            } else {
-                await submitNewFolder(dialog.parent, dialog.name);
             }
+
+            const parent = renaming ? parentFolder(dialog.path) : dialog.parent;
+            const problem = validateEntryName({
+                name: dialog.name,
+                kind: renaming ? "note" : "folder",
+                parent,
+                siblings: childrenOf(currentTree(), parent),
+                own: renaming ? dialog.path : undefined,
+            });
+            if (problem === "collision") {
+                failDialog(dialog, {
+                    code: "already-exists",
+                    message: "An entry with this name already exists.",
+                });
+                return;
+            }
+            if (problem !== null || dialog.name === "") return;
+
+            setDialogPending(store, true);
+            const pendingDialog = store.getState().dialog;
+            const result = renaming
+                ? await notes.renameNote(dialog.path, dialog.name)
+                : await notes.createFolder(parent, dialog.name);
+            if (!result.ok) {
+                failDialog(pendingDialog, result.error);
+                return;
+            }
+            if (store.getState().dialog !== pendingDialog) return;
+            if (!renaming) {
+                expandFolders(store, [
+                    ...ancestorFolders(result.value),
+                    result.value,
+                ]);
+            }
+            setFocusedRow(store, result.value);
+            closeDialog(store);
         },
     };
 }

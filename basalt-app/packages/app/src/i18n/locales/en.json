@@ -122,8 +122,7 @@
             "reserved-name": "This name is reserved by Windows.",
             "trailing-dot-or-space": "A name cannot end with a dot or a space.",
             "too-long": "This name is too long.",
-            "leading-dot": "A name cannot start with a dot.",
-            "collision": "A note or folder with this name already exists here."
+            "leading-dot": "A name cannot start with a dot."
         }
     },
     "notes": {
@@ -173,7 +172,7 @@
         "not-found": "The file or folder could not be found. It may have been moved or deleted.",
         "permission-denied": "The workspace folder is read-only. Nothing was changed.",
         "scope-denied": "Basalt does not have access to this part of the workspace folder. Nothing was changed.",
-        "already-exists": "A file with this name already exists.",
+        "already-exists": "A file or folder with this name already exists.",
         "invalid-path": "This name or location is not valid.",
         "not-a-file": "This is a folder, not a note, so it cannot be opened.",
         "conflict": "This note was changed on disk by another program.",

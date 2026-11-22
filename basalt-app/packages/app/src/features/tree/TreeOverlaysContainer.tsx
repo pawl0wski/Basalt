@@ -162,7 +162,7 @@ export function TreeOverlaysContainer() {
                     currentName={currentName}
                     name={dialog.name}
                     error={
-                        problem === null
+                        problem === null || problem === "collision"
                             ? undefined
                             : t(`tree.nameError.${problem}`)
                     }

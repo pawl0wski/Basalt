@@ -4,6 +4,7 @@ import {
     failNextWrite,
     listFiles,
     openWorkspaceWith,
+    readSavedBytes,
 } from "./support";
 
 const COLLISION = (name: string) =>
@@ -47,7 +48,6 @@ async function dragNoteOnto(page: Page, note: string, folder: string) {
     await row(page, note).dispatchEvent("dragstart", { dataTransfer });
     await row(page, folder).dispatchEvent("dragover", { dataTransfer });
     await row(page, folder).dispatchEvent("drop", { dataTransfer });
-    await row(page, note).dispatchEvent("dragend", { dataTransfer });
 }
 
 async function collide(page: Page, note: string) {
@@ -240,21 +240,28 @@ test.describe("what stays persistent (AC-08.3)", () => {
 });
 
 test.describe("partial failures (AC-08.7)", () => {
-    test("moving several notes where one collides reports it as a toast and loses nothing", async ({
+    test("a note that moves but cannot have its links rewritten keeps its bytes and shows a toast", async ({
         page,
     }) => {
+        const invalidUtf8 = [0xff, 0xff];
         await openWorkspaceWith(page, "/work/W", {
-            "Ideas.md": "1",
-            "Notes.md": "3",
-            "projects/NOTES.md": "taken",
+            "Broken.md": Uint8Array.from(invalidUtf8),
+            "projects/Roadmap.md": "roadmap",
         });
-        const before = await listFiles(page);
-        await row(page, "Ideas").click({ modifiers: ["Control"] });
-        await row(page, "Notes").click({ modifiers: ["Control"] });
 
-        await dragNoteOnto(page, "Ideas", "projects");
+        await dragNoteOnto(page, "Broken", "projects");
 
-        await expect(toasts(page).first()).toContainText("Notes.md");
-        expect(await listFiles(page)).toEqual(before);
+        await expect(toasts(page)).toHaveCount(1);
+        await expect(toasts(page).first()).toContainText(
+            'Moved 1 of 1 notes. "Broken.md" was moved but its links could not be updated',
+        );
+        await expect(sidebar(page).getByRole("status")).toHaveCount(0);
+        expect(await listFiles(page)).toEqual([
+            "projects/Broken.md",
+            "projects/Roadmap.md",
+        ]);
+        expect(await readSavedBytes(page, "projects/Broken.md")).toEqual(
+            invalidUtf8,
+        );
     });
 });
