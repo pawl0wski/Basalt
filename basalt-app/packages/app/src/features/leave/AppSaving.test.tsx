@@ -12,7 +12,7 @@ import { createHarness, root, seedFs, settle } from "../test-harness";
 
 const A = root("/home/me/Notes");
 
-async function openApp(files: Record<string, string>) {
+async function openApp(files: Record<string, string | Uint8Array>) {
     const fs = seedFs(files);
     const harness = createHarness({
         workspaces: { [A]: fs },
@@ -64,6 +64,10 @@ async function disk(fs: ReturnType<typeof seedFs>, path: string) {
     return read.ok ? read.value : null;
 }
 
+function statusBar() {
+    return document.querySelector(".bs-status-bar") as HTMLElement;
+}
+
 describe("save state and errors", () => {
     beforeAll(async () => {
         await initI18n();
@@ -72,35 +76,31 @@ describe("save state and errors", () => {
     it("shows nothing in the status bar until a note is open", async () => {
         await openApp({ "a.md": "x" });
 
-        expect(screen.queryByRole("status")).toBeNull();
+        expect(statusBar().textContent).toBe("");
     });
 
-    it("goes Saved, Not saved, Saved as the user types and autosave runs", async () => {
+    it("moves the tab between saved and not saved as the user types and autosave runs", async () => {
         const user = userEvent.setup();
         const { harness } = await openApp({ "a.md": "base" });
         await user.click(listOption("a"));
         await screen.findByRole("textbox", { name: "a" });
-        expect(screen.getByRole("status")).toHaveTextContent(
-            en.saveStatus.saved,
-        );
+        expect(screen.getByRole("tab", { name: "a" })).toBeInTheDocument();
+        expect(statusBar().textContent).toBe("1 word");
 
-        typeInto("a", "!");
+        typeInto("a", " more");
         await waitFor(() => {
-            expect(screen.getByRole("status")).toHaveTextContent(
-                en.saveStatus.notSaved,
-            );
+            expect(
+                screen.getByRole("tab", { name: "a not saved" }),
+            ).toBeInTheDocument();
         });
+        expect(statusBar().textContent).toBe("2 words");
         harness.scheduler.fire();
         await settle();
 
         await waitFor(() => {
-            expect(screen.getByRole("status")).toHaveTextContent(
-                en.saveStatus.saved,
-            );
+            expect(screen.getByRole("tab", { name: "a" })).toBeInTheDocument();
         });
-        expect(screen.getByRole("status").textContent).toBe(
-            en.saveStatus.saved,
-        );
+        expect(statusBar().textContent).toBe("2 words");
     });
 
     it("saves at once on Ctrl+S and prevents the browser dialog", async () => {
@@ -120,9 +120,7 @@ describe("save state and errors", () => {
         expect(await disk(fs, "a.md")).toBe("base!");
         expect(harness.scheduler.pending()).toBe(0);
         await waitFor(() => {
-            expect(screen.getByRole("status")).toHaveTextContent(
-                en.saveStatus.saved,
-            );
+            expect(screen.getByRole("tab", { name: "a" })).toBeInTheDocument();
         });
     });
 
@@ -152,9 +150,10 @@ describe("save state and errors", () => {
         const alert = await screen.findByRole("alert");
         expect(alert).toHaveTextContent(en.notes.saveError.title);
         expect(alert).toHaveTextContent(en.errors.unknown);
-        expect(screen.getByRole("status")).toHaveTextContent(
-            en.saveStatus.notSaved,
-        );
+        expect(
+            screen.getByRole("tab", { name: "a not saved" }),
+        ).toBeInTheDocument();
+        expect(statusBar().textContent).toBe("1 word");
         expect(viewOf("a").state.doc.toString()).toBe("base!");
 
         await user.click(
@@ -167,9 +166,7 @@ describe("save state and errors", () => {
         });
         expect(await disk(fs, "a.md")).toBe("base!");
         expect(viewOf("a").state.doc.toString()).toBe("base!");
-        expect(screen.getByRole("status")).toHaveTextContent(
-            en.saveStatus.saved,
-        );
+        expect(screen.getByRole("tab", { name: "a" })).toBeInTheDocument();
     });
 });
 
@@ -337,5 +334,54 @@ describe("leaving with a failing save", () => {
 
         await screen.findByRole("alertdialog");
         expect(harness.windowState.destroyed).toBe(0);
+    });
+});
+
+describe("word count in the status bar", () => {
+    beforeAll(async () => {
+        await initI18n();
+    });
+
+    it("does not count a bare Markdown marker as a word", async () => {
+        const user = userEvent.setup();
+        await openApp({ "a.md": "# " });
+        await user.click(listOption("a"));
+        await screen.findByRole("textbox", { name: "a" });
+
+        expect(statusBar().textContent).toBe("0 words");
+
+        typeInto("a", "Title");
+        await waitFor(() => {
+            expect(statusBar().textContent).toBe("1 word");
+        });
+    });
+
+    it("formats thousands and follows the active tab", async () => {
+        const user = userEvent.setup();
+        await openApp({
+            "a.md": "word ".repeat(1204),
+            "b.md": "one two three",
+        });
+        await user.click(listOption("a"));
+        await screen.findByRole("textbox", { name: "a" });
+        expect(statusBar().textContent).toBe("1,204 words");
+
+        await user.click(listOption("b"));
+        await screen.findByRole("textbox", { name: "b" });
+        expect(statusBar().textContent).toBe("3 words");
+
+        await user.click(screen.getByRole("tab", { name: "a" }));
+        await waitFor(() => {
+            expect(statusBar().textContent).toBe("1,204 words");
+        });
+    });
+
+    it("shows no count for a note that failed to open", async () => {
+        const user = userEvent.setup();
+        await openApp({ "bin.md": new Uint8Array([0xff, 0xfe, 0x41]) });
+        await user.click(listOption("bin"));
+        await screen.findByText(en.notes.openError["not-utf8"]);
+
+        expect(statusBar().textContent).toBe("");
     });
 });

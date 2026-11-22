@@ -17,8 +17,12 @@ function editor(page: Page, name: string) {
     return page.getByRole("textbox", { name });
 }
 
-function saveState(page: Page) {
-    return page.locator(".bs-save-status");
+function unsavedTab(page: Page) {
+    return page.getByRole("tab", { name: "a not saved", exact: true });
+}
+
+function savedTab(page: Page) {
+    return page.getByRole("tab", { name: "a", exact: true });
 }
 
 async function openDirty(page: Page, text = "base") {
@@ -27,7 +31,7 @@ async function openDirty(page: Page, text = "base") {
     await editor(page, "a").click();
     await page.keyboard.press("Control+End");
     await page.keyboard.type(" mine");
-    await expect(saveState(page)).toHaveText("Not saved");
+    await expect(unsavedTab(page)).toBeVisible();
 }
 
 async function conflictBanner(page: Page) {
@@ -53,12 +57,15 @@ test.describe("external changes to the open note", () => {
         await openWorkspaceWith(page, "/work/W", { "a.md": "base" });
         await option(page, "a").click();
         await expect(editor(page, "a")).toContainText("base");
+        const statusBar = page.locator(".bs-status-bar");
+        await expect(statusBar).toHaveText("1 word");
 
         await externalWrite(page, "a.md", "from disk");
 
         await expect(editor(page, "a")).toContainText("from disk");
+        await expect(statusBar).toHaveText("2 words");
         await expect(page.getByRole("alert")).toHaveCount(0);
-        await expect(saveState(page)).toHaveText("Saved");
+        await expect(savedTab(page)).toBeVisible();
         expect(await readSavedText(page, "a.md")).toBe("from disk");
     });
 
@@ -81,7 +88,7 @@ test.describe("external changes to the open note", () => {
         await banner.getByRole("button", { name: "Keep my version" }).click();
 
         await expect(page.getByRole("alert")).toHaveCount(0);
-        await expect(saveState(page)).toHaveText("Saved");
+        await expect(savedTab(page)).toBeVisible();
         expect(await readSavedText(page, "a.md")).toBe("base mine");
     });
 
@@ -139,7 +146,7 @@ test.describe("external changes to the open note", () => {
 
         await expect(page.getByRole("alert")).toHaveCount(0);
         expect(await readSavedText(page, "a.md")).toBe("base mine");
-        await expect(saveState(page)).toHaveText("Saved");
+        await expect(savedTab(page)).toBeVisible();
     });
 
     test("Close note asks first and closes the tab after confirming", async ({
