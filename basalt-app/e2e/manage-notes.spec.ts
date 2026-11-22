@@ -183,7 +183,7 @@ test.describe("the context menu (AC-04.9)", () => {
         ]);
     });
 
-    test("right-click on a folder offers New note and New folder", async ({
+    test("right-click on a folder offers New note, New folder, Rename and Delete", async ({
         page,
     }) => {
         await openWorkspaceWith(page, "/work/W", FILES);
@@ -193,6 +193,8 @@ test.describe("the context menu (AC-04.9)", () => {
         await expect(page.getByRole("menuitem")).toHaveText([
             "New note",
             "New folder",
+            "Rename",
+            "Delete",
         ]);
     });
 
@@ -254,6 +256,8 @@ test.describe("the context menu (AC-04.9)", () => {
         await expect(page.getByRole("menuitem")).toHaveText([
             "New note",
             "New folder",
+            "Rename",
+            "Delete",
         ]);
     });
 
