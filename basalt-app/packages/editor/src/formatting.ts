@@ -18,16 +18,22 @@ export type EmphasisEdit = {
     readonly range: TextRange;
 };
 
+function isEscaped(text: string, position: number): boolean {
+    let start = position;
+    while (start > 0 && text[start - 1] === "\\") start--;
+    return (position - start) % 2 === 1;
+}
+
 function runBefore(text: string, position: number): number {
     let start = position;
     while (start > 0 && text[start - 1] === "*") start--;
     const run = position - start;
-    if (run > 0 && start > 0 && text[start - 1] === "\\") return run - 1;
+    if (run > 0 && isEscaped(text, start)) return run - 1;
     return run;
 }
 
 function runAfter(text: string, position: number): number {
-    if (position > 0 && text[position - 1] === "\\") return 0;
+    if (isEscaped(text, position)) return 0;
     let end = position;
     while (end < text.length && text[end] === "*") end++;
     return end - position;

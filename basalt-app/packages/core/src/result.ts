@@ -30,6 +30,7 @@ export type AppErrorDetail =
           readonly total: number;
       }
     | { readonly kind: "flush-failed" }
+    | { readonly kind: "title-links-failed"; readonly count: number }
     | {
           readonly kind: "folder-move-stopped";
           readonly name: string;

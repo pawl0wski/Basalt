@@ -261,9 +261,15 @@ test.describe("note errors", () => {
         ).toBeVisible();
         await expect(page.locator(".cm-editor")).toHaveCount(0);
         await expect(tab(page, "big")).toBeVisible();
-        expect((await readSavedBytes(page, "big.md"))?.length).toBe(
-            MAX_NOTE_BYTES + 1,
-        );
+        const saved = await page.evaluate(() => {
+            const bytes = window.__basaltTestFs?.readBytes("big.md");
+            const expected = "a".charCodeAt(0);
+            return {
+                length: bytes?.length,
+                unchanged: bytes?.every((byte) => byte === expected),
+            };
+        });
+        expect(saved).toEqual({ length: MAX_NOTE_BYTES + 1, unchanged: true });
     });
 
     test("a note that is not UTF-8 shows the message and is never written", async ({

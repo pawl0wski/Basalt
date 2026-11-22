@@ -41,6 +41,24 @@ describe("committing titles before leaving", () => {
         expect(await savedText(fsA, wsPath("Renamed.md"))).toBe(
             "# Renamed\nbody",
         );
+        expect(h.notesStore.getState().openNotes.map((s) => s.path)).toEqual([
+            "m.md",
+        ]);
+    });
+
+    it("closes the renamed tab when editor blur already started the title commit", async () => {
+        const { h, fsA } = await setup();
+        h.notesActions.updateText(n, "# Renamed\nbody");
+
+        const committing = h.notesActions.commitTitle(n);
+        await Promise.all([committing, h.leaveActions.closeTab(n)]);
+
+        expect(await savedText(fsA, wsPath("Renamed.md"))).toBe(
+            "# Renamed\nbody",
+        );
+        expect(h.notesStore.getState().openNotes.map((s) => s.path)).toEqual([
+            "m.md",
+        ]);
     });
 
     it("renames pending notes before the window closes", async () => {

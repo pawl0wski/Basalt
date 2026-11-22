@@ -8,6 +8,7 @@ export function errorSurface(error: AppError): ErrorSurface {
         case "move-stopped":
         case "folder-move-stopped":
         case "delete-failed":
+        case "title-links-failed":
             return "toast";
         case "flush-failed":
         case undefined:

@@ -26,6 +26,25 @@ async function startRename(page: Page, name: string) {
 }
 
 test.describe("the note name follows its first heading", () => {
+    test("closing a tab from its edited heading saves the renamed note and closes the tab", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", { "Old.md": "# Old\nbody" });
+        await option(page, "Old").click();
+        await page.locator(".cm-line").first().click();
+        await page.keyboard.press("End");
+        await page.keyboard.type(" title");
+
+        await page
+            .getByRole("button", { name: "Close Old", exact: true })
+            .click();
+
+        await expect
+            .poll(() => readSavedText(page, "Old title.md"))
+            .toBe("# Old title\nbody");
+        await expect(page.getByRole("tab")).toHaveCount(0);
+    });
+
     test("a new note opens with an empty heading and is named after the typed title (AC-06.1)", async ({
         page,
     }) => {

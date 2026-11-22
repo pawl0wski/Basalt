@@ -32,11 +32,12 @@ const options = (
     labels: { loading: "Loading", broken: "Broken", resize: "Resize image" },
 });
 
-async function mount(doc: string, opts = options()) {
+async function mount(doc: string, opts = options(), readOnly = false) {
     const onChange = vi.fn();
     const editor = createMarkdownEditor(parent, {
         doc,
         onChange,
+        readOnly,
         images: opts,
         extensions: [history()],
     });
@@ -72,10 +73,79 @@ function drag(target: HTMLElement, from: number, to: number) {
 }
 
 describe("image resize handle", () => {
-    it("is a focusable button with an accessible name", async () => {
-        await mount("![a](x.png)", options());
-        expect(handle()?.tagName).toBe("BUTTON");
-        expect(handle()?.getAttribute("aria-label")).toBe("Resize image");
+    it("updates the selected occurrence when images share a destination and line", async () => {
+        const { editor, view } = await mount("![a|120](x.png) ![b|300](x.png)");
+        const handles = parent.querySelectorAll<HTMLButtonElement>(
+            ".cm-image-resize-handle",
+        );
+        view.dispatch({ changes: { from: 0, insert: "intro\n\n" } });
+
+        key(handles[0], "ArrowRight");
+        key(handles[1], "ArrowLeft");
+
+        expect(editor.getText()).toBe(
+            "intro\n\n![a|130](x.png) ![b|290](x.png)",
+        );
+    });
+
+    it("renders the preview without a resize handle in a read-only editor", async () => {
+        const { onChange } = await mount("![a|120](x.png)", options(), true);
+        expect(img()?.style.width).toBe("120px");
+        expect(handle()).toBeNull();
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it.each(["Escape", "edit"])(
+        "cancels a drag on %s before release",
+        async (reason) => {
+            const { editor, view } = await mount("![a|120](x.png)");
+            const target = handle() as HTMLElement;
+            vi.spyOn(
+                img() as HTMLElement,
+                "getBoundingClientRect",
+            ).mockReturnValue({ width: 120 } as DOMRect);
+            target.dispatchEvent(
+                new MouseEvent("pointerdown", { bubbles: true }),
+            );
+            target.dispatchEvent(
+                new MouseEvent("pointermove", { clientX: 50, bubbles: true }),
+            );
+            expect(img()?.style.width).toBe("170px");
+
+            if (reason === "Escape") key(view.contentDOM, "Escape");
+            else view.dispatch({ changes: { from: 0, insert: "before " } });
+
+            expect(img()?.style.width).toBe("120px");
+            target.dispatchEvent(
+                new MouseEvent("pointerup", { clientX: 50, bubbles: true }),
+            );
+            expect(editor.getText()).toBe(
+                reason === "Escape"
+                    ? "![a|120](x.png)"
+                    : "before ![a|120](x.png)",
+            );
+        },
+    );
+
+    it("exposes the slider name, bounds and width after keyboard resizing", async () => {
+        await mount("![a|120](x.png)");
+        const slider = handle() as HTMLButtonElement;
+        expect(slider.tabIndex).toBe(0);
+        expect(slider.getAttribute("role")).toBe("slider");
+        expect(slider.getAttribute("aria-label")).toBe("Resize image");
+        expect(slider.getAttribute("aria-valuemin")).toBe("40");
+        expect(slider.getAttribute("aria-valuemax")).toBe("2000");
+        expect(slider.getAttribute("aria-valuenow")).toBe("120");
+
+        key(slider, "ArrowRight");
+
+        expect(slider.getAttribute("aria-valuenow")).toBe("130");
+    });
+
+    it("keeps table images visible without offering a resize handle", async () => {
+        await mount("| Image |\n| --- |\n| ![a](x.png) |");
+        expect(img()?.alt).toBe("a");
+        expect(handle()).toBeNull();
     });
 
     it("offers no handle for a placeholder", async () => {

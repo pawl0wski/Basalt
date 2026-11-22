@@ -43,9 +43,11 @@ export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
     return {
         block,
         async closeTab(path) {
-            await notes.commitTitle(path);
-            const closed = await notes.closeTab(path);
-            if (!closed.ok) block({ kind: "close-tab", path }, closed.error);
+            const currentPath = await notes.commitTitle(path);
+            const closed = await notes.closeTab(currentPath);
+            if (!closed.ok) {
+                block({ kind: "close-tab", path: currentPath }, closed.error);
+            }
         },
         async handleCloseRequest() {
             await notes.commitPendingTitles();
@@ -63,18 +65,14 @@ export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
                     block(pending, saved.error);
                     return;
                 }
-                const closed = await notes.closeTab(pending.path);
+                const path = await notes.commitTitle(pending.path);
+                const closed = await notes.closeTab(path);
                 if (!closed.ok) {
-                    block(pending, closed.error);
+                    block({ kind: "close-tab", path }, closed.error);
                     return;
                 }
                 clear();
                 await workspace.retryLost();
-                return;
-            }
-            const flushed = await notes.retryAll();
-            if (!flushed.ok) {
-                block(pending, flushed.error);
                 return;
             }
             if (pending.kind === "delete-folder") {
@@ -90,6 +88,11 @@ export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
                 }
                 clear();
                 onFolderDeleted?.(pending.path);
+                return;
+            }
+            const flushed = await notes.retryAll();
+            if (!flushed.ok) {
+                block(pending, flushed.error);
                 return;
             }
             clear();

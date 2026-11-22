@@ -106,6 +106,13 @@ describe("computeEmphasisToggle", () => {
         expect(apply("\\**t**", 3, 4, "*")?.text).not.toBe("t");
     });
 
+    it("unwraps emphasis after an escaped backslash", () => {
+        const backslashes = "\\".repeat(2);
+        expect(apply(backslashes + "**t**", 4, 5, "**")?.text).toBe(
+            backslashes + "t",
+        );
+    });
+
     it("wraps when markers exist on one side only", () => {
         expect(apply("**t", 2, 3, "**")?.text).toBe("****t**");
         expect(apply("t**", 0, 1, "**")?.text).toBe("**t****");

@@ -218,6 +218,30 @@ describe("deleting a folder", () => {
         expect(await paths(fs)).toEqual(["k.md"]);
     });
 
+    it("retries only the notes in the folder when an unrelated note has a write conflict", async () => {
+        const { h, fs } = await open({ "docs/a.md": "base", "k.md": "base" });
+        const outside = wsPath("k.md");
+        const inside = wsPath("docs/a.md");
+        await h.notesActions.openNote(outside);
+        h.notesActions.updateText(outside, "unsaved");
+        fs.externalWrite(outside, new TextEncoder().encode("external"));
+        await h.notesActions.openNote(inside);
+        h.notesActions.updateText(inside, "typed");
+        fs.failNextWrite();
+        h.treeActions.requestDelete([wsPath("docs")]);
+        await h.treeActions.confirmDelete();
+        expect(h.leaveStore.getState().pending?.kind).toBe("delete-folder");
+
+        await h.leaveActions.retry();
+
+        expect(h.leaveStore.getState().pending).toBeNull();
+        expect(await paths(fs)).toEqual(["k.md"]);
+        expect(await savedText(fs, outside)).toBe("external");
+        expect(h.notesStore.getState().openNotes).toEqual([
+            expect.objectContaining({ path: outside, text: "unsaved" }),
+        ]);
+    });
+
     it("discarding the Save-failed dialog deletes without saving", async () => {
         const { h, fs } = await open({ "docs/a.md": "base", "k.md": "" });
         await h.notesActions.openNote(wsPath("docs/a.md"));

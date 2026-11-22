@@ -19,7 +19,7 @@ import {
     formatImageAlt,
     parseImageAlt,
 } from "./imageWidth";
-import { activeLineNumbers } from "./livePreview";
+import { activeLineNumbers, type TextRange } from "./livePreview";
 
 export type ImageSource =
     | {
@@ -53,6 +53,9 @@ interface Mounted {
     box: HTMLElement;
     shownKey: string | null;
     view: EditorView;
+    altRange: TextRange;
+    resizable: boolean;
+    cancelDrag?: () => void;
     show(source: ImageSource): void;
 }
 
@@ -109,6 +112,7 @@ export function createImagePreview(options: ImageOptions): ImagePreview {
         const key = sourceKey(source);
         if (record.shownKey === key) return;
         record.shownKey = key;
+        record.cancelDrag?.();
         record.box.replaceChildren();
         if (source.kind === "placeholder") {
             record.box.append(placeholder(source.label));
@@ -131,62 +135,51 @@ export function createImagePreview(options: ImageOptions): ImagePreview {
         }
         const frame = document.createElement("div");
         frame.className = "cm-image-frame";
-        applyWidth(img, parseImageAlt(alt()).width);
-        img.addEventListener("load", () => record.view.requestMeasure());
+        img.addEventListener("load", () => {
+            updateResizeValue(img, parseImageAlt(alt()).width);
+            record.view.requestMeasure();
+        });
         img.addEventListener("error", () => {
             if (record.destroyed) return;
+            record.cancelDrag?.();
             record.shownKey = "broken";
             record.box.replaceChildren(placeholder(options.labels.broken));
             record.view.requestMeasure();
         });
         img.src = source.src;
-        frame.append(img, createHandle(record, img));
+        frame.append(img);
+        if (record.resizable && !record.view.state.readOnly)
+            frame.append(createHandle(record, img));
         record.box.append(frame);
+        applyWidth(img, parseImageAlt(alt()).width);
         record.view.requestMeasure();
+    }
+
+    function updateResizeValue(img: HTMLImageElement, width: number | null) {
+        const handle = img.nextElementSibling;
+        if (!handle) return;
+        const value = width ?? img.getBoundingClientRect().width;
+        handle.setAttribute("aria-valuenow", String(clampImageWidth(value)));
     }
 
     function applyWidth(img: HTMLImageElement, width: number | null) {
         img.style.width = width === null ? "" : `${width}px`;
+        updateResizeValue(img, width);
     }
 
     function commitWidth(record: Mounted, width: number | null) {
-        const { view, box } = record;
-        const pos = view.posAtDOM(box);
-        const line = view.state.doc.lineAt(pos);
-        let target: { from: number; to: number; alt: string } | null = null;
-        syntaxTree(view.state).iterate({
-            from: line.from,
-            to: line.to,
-            enter: (node) => {
-                if (node.name !== "Image") return;
-                const url = node.node.getChild("URL");
-                if (!url) return false;
-                const destination = view.state.doc.sliceString(
-                    url.from,
-                    url.to,
-                );
-                if (destination !== record.destination) return false;
-                const marks = node.node.getChildren("LinkMark");
-                const from = marks[0]?.to ?? node.from + 2;
-                const to = marks[1]?.from ?? from;
-                target = {
-                    from,
-                    to,
-                    alt: view.state.doc.sliceString(from, to),
-                };
-                return false;
-            },
-        });
-        const found = target as {
-            from: number;
-            to: number;
-            alt: string;
-        } | null;
-        if (!found) return;
-        const insert = formatImageAlt(parseImageAlt(found.alt).alt, width);
-        if (insert === found.alt) return;
+        const {
+            view,
+            box,
+            altRange: { from, to },
+        } = record;
+        if (record.destroyed || view.state.readOnly) return;
+        const alt = view.state.doc.sliceString(from, to);
+        if (alt !== box.dataset.alt) return;
+        const insert = formatImageAlt(parseImageAlt(alt).alt, width);
+        if (insert === alt) return;
         view.dispatch({
-            changes: { from: found.from, to: found.to, insert },
+            changes: { from, to, insert },
             userEvent: "input.resize",
             annotations: isolateHistory.of("full"),
         });
@@ -196,44 +189,76 @@ export function createImagePreview(options: ImageOptions): ImagePreview {
         const handle = document.createElement("button");
         handle.type = "button";
         handle.className = "cm-image-resize-handle";
+        handle.title = options.labels.resize;
+        handle.setAttribute("role", "slider");
         handle.setAttribute("aria-label", options.labels.resize);
+        handle.setAttribute("aria-orientation", "horizontal");
+        handle.setAttribute("aria-valuemin", String(MIN_IMAGE_WIDTH));
+        handle.setAttribute("aria-valuemax", String(MAX_IMAGE_WIDTH));
         const storedWidth = () =>
             parseImageAlt(record.box.dataset.alt ?? "").width;
         const currentWidth = () =>
             storedWidth() ?? Math.round(img.getBoundingClientRect().width);
-        let drag: { startX: number; startWidth: number; width: number } | null =
-            null;
+        let drag: {
+            pointerId: number;
+            startX: number;
+            startWidth: number;
+            width: number;
+        } | null = null;
+
+        function endDrag() {
+            const done = drag;
+            if (!done) return;
+            drag = null;
+            record.cancelDrag = undefined;
+            handle.ownerDocument.removeEventListener("keydown", escape, true);
+            if (handle.hasPointerCapture?.(done.pointerId)) {
+                handle.releasePointerCapture(done.pointerId);
+            }
+            applyWidth(img, storedWidth());
+            return done;
+        }
+
+        function escape(event: KeyboardEvent) {
+            if (event.key !== "Escape") return;
+            event.preventDefault();
+            event.stopPropagation();
+            endDrag();
+        }
+
         handle.addEventListener("pointerdown", (event) => {
-            if (event.button !== 0) return;
+            if (event.button !== 0 || drag) return;
             event.preventDefault();
             handle.setPointerCapture?.(event.pointerId);
             const startWidth = Math.round(img.getBoundingClientRect().width);
-            drag = { startX: event.clientX, startWidth, width: startWidth };
+            drag = {
+                pointerId: event.pointerId,
+                startX: event.clientX,
+                startWidth,
+                width: startWidth,
+            };
+            record.cancelDrag = endDrag;
+            handle.ownerDocument.addEventListener("keydown", escape, true);
         });
         handle.addEventListener("pointermove", (event) => {
-            if (!drag) return;
+            if (!drag || drag.pointerId !== event.pointerId) return;
             drag.width = clampImageWidth(
                 drag.startWidth + event.clientX - drag.startX,
             );
             applyWidth(img, drag.width);
         });
-        const finish = (event: PointerEvent) => {
-            if (!drag) return;
-            const done = drag;
-            drag = null;
-            handle.releasePointerCapture?.(event.pointerId);
-            if (event.type === "pointercancel") {
-                applyWidth(img, storedWidth());
-                return;
+        handle.addEventListener("pointerup", (event) => {
+            if (!drag || drag.pointerId !== event.pointerId) return;
+            const done = endDrag();
+            if (done && done.width !== done.startWidth) {
+                commitWidth(record, done.width);
             }
-            if (done.width === done.startWidth) {
-                applyWidth(img, storedWidth());
-                return;
-            }
-            commitWidth(record, done.width);
+        });
+        const cancel = (event: PointerEvent) => {
+            if (drag && drag.pointerId === event.pointerId) endDrag();
         };
-        handle.addEventListener("pointerup", finish);
-        handle.addEventListener("pointercancel", finish);
+        handle.addEventListener("pointercancel", cancel);
+        handle.addEventListener("lostpointercapture", cancel);
         handle.addEventListener("dblclick", (event) => {
             event.preventDefault();
             commitWidth(record, null);
@@ -259,13 +284,21 @@ export function createImagePreview(options: ImageOptions): ImagePreview {
         constructor(
             readonly destination: string,
             readonly alt: string,
+            readonly altRange: TextRange,
+            readonly resizable: boolean,
+            readonly active: boolean,
         ) {
             super();
         }
 
         eq(other: ImageWidget): boolean {
             return (
-                other.destination === this.destination && other.alt === this.alt
+                other.destination === this.destination &&
+                other.alt === this.alt &&
+                other.altRange.from === this.altRange.from &&
+                other.altRange.to === this.altRange.to &&
+                other.resizable === this.resizable &&
+                other.active === this.active
             );
         }
 
@@ -280,6 +313,7 @@ export function createImagePreview(options: ImageOptions): ImagePreview {
         toDOM(view: EditorView): HTMLElement {
             const box = document.createElement("div");
             box.className = "cm-image-widget";
+            box.classList.toggle("cm-image-active", this.active);
             const loading = document.createElement("div");
             loading.className = "cm-image-loading";
             loading.textContent = options.labels.loading;
@@ -291,6 +325,8 @@ export function createImagePreview(options: ImageOptions): ImagePreview {
                 box,
                 shownKey: null,
                 view,
+                altRange: this.altRange,
+                resizable: this.resizable,
                 show: () => undefined,
             };
             const alt = () => box.dataset.alt ?? "";
@@ -316,9 +352,15 @@ export function createImagePreview(options: ImageOptions): ImagePreview {
 
         updateDOM(dom: HTMLElement): boolean {
             const record = records.get(dom);
-            if (!record || record.destination !== this.destination)
+            if (
+                !record ||
+                record.destination !== this.destination ||
+                record.resizable !== this.resizable
+            )
                 return false;
+            dom.classList.toggle("cm-image-active", this.active);
             dom.dataset.alt = this.alt;
+            record.altRange = this.altRange;
             const img = dom.querySelector("img");
             if (img) {
                 const parsed = parseImageAlt(this.alt);
@@ -331,6 +373,7 @@ export function createImagePreview(options: ImageOptions): ImagePreview {
         destroy(dom: HTMLElement): void {
             const record = records.get(dom);
             if (!record || record.destroyed) return;
+            record.cancelDrag?.();
             record.destroyed = true;
             mounted.delete(record);
             records.delete(dom);
@@ -357,14 +400,28 @@ export function createImagePreview(options: ImageOptions): ImagePreview {
                 const altTo = marks[1]?.from ?? altFrom;
                 const alt = state.doc.sliceString(altFrom, altTo);
                 const line = state.doc.lineAt(node.to);
+                const startLine = state.doc.lineAt(node.from);
+                const onImage =
+                    active.has(line.number) || active.has(startLine.number);
+                let parent = node.node.parent;
+                while (parent && parent.name !== "Table")
+                    parent = parent.parent;
                 out.push(
                     Decoration.widget({
-                        widget: new ImageWidget(destination, alt),
+                        widget: new ImageWidget(
+                            destination,
+                            alt,
+                            {
+                                from: altFrom,
+                                to: altTo,
+                            },
+                            !parent,
+                            onImage,
+                        ),
                         block: true,
                         side: 1,
                     }).range(line.to),
                 );
-                const startLine = state.doc.lineAt(node.from);
                 if (
                     startLine.number === line.number &&
                     !active.has(line.number)
@@ -421,7 +478,7 @@ export function createImagePreview(options: ImageOptions): ImagePreview {
             opacity: "0",
             touchAction: "none",
         },
-        ".cm-image-frame:hover .cm-image-resize-handle, .cm-image-resize-handle:focus-visible":
+        ".cm-image-frame:hover .cm-image-resize-handle, .cm-image-active .cm-image-resize-handle, .cm-image-resize-handle:focus-visible":
             { opacity: "1" },
         ".cm-image-resize-handle:focus-visible": {
             outline: "2px solid var(--bs-text-link)",
@@ -440,7 +497,14 @@ export function createImagePreview(options: ImageOptions): ImagePreview {
     });
 
     return {
-        extension: [field, theme],
+        extension: [
+            field,
+            theme,
+            EditorView.updateListener.of((update) => {
+                if (!update.docChanged) return;
+                for (const record of mounted) record.cancelDrag?.();
+            }),
+        ],
         refresh() {
             for (const record of [...mounted]) {
                 const widget = record;

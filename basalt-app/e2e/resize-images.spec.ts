@@ -16,7 +16,7 @@ function option(page: Page, name: string) {
 
 const image = (page: Page) => page.locator("img.cm-image-preview");
 const handle = (page: Page) =>
-    page.getByRole("button", { name: "Resize image" });
+    page.getByRole("slider", { name: "Resize image" });
 
 async function open(page: Page, note: string, readOnly = false) {
     await openWorkspaceWith(
@@ -40,6 +40,35 @@ const renderedWidth = (page: Page) =>
     );
 
 test.describe("resize images by dragging", () => {
+    test("reveals the resize handle when the caret enters the image line", async ({
+        page,
+    }) => {
+        await open(page, "intro\n![pic](pic.png)\nend");
+        await expect(handle(page)).toHaveCSS("opacity", "0");
+        await page.locator(".cm-line").nth(1).click();
+        await expect(handle(page)).toHaveCSS("opacity", "1");
+        await page.keyboard.press("ArrowUp");
+        await expect(handle(page)).toHaveCSS("opacity", "0");
+    });
+
+    test("each occurrence of an image on one line has its own saved width", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", {
+            "a.md": "![first|120](pic.png) ![second|120](pic.png)",
+            "pic.png": PNG,
+        });
+        await option(page, "a").click();
+        const first = image(page).and(page.getByRole("img", { name: "first" }));
+        const widget = page.locator(".cm-image-widget").filter({ has: first });
+        await widget.getByRole("slider", { name: "Resize image" }).focus();
+        await page.keyboard.press("ArrowRight");
+
+        await expect
+            .poll(() => readSavedText(page, "a.md"))
+            .toBe("![first|130](pic.png) ![second|120](pic.png)");
+    });
+
     test("dragging the handle stores the width in the alt text and Undo restores it", async ({
         page,
     }) => {

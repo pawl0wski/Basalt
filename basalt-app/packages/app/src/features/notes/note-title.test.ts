@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { err } from "@basalt/core";
+import { describe, expect, it, vi } from "vitest";
 import { createHarness, root, seedFs, wsPath } from "../test-harness";
 
 const A = root("/a");
@@ -279,6 +280,38 @@ describe("links after a rename", () => {
 });
 
 describe("renaming from the tree", () => {
+    it.each([false, true])(
+        "reports failed link updates after a tree rename (open: %s)",
+        async (openNote) => {
+            const t = await setup({
+                "Old.md": "# Old",
+                "ref.md": "[o](Old.md)",
+            });
+            if (openNote) await open(t, "Old.md");
+            const rename = t.fs.rename.bind(t.fs);
+            t.fs.rename = async (from, to) => {
+                const result = await rename(from, to);
+                t.fs.failNextWrite();
+                return result;
+            };
+
+            const result = await t.h.notesActions.applyTitle(
+                wsPath("Old.md"),
+                "New",
+            );
+
+            expect(result.ok && result.value).toBe("New.md");
+            expect(await t.text("New.md")).toBe("# New");
+            expect(await t.text("ref.md")).toBe("[o](Old.md)");
+            expect(
+                t.h.feedbackStore.getState().messages[0]?.error.detail,
+            ).toEqual({
+                kind: "title-links-failed",
+                count: 1,
+            });
+        },
+    );
+
     it("sets the heading of an open note and renames the file", async () => {
         const t = await setup({ "Old.md": "# Old\nbody" });
         await open(t, "Old.md");
@@ -333,6 +366,35 @@ describe("renaming from the tree", () => {
         expect(result.ok).toBe(false);
         expect(t.sessionOf("Old.md")?.text).toBe("# Old");
         expect(await t.paths()).toEqual(["Old.md", "Taken.md"]);
+    });
+
+    it("keeps text typed while a tree rename is in flight even if the rename fails", async () => {
+        const t = await setup({ "Old.md": "# Old\nbody" });
+        const path = wsPath("Old.md");
+        await open(t, path);
+        let failRename = () => {};
+        const pending = new Promise<Awaited<ReturnType<typeof t.fs.rename>>>(
+            (resolve) => {
+                failRename = () =>
+                    resolve(
+                        err({
+                            code: "permission-denied",
+                            message: "Read-only",
+                        }),
+                    );
+            },
+        );
+        const renameFile = vi.spyOn(t.fs, "rename").mockReturnValue(pending);
+
+        const rename = t.h.notesActions.applyTitle(path, "New");
+        await vi.waitFor(() => expect(renameFile).toHaveBeenCalled());
+        t.h.notesActions.updateText(path, "# New\nbody edited");
+        failRename();
+
+        expect((await rename).ok).toBe(false);
+        expect(t.sessionOf("Old.md")?.text).toBe("# New\nbody edited");
+        await t.h.notesActions.saveNow(path);
+        expect(await t.text("Old.md")).toBe("# New\nbody edited");
     });
 
     it("leaves a closed note untouched when the title collides", async () => {

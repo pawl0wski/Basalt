@@ -74,7 +74,7 @@ export type NotesActions = {
         path: WorkspacePath,
         newName: string,
     ): Promise<Result<WorkspacePath>>;
-    commitTitle(path: WorkspacePath): Promise<void>;
+    commitTitle(path: WorkspacePath): Promise<WorkspacePath>;
     applyTitle(
         path: WorkspacePath,
         title: string,
@@ -544,7 +544,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         newPath: WorkspacePath,
     ): Promise<number> {
         const active = workspace;
-        if (!active) return 0;
+        if (!active || oldPath === newPath) return 0;
         const sessions = store
             .getState()
             .openNotes.filter((session) => !session.openFailed);
@@ -566,44 +566,54 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         return result.value.failed.length;
     }
 
-    const committing = new Set<number>();
+    const committing = new Map<number, Promise<WorkspacePath>>();
 
-    async function commitTitle(path: WorkspacePath): Promise<void> {
+    async function commitTitle(path: WorkspacePath): Promise<WorkspacePath> {
+        const active = workspace;
         const session = findSession(path);
-        if (!workspace || !session || session.openFailed) return;
-        if (!session.titlePending || committing.has(session.id)) return;
+        if (!active || !session || session.openFailed) return path;
+        const inFlight = committing.get(session.id);
+        if (inFlight) return inFlight;
+        if (!session.titlePending) return path;
         const heading = firstHeading(session.text);
         const current = baseNameOf(path);
-        if (!heading) {
+        if (!heading || heading.text === "" || heading.text === current) {
+            if (heading?.text === "") {
+                setText(path, setFirstHeading(session.text, current));
+            }
             patchSession(path, { titlePending: false, titleError: null });
-            return;
+            return path;
         }
-        if (heading.text === "") {
-            setText(path, setFirstHeading(session.text, current));
-            patchSession(path, { titlePending: false, titleError: null });
-            return;
-        }
-        if (heading.text === current) {
-            patchSession(path, { titlePending: false, titleError: null });
-            return;
-        }
-        committing.add(session.id);
-        try {
+
+        const completion = (async () => {
             const renamed = await renameNote(path, heading.text);
+            if (workspace !== active) return path;
             if (!renamed.ok) {
-                patchSession(path, {
-                    titleError: { error: renamed.error, linksFailed: 0 },
-                });
-                return;
+                if (findSession(path)?.id === session.id) {
+                    patchSession(path, {
+                        titleError: { error: renamed.error, linksFailed: 0 },
+                    });
+                }
+                return path;
             }
             const failed = await rewriteLinksAfterRename(path, renamed.value);
-            patchSession(renamed.value, {
-                titlePending: false,
-                titleError:
-                    failed > 0
-                        ? { error: LINKS_FAILED, linksFailed: failed }
-                        : null,
-            });
+            const currentSession = findSession(renamed.value);
+            if (workspace === active && currentSession?.id === session.id) {
+                patchSession(renamed.value, {
+                    titlePending:
+                        firstHeading(currentSession.text)?.text !==
+                        heading.text,
+                    titleError:
+                        failed > 0
+                            ? { error: LINKS_FAILED, linksFailed: failed }
+                            : null,
+                });
+            }
+            return renamed.value;
+        })();
+        committing.set(session.id, completion);
+        try {
+            return await completion;
         } finally {
             committing.delete(session.id);
         }
@@ -618,15 +628,19 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         const session = findSession(path);
         if (session && !session.openFailed) {
             const original = session.text;
-            setText(path, setFirstHeading(original, title));
+            const titled = setFirstHeading(original, title);
+            setText(path, titled);
             const renamed = await renameNote(path, title);
             if (!renamed.ok) {
-                setText(path, original);
-                patchSession(path, { titlePending: session.titlePending });
+                const current = findSession(path);
+                if (current?.id === session.id && current.text === titled) {
+                    setText(path, original);
+                    patchSession(path, { titlePending: session.titlePending });
+                }
                 return renamed;
             }
             patchSession(renamed.value, { titlePending: false });
-            await rewriteLinksAfterRename(path, renamed.value);
+            await reportTreeRenameLinkFailures(active, path, renamed.value);
             return renamed;
         }
         const flushed = await flushBeforeChange([path]);
@@ -642,8 +656,23 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         if (findSession(path)) applyPathChange(path, renamed.value.path);
         await persistTabs();
         await refreshNotes();
-        await rewriteLinksAfterRename(path, renamed.value.path);
+        await reportTreeRenameLinkFailures(active, path, renamed.value.path);
         return ok(renamed.value.path);
+    }
+
+    async function reportTreeRenameLinkFailures(
+        active: ActiveWorkspace,
+        oldPath: WorkspacePath,
+        newPath: WorkspacePath,
+    ): Promise<void> {
+        if (workspace !== active) return;
+        const count = await rewriteLinksAfterRename(oldPath, newPath);
+        if (workspace === active && count > 0) {
+            options.feedback.report({
+                ...LINKS_FAILED,
+                detail: { kind: "title-links-failed", count },
+            });
+        }
     }
 
     async function commitPendingTitles(): Promise<void> {

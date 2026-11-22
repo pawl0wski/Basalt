@@ -27,6 +27,9 @@ export function describeOperationError(t: TFunction, error: AppError): string {
             reason: t(`errors.${error.code}`),
         });
     }
+    if (detail?.kind === "title-links-failed") {
+        return t("notes.titleError.links", { count: detail.count });
+    }
     if (detail?.kind === "delete-failed") {
         return t("tree.delete.partial", {
             failed: detail.failed,
