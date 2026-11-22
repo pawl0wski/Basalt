@@ -183,12 +183,12 @@ function MainScreen({
             }
             statusBar={
                 <StatusBar
-                    wordCount={hasNote ? 1204 : undefined}
-                    characterCount={hasNote ? 7311 : undefined}
-                    saveState={
-                        hasNote ? (unsaved ? "unsaved" : "saved") : undefined
+                    trailing={
+                        <>
+                            <StatusIndicator status={sync} />
+                            {hasNote ? <span>1,204 words</span> : null}
+                        </>
                     }
-                    trailing={<StatusIndicator status={sync} />}
                 />
             }
         >

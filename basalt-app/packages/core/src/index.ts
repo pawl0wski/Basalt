@@ -117,3 +117,5 @@ export type {
     NoteOperations,
     RenameNoteInput,
 } from "./note-operations";
+
+export { countWords } from "./text-stats";

@@ -18,8 +18,12 @@ function editor(page: Page, name: string) {
     return page.getByRole("textbox", { name });
 }
 
-function saveState(page: Page) {
-    return page.locator(".bs-save-status");
+function unsavedTab(page: Page) {
+    return page.getByRole("tab", { name: "a not saved", exact: true });
+}
+
+function savedTab(page: Page) {
+    return page.getByRole("tab", { name: "a", exact: true });
 }
 
 test.describe("choosing a workspace lists Markdown files", () => {
@@ -61,7 +65,9 @@ test.describe("create, edit and save", () => {
             .click();
         await expect(editor(page, "Untitled")).toBeFocused();
         await page.keyboard.type("# Heading\n\nbody text");
-        await expect(saveState(page)).toHaveText("Saved", { timeout: 5000 });
+        await expect(
+            page.getByRole("tab", { name: "Untitled", exact: true }),
+        ).toBeVisible({ timeout: 5000 });
 
         expect(await readSavedBytes(page, "Untitled.md")).toEqual(
             Array.from(encoder.encode("# Heading\n\nbody text")),
@@ -93,8 +99,8 @@ test.describe("create, edit and save", () => {
         await editor(page, "a").click();
         await page.keyboard.press("Control+End");
         await page.keyboard.type("three");
-        await expect(saveState(page)).toHaveText("Not saved");
-        await expect(saveState(page)).toHaveText("Saved", { timeout: 5000 });
+        await expect(unsavedTab(page)).toBeVisible();
+        await expect(savedTab(page)).toBeVisible({ timeout: 5000 });
 
         expect(await readSavedBytes(page, "a.md")).toEqual([
             ...bom,
@@ -151,7 +157,7 @@ test.describe("workspace that is not writable", () => {
             { timeout: 5000 },
         );
         await expect(editor(page, "a")).toContainText("base unsaved");
-        await expect(saveState(page)).toHaveText("Not saved");
+        await expect(unsavedTab(page)).toBeVisible();
         await expect(
             page.getByRole("tab", { name: "a not saved" }),
         ).toBeVisible();
