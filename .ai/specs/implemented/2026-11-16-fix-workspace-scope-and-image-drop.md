@@ -13,7 +13,6 @@ tags: [bug, images, tauri, fs-scope, editor, windows]
 On the built Tauri app (reproduced on Windows), adding an image by drop or paste (E01-S03, #10) always fails with the notice "The workspace folder is read-only. Nothing was changed." The folder is writable. The real cause is that the workspace picker grants a **non-recursive** fs scope. Because of this, `tauri-plugin-fs` rejects every path below a sub-folder (`attachments/…`) with `forbidden path`, and the app reports that as read-only. The same narrow scope also breaks displaying images already stored in `attachments/`. Separately, a drop only works over the lines of text, because the editor is only as tall as its content.
 
 This spec describes the future behavior:
-
 - the picker grants a recursive scope;
 - workspaces picked before the fix are recovered with a single "Grant access" action that keeps the open notes;
 - scope errors are reported truthfully;
@@ -23,13 +22,13 @@ This spec describes the future behavior:
 
 Evidence (owner's manual test, Windows, `npm run tauri dev`, 2026-11-16):
 
-| Observation                                                                                                                                                                   | Meaning                                                                                    |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Notes in the workspace root are created and saved                                                                                                                             | Root and its direct children are in scope                                                  |
-| `attachments/` is created when an image is dropped                                                                                                                            | `mkdir` of a direct child is in scope                                                      |
-| `plugin:fs\|read_dir` and `plugin:fs\|write_file` on `<root>\attachments\…` → `forbidden path: …, maybe it is not allowed on the scope for allow-read-dir / allow-write-file` | Grandchildren of the root are **not** in scope                                             |
-| Notice "The workspace folder is read-only"                                                                                                                                    | `mapPluginError` maps `forbidden path` to `permission-denied`, whose text says "read-only" |
-| Dragging a file over the empty part of a short note shows the 🚫 cursor                                                                                                       | The window drop guard (`dropEffect = "none"`) handles the drop, not the editor             |
+| Observation | Meaning |
+| --- | --- |
+| Notes in the workspace root are created and saved | Root and its direct children are in scope |
+| `attachments/` is created when an image is dropped | `mkdir` of a direct child is in scope |
+| `plugin:fs\|read_dir` and `plugin:fs\|write_file` on `<root>\attachments\…` → `forbidden path: …, maybe it is not allowed on the scope for allow-read-dir / allow-write-file` | Grandchildren of the root are **not** in scope |
+| Notice "The workspace folder is read-only" | `mapPluginError` maps `forbidden path` to `permission-denied`, whose text says "read-only" |
+| Dragging a file over the empty part of a short note shows the 🚫 cursor | The window drop guard (`dropEffect = "none"`) handles the drop, not the editor |
 
 Root causes:
 
@@ -38,7 +37,6 @@ Root causes:
 3. **Small drop target.** Nothing gives `.cm-editor` the pane height (`packages/editor/src/theme.ts` and the note editor container), so an empty or short note is a one-line drop target.
 
 Impact:
-
 - Every operation below a sub-folder fails: adding an image (`read_dir`, `write_file` in `attachments/`), and displaying an existing image (`readFile` in `tauri-workspace-file-system.ts`, shown as the "unreadable" placeholder).
 - Any future note in a sub-folder (E01-S04) would fail the same way.
 - Tests did not catch it, because the memory platform has no scope. The lesson `2026-11-16-paste-drop-e2e-and-alert` had already flagged plugin-fs on real Tauri as unverified.
@@ -59,7 +57,6 @@ Impact:
    - drop a trailing separator, except on a drive or filesystem root.
 
    The comparison is case-sensitive on purpose. On Windows, a case-only difference then falls back to a full reopen, which is correct but heavier. A case-insensitive comparison on Linux could treat two different folders as one and skip a reopen that is needed. No OS detection and no new dependency are needed.
-
 6. **Truthful messages.** `errors.permission-denied` keeps "The workspace folder is read-only. Nothing was changed." The new `errors.scope-denied` says "Basalt does not have access to this part of the workspace folder. Nothing was changed." Both the add-image notice (`add-notice.ts`, through `errors.${reason}`) and the generic save `ErrorBanner` (`NoteEditorAreaContainer.tsx`, through `errors.${code}`) pick it up automatically. The action lives only on the workspace banner, so `AddNotice` and the save banner need no button.
 7. **Startup restore.** If `restoreWorkspace` gets `scope-denied` from `access.open`, the welcome screen shows a new `WorkspaceNotice` value `workspace-access-needed`, with the text "Open the workspace folder again to give Basalt access to it." The existing "Open folder" button then grants the recursive scope. This does not happen with today's flat workspaces (the root is in scope), but it will once notes live in sub-folders (E01-S04).
 8. **Whole-pane drop target.**
@@ -100,23 +97,23 @@ Impact:
 
 ## 📝 Edge Cases & Failure Scenarios
 
-| Case                                                                  | Behavior                                                                                                                                                                                                  |
-| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Workspace picked before the fix, first image add                      | Add-image notice with the `scope-denied` reason. The workspace banner appears. After "Grant access" with the same folder, the banner goes away, and the next drop works without restarting or losing tabs |
-| Workspace picked before the fix, note with an existing image          | "Unreadable" placeholder and the workspace banner. After the grant, the image is shown                                                                                                                    |
-| Saving a note fails with `scope-denied` (sub-folder notes, E01-S04)   | Save `ErrorBanner` with the `scope-denied` text, plus the workspace banner. Text is kept, and after the grant the existing retry saves it                                                                 |
-| Owner picks a different folder in the re-grant dialog                 | Existing switch flow (flush, discard dialog if blocked)                                                                                                                                                   |
-| Owner cancels the re-grant dialog                                     | Banner stays, nothing changes                                                                                                                                                                             |
-| Same folder, path differs only by trailing separator or `\\?\` prefix | Treated as the same folder                                                                                                                                                                                |
-| Same folder, path differs only by letter case (Windows)               | Full reopen through the switch flow. The scope is granted either way                                                                                                                                      |
-| Folder really read-only (OS ACL)                                      | Unchanged "read-only" text (`permission-denied`), no workspace banner                                                                                                                                     |
-| Path contains words such as "not found" or "os error 2"               | Still `scope-denied`, because the scope pattern is tested first                                                                                                                                           |
-| Unknown future plugin wording                                         | Falls back to the existing mapping. The regex is covered by tests with the exact Windows and Linux messages from `tauri-plugin-fs` 2.x                                                                    |
-| Startup with a narrow scope that blocks the root listing              | Welcome screen with the `workspace-access-needed` notice                                                                                                                                                  |
-| Folder disappears while access is needed                              | Only the unavailable banner is shown                                                                                                                                                                      |
-| Empty note, drop anywhere in the pane                                 | Link inserted at the start of the note, image preview shown                                                                                                                                               |
-| Long note                                                             | Editor scrolls inside `.cm-scroller`, no double scrollbar, banners stay visible                                                                                                                           |
-| Drop on sidebar or tabs                                               | Still ignored, no navigation (window guard)                                                                                                                                                               |
+| Case | Behavior |
+| --- | --- |
+| Workspace picked before the fix, first image add | Add-image notice with the `scope-denied` reason. The workspace banner appears. After "Grant access" with the same folder, the banner goes away, and the next drop works without restarting or losing tabs |
+| Workspace picked before the fix, note with an existing image | "Unreadable" placeholder and the workspace banner. After the grant, the image is shown |
+| Saving a note fails with `scope-denied` (sub-folder notes, E01-S04) | Save `ErrorBanner` with the `scope-denied` text, plus the workspace banner. Text is kept, and after the grant the existing retry saves it |
+| Owner picks a different folder in the re-grant dialog | Existing switch flow (flush, discard dialog if blocked) |
+| Owner cancels the re-grant dialog | Banner stays, nothing changes |
+| Same folder, path differs only by trailing separator or `\\?\` prefix | Treated as the same folder |
+| Same folder, path differs only by letter case (Windows) | Full reopen through the switch flow. The scope is granted either way |
+| Folder really read-only (OS ACL) | Unchanged "read-only" text (`permission-denied`), no workspace banner |
+| Path contains words such as "not found" or "os error 2" | Still `scope-denied`, because the scope pattern is tested first |
+| Unknown future plugin wording | Falls back to the existing mapping. The regex is covered by tests with the exact Windows and Linux messages from `tauri-plugin-fs` 2.x |
+| Startup with a narrow scope that blocks the root listing | Welcome screen with the `workspace-access-needed` notice |
+| Folder disappears while access is needed | Only the unavailable banner is shown |
+| Empty note, drop anywhere in the pane | Link inserted at the start of the note, image preview shown |
+| Long note | Editor scrolls inside `.cm-scroller`, no double scrollbar, banners stay visible |
+| Drop on sidebar or tabs | Still ignored, no navigation (window guard) |
 
 ## 📝 Risks & Impact Review
 
@@ -130,7 +127,7 @@ Impact:
 
 1. Picker passes `recursive: true` and the optional `defaultPath`. Unit tests: `open` is called with `recursive: true`, and with `defaultPath` when it is given.
 2. `scope-denied` code and mapping, with the pattern tested first and removed from `PERMISSION_DENIED`. Unit tests:
-   - the exact message `forbidden path: C:\…\attachments, maybe it is not allowed on the scope for \`allow-read-dir\` …`→`scope-denied`;
+   - the exact message `forbidden path: C:\…\attachments, maybe it is not allowed on the scope for \`allow-read-dir\` …` → `scope-denied`;
    - the Linux variant with a `/home/…` path → `scope-denied`;
    - a forbidden path that contains `not found` → `scope-denied`;
    - `Access is denied. (os error 5)` → `permission-denied`.
@@ -155,5 +152,4 @@ Impact:
    - in a long note: the pane does not scroll, `.cm-scroller` does.
 
    Existing `add-images.spec.ts` tests still pass. Run `npm run check:tokens`.
-
 10. Update the lesson `2026-11-16-paste-drop-e2e-and-alert` (plugin-fs on real Tauri now verified) and write the run log.

@@ -94,8 +94,8 @@ No new entities and no persisted-format change. The note on disk is byte-identic
 ```ts
 // @basalt/editor — livePreview.ts (no signature or export change)
 export function buildLivePreviewDecorations(
-  state: EditorState,
-  ranges: readonly TextRange[],
+    state: EditorState,
+    ranges: readonly TextRange[],
 ): DecorationSet;
 export function activeLineNumbers(state: EditorState): Set<number>;
 export const livePreview: Extension;
