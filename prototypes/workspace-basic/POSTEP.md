@@ -1,6 +1,6 @@
 # Progress: workspace-basic clickable prototype
 
-Resume here in a new session. Source of truth: `../e01-screen-map.md` (approved by the owner on 2026-10-31), the grey prototype in `../../.ai/prototypes/discovery/workspace-basic/revision-001/`, the design system in `../../basalt-app/packages/ui`, the review engine copied from `../../local-course-file` into `review/`.
+Resume here in a new session. Source of truth: `../e01-screen-map.md` (approved by the owner on 2026-10-31), the grey prototype in `../../.ai/prototypes/discovery/workspace-basic/revision-001/`, the design system in `../../basalt-app/packages/ui`, the review engine copied from the local review engine/` into `review/`.
 
 ## Decisions taken with the owner
 
@@ -52,4 +52,4 @@ DSG-01 editor stand-in, DSG-02 tree, DSG-04 rename and new folder dialogs (the c
 
 - Screen notes under each screen ("Screen notes" button in the review bar), `README.md` with "Simulation limits", navigation tests for all 14 screens (110 unit tests in total), browser checks (every button on every screen, keyboard, comment mode, 320, 768 and 1440 px), run log and lesson in `.ai/`.
 - Bugs found and fixed in this stage: deep link `#sNN` ended on s01, the engine's heading focus closed open menus, the tree key handler stole menu keystrokes (React portal bubbling), editor activation on `mousedown` broke comment mode, the image disappeared from the active line, a focus loss after closing a dialog, the review bar overflowed at 320 px.
-- Pushed to branch `prototype-workspace-basic-test`: only `prototypes/workspace-basic/` and the two new `.ai` files of this run. `.ai/lessons.md` (index line added), `prototypes/e01-screen-map.md` and `local-course-file` are left uncommitted for the owner.
+- Pushed to branch `prototype-workspace-basic-test`: only `prototypes/workspace-basic/` and the two new `.ai` files of this run. `.ai/lessons.md` (index line added), `prototypes/e01-screen-map.md` and a local course file (not in this repo) are left uncommitted for the owner.

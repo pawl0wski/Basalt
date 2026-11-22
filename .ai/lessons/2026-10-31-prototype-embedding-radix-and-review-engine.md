@@ -10,7 +10,7 @@ tags: [prototype, review-engine, radix, focus, react, testing]
 
 ## What happened
 
-Building `prototypes/workspace-basic/` (Vite + React on `@basalt/ui`, with the review engine from `local-course-file`) surfaced six bugs that unit tests alone did not predict. Each was found by a browser walk or by a test written for a screen.
+Building `prototypes/workspace-basic/` (Vite + React on `@basalt/ui`, with the review engine from `a local review engine`) surfaced six bugs that unit tests alone did not predict. Each was found by a browser walk or by a test written for a screen.
 
 ## Lessons
 

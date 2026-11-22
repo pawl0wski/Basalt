@@ -10,7 +10,7 @@ tags: [design-system, storybook, components]
 
 ## Goal
 
-Continue `local-course-file`: build Batch 1 of the base components (Button, IconButton, TextLink, Input, Label+Field, Checkbox) on tokens, with stories and 13-section docs.
+Continue a local course file (not in this repo): build Batch 1 of the base components (Button, IconButton, TextLink, Input, Label+Field, Checkbox) on tokens, with stories and 13-section docs.
 
 ## Done
 

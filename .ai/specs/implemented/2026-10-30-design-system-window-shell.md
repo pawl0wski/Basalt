@@ -11,13 +11,13 @@ tags:
 
 ## Goal
 
-The main screen test (`local-course-file`) showed that `@basalt/ui` cannot build the window of an open workspace: four regions have no component and two surfaces contradict the token table. This spec adds the regions and settles the contradictions. Stage 1 (this spec's scope, owner decision "20b") covers components and contradictions. Stage 2 (rules and documentation polish) is separate and waits for the owner's review.
+The main screen test (a local course file (not in this repo)) showed that `@basalt/ui` cannot build the window of an open workspace: four regions have no component and two surfaces contradict the token table. This spec adds the regions and settles the contradictions. Stage 1 (this spec's scope, owner decision "20b") covers components and contradictions. Stage 2 (rules and documentation polish) is separate and waits for the owner's review.
 
 ## Owner decisions (2026-10-30)
 
 | #   | Decision                                                                                                                                                       |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Left and right panel use `surface-card` (same shade as the editor), not `surface-frame`. `local-course-file` and `docs/design-system.md` are corrected.        |
+| 1   | Left and right panel use `surface-card` (same shade as the editor), not `surface-frame`. a local course file (not in this repo) and `docs/design-system.md` are corrected.        |
 | 2   | The status bar uses `surface-frame` (as `StatusBar` does today). `tokeny.md` and the `LayoutWidths` diagram are corrected.                                     |
 | 3   | A note tab is 28 px high (`h-icon-button`) inside the 36 px title bar.                                                                                         |
 | 4   | The active tab indicator is at the bottom of the tab.                                                                                                          |

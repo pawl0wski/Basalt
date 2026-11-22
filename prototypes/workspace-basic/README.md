@@ -93,7 +93,7 @@ The happy path is s01, s02, s03, s04, s07, s08, then s09, s10, s12, s11, s14, s1
 
 - `src/model/`: the state (reducer), demo data, name rules, Markdown helpers, presets for each screen, screen notes, timers.
 - `src/ui/`: the screens, built from `@basalt/ui`, the review bar and the scenario bar.
-- `review/`: the review engine copied from `local-course-file` (`prototype.js` is not edited), `comments.js` for committed comments, the colour bridge and the review-bar styles.
+- `review/`: the review engine copied from `a local review engine` (`prototype.js` is not edited), `comments.js` for committed comments, the colour bridge and the review-bar styles.
 - `POSTEP.md`: progress log, to resume in a new session.
 
 ## Changes after the owner review (2026-11-01)

@@ -23,7 +23,7 @@ Build a clickable prototype of the approved E01 screen map (`prototypes/e01-scre
 
 - No demo accounts or access gates: the map has one role and no login (map section 2).
 - Dark theme only; the theme toggle is inert and says so. No colours, spacing or components were added; missing parts are built from tokens and marked with `data-gap`.
-- `local-course-file` was copied, not edited. Its three `color-mix(` calls stay (review chrome, not product).
+- `a local review engine` was copied, not edited. Its three `color-mix(` calls stay (review chrome, not product).
 - The screen map was marked approved and decisions D-6 to D-8 were added, at the owner's request.
 - Texts and rules the specifications do not give were invented and are listed in the README as not product decisions.
 
@@ -35,5 +35,5 @@ Build a clickable prototype of the approved E01 screen map (`prototypes/e01-scre
 ## Open issues
 
 - Questions for the specifications and design-system gaps are in the final report and the README.
-- The map `prototypes/e01-screen-map.md` and `local-course-file` are untracked in git; only `prototypes/workspace-basic/` and these `.ai` files are committed by this run.
+- The map `prototypes/e01-screen-map.md` and a local course file (not in this repo) are untracked in git; only `prototypes/workspace-basic/` and these `.ai` files are committed by this run.
 - Playwright integration tests in `basalt-app/e2e/` were not added: the prototype is not part of the application. The browser walks were run as scripts outside the repository.

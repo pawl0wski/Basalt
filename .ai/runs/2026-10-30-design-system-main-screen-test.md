@@ -17,8 +17,8 @@ where the system was not enough. The screen is not to be shipped.
 
 - Read `basalt-app/packages/ui/docs/design-system.md`, the Storybook docs
   (foundations, primitives, product, patterns, screens) and the reference/token
-  sources in `local-course-file`.
-- Wrote the decision list before coding: `local-course-file`
+  sources in a local course file (not in this repo).
+- Wrote the decision list before coding: a local course file (not in this repo)
   (75 decisions: 45 rule, 12 example, 18 guessed).
 - Built the screen as one story file:
   `basalt-app/packages/ui/docs/screens/MainScreen.stories.tsx`
@@ -26,10 +26,10 @@ where the system was not enough. The screen is not to be shipped.
   sync error, conflict banner, list loading, list error, outline closed.
 - Nothing exported from `src/index.ts`, no new components, no tests, no config
   changes. Only token classes and existing components were used.
-- Wrote the gap report: `local-course-file` (short, Polish).
+- Wrote the gap report: a local course file (not in this repo) (short, Polish).
 - Wrote the handoff for the next agent, in English, with locations, work plan and
-  open questions: `local-course-file`.
-- Captured screenshots at 1440, 768 and 320 px: `local-course-file`.
+  open questions: a local course file (not in this repo).
+- Captured screenshots at 1440, 768 and 320 px: a local course file (not in this repo).
 
 ## Decisions made
 
@@ -54,7 +54,7 @@ where the system was not enough. The screen is not to be shipped.
 
 - 6 missing components (window shell, title bar with note tabs, activity bar,
   side panel, badge, tab-like tabs), 6 missing states, 14 missing rules and 8
-  contradictions. Details in `local-course-file`.
+  contradictions. Details in a local course file (not in this repo).
 - At 768 px both side panels leave about 120 px for the note column; no rule says
   which panel is closed at that width.
 - The design system was not changed, as the task asked.

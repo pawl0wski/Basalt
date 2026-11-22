@@ -29,5 +29,5 @@
 
 ## Worktree
 
-- Path: (local path omitted)
+- Path: (session worktree; local path omitted)
 - Created this run: no

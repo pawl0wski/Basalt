@@ -10,7 +10,7 @@ tags: [design-system, storybook, app-shell, title-bar, activity-bar, side-panel]
 
 ## Goal
 
-Act on `local-course-file`: add the missing window regions to `@basalt/ui` and settle the two surface contradictions. Spec: `.ai/specs/2026-10-30-design-system-window-shell.md`. Stage 1 only (owner decision "20b"): components and contradictions; the rest waits for the owner's review.
+Act on a local course file (not in this repo): add the missing window regions to `@basalt/ui` and settle the two surface contradictions. Spec: `.ai/specs/2026-10-30-design-system-window-shell.md`. Stage 1 only (owner decision "20b"): components and contradictions; the rest waits for the owner's review.
 
 ## What was done
 
