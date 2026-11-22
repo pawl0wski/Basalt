@@ -1,6 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 import {
+    AUTOSAVE_DELAY_MS,
+    advanceClock,
     failNextWrite,
+    freezeClock,
+    installClock,
     openWorkspaceWith,
     readSavedBytes,
     readSavedText,
@@ -27,242 +31,334 @@ function savedTab(page: Page) {
     return page.getByRole("tab", { name: "a", exact: true });
 }
 
-async function openAndType(page: Page, files: Record<string, string>) {
-    await openWorkspaceWith(page, "/work/W", files);
+async function openNoteWithFrozenClock(
+    page: Page,
+    files: Record<string, string>,
+    flags: { readOnly?: boolean } = {},
+) {
+    await installClock(page);
+    await openWorkspaceWith(page, "/work/W", files, flags);
     await option(page, "a").click();
+    await expect(savedTab(page)).toBeVisible();
+    await freezeClock(page);
+}
+
+async function typeAtEnd(page: Page, text: string) {
     await editor(page, "a").click();
     await page.keyboard.press("Control+End");
-    await page.keyboard.type("typed");
+    await page.keyboard.type(text);
+}
+
+async function openAndType(page: Page, files: Record<string, string>) {
+    await openNoteWithFrozenClock(page, files);
+    await typeAtEnd(page, "typed");
+}
+
+async function waitForAutosave(page: Page) {
+    await advanceClock(page, AUTOSAVE_DELAY_MS);
 }
 
 test.describe("save state", () => {
-    test("the tab goes from saved to not saved while typing and back, with the exact bytes on disk", async ({
-        page,
-    }) => {
-        await openWorkspaceWith(page, "/work/W", { "a.md": "" });
-        await option(page, "a").click();
-        await expect(savedTab(page)).toBeVisible();
+    test(
+        "marks the tab not saved while typing and saved again with the exact bytes on disk once the autosave delay passes",
+        { tag: "@SAVING-001" },
+        async ({ page }) => {
+            await openNoteWithFrozenClock(page, { "a.md": "" });
+            await typeAtEnd(page, "hello world");
+            await expect(unsavedTab(page)).toBeVisible();
+            expect(await readSavedBytes(page, "a.md")).toEqual([]);
 
-        await editor(page, "a").click();
-        await page.keyboard.type("hello world");
+            await waitForAutosave(page);
 
-        await expect(unsavedTab(page)).toBeVisible();
-        await expect(savedTab(page)).toBeVisible({ timeout: 5000 });
-        expect(await readSavedBytes(page, "a.md")).toEqual(
-            Array.from(new TextEncoder().encode("hello world")),
-        );
-    });
+            await expect(savedTab(page)).toBeVisible();
+            expect(await readSavedBytes(page, "a.md")).toEqual(
+                Array.from(new TextEncoder().encode("hello world")),
+            );
+        },
+    );
 
-    test("the status bar never shows save wording or a sync word while saving", async ({
-        page,
-    }) => {
-        await openWorkspaceWith(page, "/work/W", { "a.md": "x" });
-        await option(page, "a").click();
-        await editor(page, "a").click();
-        await page.keyboard.type(" y");
+    test(
+        "writes the typed text at once on Ctrl+S before the autosave delay has passed",
+        { tag: "@SAVING-002" },
+        async ({ page }) => {
+            await openAndType(page, { "a.md": "" });
+            await expect(unsavedTab(page)).toBeVisible();
+            expect(await readSavedText(page, "a.md")).toBe("");
 
-        const bar = page.locator(".bs-status-bar");
-        for (let i = 0; i < 40; i += 1) {
+            await page.keyboard.press("Control+s");
+
+            await expect(savedTab(page)).toBeVisible();
+            expect(await readSavedText(page, "a.md")).toBe("typed");
+        },
+    );
+
+    test(
+        "shows only the word count and no save or sync wording in the status bar before and after autosave runs",
+        { tag: "@STATUSBAR-001" },
+        async ({ page }) => {
+            await openNoteWithFrozenClock(page, { "a.md": "x" });
+            const bar = page.locator(".bs-status-bar");
+
+            await typeAtEnd(page, " y");
+            await expect(unsavedTab(page)).toBeVisible();
+            await expect(bar).toHaveText("2 words");
             await expect(bar).not.toContainText(/saved|saving|sync/i);
-            await page.waitForTimeout(100);
-        }
-        await expect(bar).toHaveText("2 words");
-    });
 
-    test("Ctrl+S saves immediately without the browser dialog", async ({
-        page,
-    }) => {
-        await openAndType(page, { "a.md": "" });
-        await expect(unsavedTab(page)).toBeVisible();
+            await waitForAutosave(page);
 
-        await page.keyboard.press("Control+s");
-
-        await expect(savedTab(page)).toBeVisible({ timeout: 800 });
-        expect(await readSavedText(page, "a.md")).toBe("typed");
-    });
+            await expect(savedTab(page)).toBeVisible();
+            await expect(bar).toHaveText("2 words");
+            await expect(bar).not.toContainText(/saved|saving|sync/i);
+        },
+    );
 });
 
 test.describe("save errors", () => {
-    test("a read-only workspace shows the alert, keeps the text, and Retry works after the cause is fixed", async ({
-        page,
-    }) => {
-        await openWorkspaceWith(
-            page,
-            "/work/W",
-            { "a.md": "base" },
-            { readOnly: true },
-        );
-        await option(page, "a").click();
-        await editor(page, "a").click();
-        await page.keyboard.press("Control+End");
-        await page.keyboard.type("!");
+    test(
+        "shows the could-not-save alert and keeps the typed text and the unsaved tab when the workspace is read-only",
+        { tag: "@SAVING-003" },
+        async ({ page }) => {
+            await openNoteWithFrozenClock(
+                page,
+                { "a.md": "base" },
+                { readOnly: true },
+            );
+            await typeAtEnd(page, "!");
 
-        const alert = page.getByRole("alert");
-        await expect(alert).toContainText("Could not save the note", {
-            timeout: 5000,
-        });
-        await expect(alert).toContainText(READ_ONLY);
-        await expect(unsavedTab(page)).toBeVisible();
-        await expect(editor(page, "a")).toContainText("base!");
+            await waitForAutosave(page);
 
-        await alert.getByRole("button", { name: "Retry" }).click();
-        await expect(alert).toBeVisible();
-        await expect(editor(page, "a")).toContainText("base!");
+            const alert = page.getByRole("alert");
+            await expect(alert).toContainText("Could not save the note");
+            await expect(alert).toContainText(READ_ONLY);
+            await expect(unsavedTab(page)).toBeVisible();
+            await expect(editor(page, "a")).toContainText("base!");
+            expect(await readSavedText(page, "a.md")).toBe("base");
+        },
+    );
 
-        await setReadOnly(page, false);
-        await alert.getByRole("button", { name: "Retry" }).click();
+    test(
+        "keeps the alert and the typed text when Retry is used while the workspace is still read-only",
+        { tag: "@SAVING-004" },
+        async ({ page }) => {
+            await openNoteWithFrozenClock(
+                page,
+                { "a.md": "base" },
+                { readOnly: true },
+            );
+            await typeAtEnd(page, "!");
+            await waitForAutosave(page);
+            const alert = page.getByRole("alert");
+            await expect(alert).toContainText(READ_ONLY);
 
-        await expect(page.getByRole("alert")).toHaveCount(0);
-        await expect(savedTab(page)).toBeVisible();
-        expect(await readSavedText(page, "a.md")).toBe("base!");
-    });
+            await alert.getByRole("button", { name: "Retry" }).click();
 
-    test("the banner is pinned to the top of the editor while the note scrolls", async ({
-        page,
-    }) => {
-        const long = Array.from({ length: 200 }, (_, i) => `line ${i}`).join(
-            "\n",
-        );
-        await openWorkspaceWith(
-            page,
-            "/work/W",
-            { "a.md": long },
-            { readOnly: true },
-        );
-        await option(page, "a").click();
-        await editor(page, "a").click();
-        await page.keyboard.type("!");
-        const alert = page.getByRole("alert");
-        await expect(alert).toBeVisible({ timeout: 5000 });
-        const main = page.locator("main");
+            await expect(alert).toContainText(READ_ONLY);
+            await expect(unsavedTab(page)).toBeVisible();
+            await expect(editor(page, "a")).toContainText("base!");
+            expect(await readSavedText(page, "a.md")).toBe("base");
+        },
+    );
 
-        const scroller = page.locator(".cm-scroller");
-        const yBefore = (await alert.boundingBox())?.y ?? -1;
-        await scroller.evaluate((element) => {
-            element.scrollTop = 1500;
-        });
+    test(
+        "saves the typed text and clears the alert when Retry is used after the workspace is writable again",
+        { tag: "@SAVING-005" },
+        async ({ page }) => {
+            await openNoteWithFrozenClock(
+                page,
+                { "a.md": "base" },
+                { readOnly: true },
+            );
+            await typeAtEnd(page, "!");
+            await waitForAutosave(page);
+            const alert = page.getByRole("alert");
+            await expect(alert).toContainText(READ_ONLY);
+            await setReadOnly(page, false);
 
-        const alertBox = await alert.boundingBox();
-        const mainBox = await main.boundingBox();
-        const editorBox = await page.locator(".cm-editor").boundingBox();
-        expect(alertBox && mainBox && editorBox).toBeTruthy();
-        expect(
-            await scroller.evaluate((element) => element.scrollTop),
-        ).toBeGreaterThan(0);
-        expect(await main.evaluate((element) => element.scrollTop)).toBe(0);
-        expect(alertBox?.y).toBe(yBefore);
-        expect(Math.abs((alertBox?.x ?? 0) - (editorBox?.x ?? 0))).toBeLessThan(
-            2,
-        );
-        expect(
-            Math.abs((alertBox?.width ?? 0) - (editorBox?.width ?? 0)),
-        ).toBeLessThan(2);
-    });
+            await alert.getByRole("button", { name: "Retry" }).click();
+
+            await expect(page.getByRole("alert")).toHaveCount(0);
+            await expect(savedTab(page)).toBeVisible();
+            expect(await readSavedText(page, "a.md")).toBe("base!");
+        },
+    );
+
+    test(
+        "keeps the save-failure alert at the top of the editor and as wide as the text column while the note scrolls",
+        { tag: "@SAVING-006" },
+        async ({ page }) => {
+            const long = Array.from(
+                { length: 200 },
+                (_, i) => `line ${i}`,
+            ).join("\n");
+            await openNoteWithFrozenClock(
+                page,
+                { "a.md": long },
+                { readOnly: true },
+            );
+            await editor(page, "a").click();
+            await page.keyboard.type("!");
+            await waitForAutosave(page);
+            const alert = page.getByRole("alert");
+            await expect(alert).toBeVisible();
+            const scroller = page.locator(".cm-scroller");
+            const yBefore = (await alert.boundingBox())?.y ?? -1;
+
+            await scroller.evaluate((element) => {
+                element.scrollTop = 1500;
+            });
+
+            const alertBox = await alert.boundingBox();
+            const editorBox = await page.locator(".cm-editor").boundingBox();
+            expect(alertBox && editorBox).toBeTruthy();
+            expect(
+                await scroller.evaluate((element) => element.scrollTop),
+            ).toBeGreaterThan(0);
+            expect(
+                await page
+                    .locator("main")
+                    .evaluate((element) => element.scrollTop),
+            ).toBe(0);
+            expect(alertBox?.y).toBe(yBefore);
+            expect(
+                Math.abs((alertBox?.x ?? 0) - (editorBox?.x ?? 0)),
+            ).toBeLessThan(2);
+            expect(
+                Math.abs((alertBox?.width ?? 0) - (editorBox?.width ?? 0)),
+            ).toBeLessThan(2);
+        },
+    );
 });
 
 test.describe("leaving a note", () => {
-    async function dirtyWithFailingSave(page: Page) {
+    async function openDirtyNoteWithFailingSave(page: Page) {
         await openAndType(page, { "a.md": "base" });
         await failNextWrite(page);
+    }
+
+    async function closeTabA(page: Page) {
         await page.getByRole("button", { name: "Close a" }).click();
         const dialog = page.getByRole("alertdialog");
         await expect(dialog).toBeVisible();
         return dialog;
     }
 
-    test("closing a dirty tab with a failing save opens the dialog with focus on Cancel", async ({
-        page,
-    }) => {
-        const dialog = await dirtyWithFailingSave(page);
+    test(
+        "opens the save-failed dialog with focus on Cancel when a dirty tab is closed and the save fails",
+        { tag: "@SAVING-007" },
+        async ({ page }) => {
+            await openDirtyNoteWithFailingSave(page);
 
-        await expect(dialog).toContainText('Could not save "a"');
-        await expect(dialog).toContainText("Something went wrong.");
-        await expect(
-            dialog.getByRole("button", { name: "Cancel" }),
-        ).toBeFocused();
-    });
+            const dialog = await closeTabA(page);
 
-    test("Escape cancels: the tab and the text are still there", async ({
-        page,
-    }) => {
-        await dirtyWithFailingSave(page);
+            await expect(dialog).toContainText('Could not save "a"');
+            await expect(dialog).toContainText("Something went wrong.");
+            await expect(
+                dialog.getByRole("button", { name: "Cancel" }),
+            ).toBeFocused();
+        },
+    );
 
-        await page.keyboard.press("Escape");
+    test(
+        "keeps the tab and the typed text when Escape is pressed in the save-failed dialog",
+        { tag: "@SAVING-008" },
+        async ({ page }) => {
+            await openDirtyNoteWithFailingSave(page);
+            await closeTabA(page);
 
-        await expect(page.getByRole("alertdialog")).toHaveCount(0);
-        await expect(page.getByRole("tab", { name: /^a/ })).toBeVisible();
-        await expect(editor(page, "a")).toContainText("basetyped");
-    });
+            await page.keyboard.press("Escape");
 
-    test("Discard changes closes the tab and drops the text", async ({
-        page,
-    }) => {
-        const dialog = await dirtyWithFailingSave(page);
+            await expect(page.getByRole("alertdialog")).toHaveCount(0);
+            await expect(unsavedTab(page)).toBeVisible();
+            await expect(editor(page, "a")).toContainText("basetyped");
+            expect(await readSavedText(page, "a.md")).toBe("base");
+        },
+    );
 
-        await dialog.getByRole("button", { name: "Discard changes" }).click();
+    test(
+        "closes the tab and drops the typed text when Discard changes is chosen after a failed save",
+        { tag: "@SAVING-009" },
+        async ({ page }) => {
+            await openDirtyNoteWithFailingSave(page);
+            const dialog = await closeTabA(page);
 
-        await expect(page.getByRole("tab")).toHaveCount(0);
-        await expect(page.getByText("No note open")).toBeVisible();
-        expect(await readSavedText(page, "a.md")).toBe("base");
-    });
+            await dialog
+                .getByRole("button", { name: "Discard changes" })
+                .click();
 
-    test("Retry saves and closes the tab once the cause is fixed", async ({
-        page,
-    }) => {
-        const dialog = await dirtyWithFailingSave(page);
+            await expect(page.getByRole("tab")).toHaveCount(0);
+            await expect(page.getByText("No note open")).toBeVisible();
+            expect(await readSavedText(page, "a.md")).toBe("base");
+        },
+    );
 
-        await dialog.getByRole("button", { name: "Retry" }).click();
+    test(
+        "saves the typed text and closes the tab when Retry is chosen and the write now succeeds",
+        { tag: "@SAVING-010" },
+        async ({ page }) => {
+            await openDirtyNoteWithFailingSave(page);
+            const dialog = await closeTabA(page);
 
-        await expect(page.getByRole("tab")).toHaveCount(0);
-        expect(await readSavedText(page, "a.md")).toBe("basetyped");
-    });
+            await dialog.getByRole("button", { name: "Retry" }).click();
 
-    test("closing a clean tab never opens the dialog", async ({ page }) => {
-        await openWorkspaceWith(page, "/work/W", { "a.md": "base" });
-        await option(page, "a").click();
+            await expect(page.getByRole("tab")).toHaveCount(0);
+            expect(await readSavedText(page, "a.md")).toBe("basetyped");
+        },
+    );
 
-        await page.getByRole("button", { name: "Close a" }).click();
+    test(
+        "closes a clean tab without opening the save-failed dialog",
+        { tag: "@SAVING-011" },
+        async ({ page }) => {
+            await openNoteWithFrozenClock(page, { "a.md": "base" });
 
-        await expect(page.getByRole("tab")).toHaveCount(0);
-        await expect(page.getByRole("alertdialog")).toHaveCount(0);
-    });
+            await page.getByRole("button", { name: "Close a" }).click();
 
-    test("changing workspace with a failing flush shows the dialog and keeps the workspace", async ({
-        page,
-    }) => {
-        await openAndType(page, { "a.md": "base" });
-        await page.evaluate(() => {
-            window.__basaltTestFs?.seedWorkspace("/work/Other", {
-                "z.md": "zed",
+            await expect(page.getByRole("tab")).toHaveCount(0);
+            await expect(page.getByRole("alertdialog")).toHaveCount(0);
+        },
+    );
+
+    test(
+        "shows the save-failed dialog and keeps the open workspace and text when changing workspace with a failing save",
+        { tag: "@SAVING-012" },
+        async ({ page }) => {
+            await openAndType(page, { "a.md": "base" });
+            await page.evaluate(() => {
+                window.__basaltTestFs?.seedWorkspace("/work/Other", {
+                    "z.md": "zed",
+                });
+                window.__basaltTestFs?.setPickerResult("/work/Other");
             });
-            window.__basaltTestFs?.setPickerResult("/work/Other");
-        });
-        await failNextWrite(page);
+            await failNextWrite(page);
 
-        await page.keyboard.press("Control+o");
+            await page.keyboard.press("Control+o");
 
-        const dialog = page.getByRole("alertdialog");
-        await expect(dialog).toBeVisible();
-        await expect(
-            page.getByRole("textbox", { name: "a", includeHidden: true }),
-        ).toContainText("basetyped");
+            const dialog = page.getByRole("alertdialog");
+            await expect(dialog).toBeVisible();
+            await expect(
+                page.getByRole("textbox", { name: "a", includeHidden: true }),
+            ).toContainText("basetyped");
+            await page.keyboard.press("Escape");
+            await expect(dialog).toHaveCount(0);
+            await expect(editor(page, "a")).toContainText("basetyped");
+            await expect(option(page, "a")).toBeVisible();
+        },
+    );
 
-        await page.keyboard.press("Escape");
-        await expect(dialog).toHaveCount(0);
-        await expect(editor(page, "a")).toContainText("basetyped");
-    });
+    test(
+        "shows the save-failed dialog and keeps the typed text when the window Close button is used with a failing save",
+        { tag: "@SAVING-013" },
+        async ({ page }) => {
+            await openDirtyNoteWithFailingSave(page);
 
-    test("the window Close button flushes first and asks when saving fails", async ({
-        page,
-    }) => {
-        await openAndType(page, { "a.md": "base" });
-        await failNextWrite(page);
+            await page.getByRole("button", { name: "Close window" }).click();
 
-        await page.getByRole("button", { name: "Close window" }).click();
-
-        const dialog = page.getByRole("alertdialog");
-        await expect(dialog).toBeVisible();
-        await dialog.getByRole("button", { name: "Cancel" }).click();
-        await expect(editor(page, "a")).toContainText("basetyped");
-    });
+            const dialog = page.getByRole("alertdialog");
+            await expect(dialog).toBeVisible();
+            await dialog.getByRole("button", { name: "Cancel" }).click();
+            await expect(dialog).toHaveCount(0);
+            await expect(editor(page, "a")).toContainText("basetyped");
+            expect(await readSavedText(page, "a.md")).toBe("base");
+        },
+    );
 });

@@ -156,3 +156,21 @@ export async function listDirectories(page: Page): Promise<string[]> {
     );
     return directories.sort();
 }
+
+export const AUTOSAVE_DELAY_MS = 1000;
+export const WATCHER_DEBOUNCE_MS = 300;
+
+const CLOCK_START = new Date("2026-01-01T10:00:00Z");
+const CLOCK_FROZEN_AT = new Date("2026-01-01T10:01:00Z");
+
+export async function installClock(page: Page): Promise<void> {
+    await page.clock.install({ time: CLOCK_START });
+}
+
+export async function freezeClock(page: Page): Promise<void> {
+    await page.clock.pauseAt(CLOCK_FROZEN_AT);
+}
+
+export async function advanceClock(page: Page, ms: number): Promise<void> {
+    await page.clock.runFor(ms);
+}
