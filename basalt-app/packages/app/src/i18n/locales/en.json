@@ -146,6 +146,14 @@
             "confirm": "Close note",
             "cancel": "Cancel"
         },
+        "titleError": {
+            "invalid": "The heading cannot be used as a note name. The note is still named {name}.",
+            "exists": "A note with this name already exists. The note is still named {name}.",
+            "readOnly": "The workspace folder is read-only. The note is still named {name}.",
+            "generic": "{reason} The note is still named {name}.",
+            "links": "The note was renamed, but links in {count} other notes could not be updated.",
+            "dismiss": "Dismiss"
+        },
         "saveError": {
             "title": "Could not save the note",
             "message": "{reason} Your text is kept here and saving is paused.",

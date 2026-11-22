@@ -62,14 +62,21 @@ function plainText(
     return result + text.slice(position, to);
 }
 
-export function firstHeading(text: string): NoteHeading | null {
-    const tree = markdown.parse(text);
+const CANDIDATE = /^ {0,3}#(?=[ \t]|$)/gm;
+const MAX_CANDIDATES = 50;
+
+function headingIn(
+    text: string,
+    tree: ReturnType<typeof markdown.parse>,
+    candidate: number,
+): NoteHeading | null {
     for (
         let child = tree.topNode.firstChild;
         child;
         child = child.nextSibling
     ) {
         if (child.name !== "ATXHeading1") continue;
+        if (child.from < candidate) continue;
         const lineTo = lineEnd(text, child.from);
         let contentFrom = child.from + 1;
         while (contentFrom < lineTo && text[contentFrom] === " ") {
@@ -80,6 +87,29 @@ export function firstHeading(text: string): NoteHeading | null {
             line: { from: child.from, to: lineTo },
             content: { from: Math.min(contentFrom, lineTo), to: lineTo },
         };
+    }
+    return null;
+}
+
+export function firstHeading(text: string): NoteHeading | null {
+    CANDIDATE.lastIndex = 0;
+    let checked = 0;
+    for (
+        let match = CANDIDATE.exec(text);
+        match;
+        match = CANDIDATE.exec(text)
+    ) {
+        if (checked === MAX_CANDIDATES) {
+            return headingIn(text, markdown.parse(text), match.index);
+        }
+        checked += 1;
+        const end = lineEnd(text, match.index);
+        const found = headingIn(
+            text.slice(0, end),
+            markdown.parse(text.slice(0, end)),
+            match.index,
+        );
+        if (found) return found;
     }
     return null;
 }

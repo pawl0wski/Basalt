@@ -37,6 +37,8 @@ describe("opening notes", () => {
             bom: true,
             error: null,
             saveStatus: "saved",
+            titleError: null,
+            titlePending: false,
         });
     });
 
@@ -105,6 +107,8 @@ describe("editing and saving", () => {
         expect(session(h)).toMatchObject({
             baseText: "a\nb\n",
             saveStatus: "saved",
+            titleError: null,
+            titlePending: false,
             error: null,
         });
         const raw = await fs.readText(n);
@@ -133,6 +137,8 @@ describe("editing and saving", () => {
             text: "typed",
             baseText: "a",
             saveStatus: "paused",
+            titleError: null,
+            titlePending: false,
             error: { code: "unknown" },
         });
         expect(isDirty(session(h))).toBe(true);
@@ -142,6 +148,8 @@ describe("editing and saving", () => {
             text: "typed",
             baseText: "typed",
             saveStatus: "saved",
+            titleError: null,
+            titlePending: false,
             error: null,
         });
     });
@@ -169,6 +177,8 @@ describe("editing and saving", () => {
             text: "mine",
             error: { code: "conflict" },
             saveStatus: "paused",
+            titleError: null,
+            titlePending: false,
         });
     });
 
@@ -186,6 +196,8 @@ describe("editing and saving", () => {
             eol: "crlf",
             error: null,
             saveStatus: "saved",
+            titleError: null,
+            titlePending: false,
         });
         h.notesActions.updateText(n, "x\nyz");
         await h.notesActions.saveNow(n);
@@ -572,6 +584,7 @@ describe("editor focus and open failures", () => {
         expect(h.notesStore.getState().focusRequest).toEqual({
             path: "m.md",
             id: 2,
+            position: null,
         });
     });
 
@@ -596,6 +609,7 @@ describe("editor focus and open failures", () => {
         expect(h.notesStore.getState().focusRequest).toEqual({
             path: "Untitled.md",
             id: 1,
+            position: 2,
         });
     });
 
@@ -696,6 +710,8 @@ describe("renaming and moving open notes", () => {
                 path: "x.md",
                 error: null,
                 saveStatus: "saved",
+                titleError: null,
+                titlePending: false,
             });
         });
 
@@ -757,6 +773,8 @@ describe("renaming and moving open notes", () => {
                 text: "typed just now",
                 baseText: "typed just now",
                 saveStatus: "saved",
+                titleError: null,
+                titlePending: false,
             });
         });
 
@@ -856,6 +874,8 @@ describe("renaming and moving open notes", () => {
                 text: "body",
                 error: null,
                 saveStatus: "saved",
+                titleError: null,
+                titlePending: false,
             });
             expect(await readDisk(fs, "b.md")).toBe("body");
         });

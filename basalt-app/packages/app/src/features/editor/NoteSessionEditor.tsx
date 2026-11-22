@@ -24,9 +24,13 @@ export function NoteSessionEditor({
     const { t } = useTranslation();
     const { images } = useServices();
     const [notice, setNotice] = useState<AddNotice | null>(null);
+    const directory = notePath.slice(0, notePath.lastIndexOf("/") + 1);
+    const [hub, setHub] = useState({ directory, path: notePath });
+    if (hub.directory !== directory) setHub({ directory, path: notePath });
+    const hubPath = hub.directory === directory ? hub.path : notePath;
     const noteImages = useMemo(
-        () => images.forNote(notePath),
-        [images, notePath],
+        () => images.forNote(hubPath),
+        [images, hubPath],
     );
 
     useEffect(() => {
@@ -88,7 +92,12 @@ export function NoteSessionEditor({
                     {noticeText(t, notice)}
                 </Alert>
             ) : null}
-            <NoteEditor {...props} images={editorImages} files={files} />
+            <NoteEditor
+                key={hubPath}
+                {...props}
+                images={editorImages}
+                files={files}
+            />
         </>
     );
 }

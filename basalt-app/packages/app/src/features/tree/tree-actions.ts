@@ -303,7 +303,7 @@ export function createTreeActions(options: {
             setDialogPending(store, true);
             const pendingDialog = store.getState().dialog;
             const result = renaming
-                ? await notes.renameNote(dialog.path, dialog.name)
+                ? await notes.applyTitle(dialog.path, dialog.name)
                 : await notes.createFolder(parent, dialog.name);
             if (!result.ok) {
                 failDialog(pendingDialog, result.error);

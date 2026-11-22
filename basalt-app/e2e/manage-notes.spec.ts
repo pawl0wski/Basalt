@@ -290,7 +290,7 @@ test.describe("new note in a folder (AC-04.4)", () => {
             .poll(() => readSavedText(page, "projects/Untitled.md"), {
                 timeout: 5000,
             })
-            .toBe("hello");
+            .toBe("# hello");
         expect(await listFiles(page)).not.toContain("Untitled.md");
     });
 
@@ -523,7 +523,7 @@ test.describe("rename (AC-04.1)", () => {
 
         await expect
             .poll(() => readSavedText(page, "b.md"), { timeout: 5000 })
-            .toBe("startend");
+            .toBe("# b\n\nstartend");
         expect(await listFiles(page)).toEqual(["b.md"]);
     });
 
@@ -595,7 +595,7 @@ test.describe("rename (AC-04.1)", () => {
 
         await expect(page.getByRole("dialog")).toHaveCount(0);
         expect(await listFiles(page)).toEqual(["Ideas.md"]);
-        expect(await readSavedText(page, "Ideas.md")).toBe("keep");
+        expect(await readSavedText(page, "Ideas.md")).toBe("# Ideas\n\nkeep");
     });
 
     test("a name that collides only in another folder is allowed", async ({

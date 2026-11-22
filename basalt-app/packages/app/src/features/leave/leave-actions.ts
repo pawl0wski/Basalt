@@ -34,10 +34,12 @@ export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
     return {
         block,
         async closeTab(path) {
+            await notes.commitTitle(path);
             const closed = await notes.closeTab(path);
             if (!closed.ok) block({ kind: "close-tab", path }, closed.error);
         },
         async handleCloseRequest() {
+            await notes.commitPendingTitles();
             const flushed = await notes.flushAll();
             if (flushed.ok) return true;
             block({ kind: "close-window" }, flushed.error);

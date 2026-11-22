@@ -2,7 +2,7 @@
 date: 2026-11-16
 slug: note-name-follows-first-heading
 type: spec
-status: draft
+status: implemented
 tags: [notes, headings, rename, links, e01]
 ---
 

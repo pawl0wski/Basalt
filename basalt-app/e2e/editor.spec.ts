@@ -49,7 +49,7 @@ test.describe("note editor", () => {
         await page.keyboard.type("# Title\n\nplain *text*\nsecond line");
 
         await expect
-            .poll(() => readOnDisk(page, "a.md"), { timeout: 5000 })
+            .poll(() => readOnDisk(page, "Title.md"), { timeout: 5000 })
             .toBe("# Title\n\nplain *text*\nsecond line");
         await expect(page.locator("textarea, input[type=text]")).toHaveCount(0);
     });
@@ -68,7 +68,7 @@ test.describe("note editor", () => {
 
         await expect
             .poll(() => readOnDisk(page, "Untitled.md"), { timeout: 5000 })
-            .toBe("typed at once");
+            .toBe("# typed at once");
     });
 
     test("Ctrl+N opens a note with the cursor in the editor", async ({
@@ -82,7 +82,7 @@ test.describe("note editor", () => {
 
         await expect
             .poll(() => readOnDisk(page, "Untitled.md"), { timeout: 5000 })
-            .toBe("hello");
+            .toBe("# hello");
     });
 });
 
@@ -343,7 +343,7 @@ test.describe("live preview", () => {
         await expect(page.locator(".cm-lp-code")).toHaveText("code");
         await expect(page.locator(".cm-lp-strong")).toHaveText("strong");
         await expect
-            .poll(() => readOnDisk(page, "a.md"), { timeout: 5000 })
+            .poll(() => readOnDisk(page, "Head.md"), { timeout: 5000 })
             .toBe(source);
     });
 

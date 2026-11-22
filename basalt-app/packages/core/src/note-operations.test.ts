@@ -885,7 +885,7 @@ describe("renameNoteByTitle", () => {
             ...fs,
             rename: async () => ({
                 ok: false,
-                error: { code: "io-error", message: "nope" },
+                error: { code: "unknown", message: "nope" },
             }),
         }));
 
@@ -981,7 +981,7 @@ describe("rewriteIncomingLinks", () => {
                     path === "a.md"
                         ? {
                               ok: false,
-                              error: { code: "io-error", message: "no" },
+                              error: { code: "unknown", message: "no" },
                           }
                         : fs.writeTextAtomic(path, content),
             }),

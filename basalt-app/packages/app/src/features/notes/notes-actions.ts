@@ -5,7 +5,10 @@ import {
     createNotes,
     err,
     ok,
+    firstHeading,
     resolveOpenNoteChange,
+    rewriteLinksTo,
+    setFirstHeading,
     toWorkspacePath,
     type AppError,
     type Autosave,
@@ -53,7 +56,10 @@ export type NotesActions = {
     refreshNotes(): Promise<Result<void>>;
     openNote(
         path: WorkspacePath,
-        options?: { readonly focus?: boolean },
+        options?: {
+            readonly focus?: boolean;
+            readonly position?: number;
+        },
     ): Promise<Result<void>>;
     createNote(options?: {
         readonly folder?: WorkspacePath | null;
@@ -67,6 +73,13 @@ export type NotesActions = {
         path: WorkspacePath,
         newName: string,
     ): Promise<Result<WorkspacePath>>;
+    commitTitle(path: WorkspacePath): Promise<void>;
+    applyTitle(
+        path: WorkspacePath,
+        title: string,
+    ): Promise<Result<WorkspacePath>>;
+    dismissTitleError(path: WorkspacePath): void;
+    commitPendingTitles(): Promise<void>;
     moveNotes(
         paths: readonly WorkspacePath[],
         destinationFolder: WorkspacePath | null,
@@ -111,7 +124,18 @@ const NO_WORKSPACE: AppError = {
     message: "No workspace is open.",
 };
 
+const LINKS_FAILED: AppError = {
+    code: "unknown",
+    message: "Some links could not be updated.",
+};
+
+function baseNameOf(path: WorkspacePath): string {
+    const name = path.slice(path.lastIndexOf("/") + 1);
+    return name.endsWith(".md") ? name.slice(0, -3) : name;
+}
+
 const EXTERNAL_CHECK_ATTEMPTS = 4;
+const NEW_NOTE_CURSOR = 2;
 
 function flattenNotes(nodes: readonly TreeNode[]): Note[] {
     return nodes.flatMap((node) =>
@@ -128,6 +152,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
     const targets = new Map<WorkspacePath, SessionTarget>();
     const busy = new Set<WorkspacePath>();
     let workspace: ActiveWorkspace | null = null;
+    let nextSessionId = 1;
 
     function findSession(path: WorkspacePath): NoteSession | undefined {
         return store.getState().openNotes.find((note) => note.path === path);
@@ -206,6 +231,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         if (!opened.ok) {
             if (opened.error.code === "not-found") return opened;
             const failed: NoteSession = {
+                id: nextSessionId++,
                 path,
                 text: "",
                 baseText: "",
@@ -214,6 +240,8 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
                 error: opened.error,
                 openFailed: true,
                 saveStatus: "saved",
+                titleError: null,
+                titlePending: false,
             };
             store.setState((state) => ({
                 openNotes: [...state.openNotes, failed],
@@ -225,6 +253,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         targets.set(path, target);
         autosaves.set(path, createSessionAutosave(active, target, text));
         const session: NoteSession = {
+            id: nextSessionId++,
             path,
             text,
             baseText: text,
@@ -233,6 +262,8 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             error: null,
             openFailed: false,
             saveStatus: "saved",
+            titleError: null,
+            titlePending: false,
         };
         store.setState((state) => ({
             openNotes: [...state.openNotes, session],
@@ -273,7 +304,10 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
 
     async function openNote(
         path: WorkspacePath,
-        openOptions?: { readonly focus?: boolean },
+        openOptions?: {
+            readonly focus?: boolean;
+            readonly position?: number;
+        },
     ): Promise<Result<void>> {
         const active = workspace;
         if (!active) return err(NO_WORKSPACE);
@@ -294,6 +328,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
                     ? {
                           path,
                           id: (state.focusRequest?.id ?? 0) + 1,
+                          position: openOptions.position ?? null,
                       }
                     : state.focusRequest,
         }));
@@ -320,7 +355,11 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         store.setState({ createError: null });
         await refreshNotes();
         if (workspace !== active) return err(NO_WORKSPACE);
-        await openNote(created.value.path, { focus: true });
+        await openNote(created.value.path, {
+            focus: true,
+            position: NEW_NOTE_CURSOR,
+        });
+        patchSession(created.value.path, { titlePending: true });
         return created;
     }
 
@@ -472,6 +511,132 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         await persistTabs();
         await refreshNotes();
         return ok(renamed.value.path);
+    }
+
+    function setText(path: WorkspacePath, text: string): void {
+        const session = findSession(path);
+        const autosave = autosaves.get(path);
+        if (!session || !autosave || session.text === text) return;
+        const before = firstHeading(session.text)?.text ?? null;
+        const after = firstHeading(text)?.text ?? null;
+        patchSession(path, {
+            text,
+            ...(before !== after ? { titlePending: true } : {}),
+        });
+        autosave.change(text);
+    }
+
+    async function rewriteLinksAfterRename(
+        oldPath: WorkspacePath,
+        newPath: WorkspacePath,
+    ): Promise<number> {
+        const active = workspace;
+        if (!active) return 0;
+        const sessions = store
+            .getState()
+            .openNotes.filter((session) => !session.openFailed);
+        for (const session of sessions) {
+            const rewritten = rewriteLinksTo(
+                session.text,
+                session.path,
+                oldPath,
+                newPath,
+            );
+            if (rewritten !== session.text) setText(session.path, rewritten);
+        }
+        const result = await active.operations.rewriteIncomingLinks({
+            oldPath,
+            newPath,
+            skip: sessions.map((session) => session.path),
+        });
+        if (!result.ok) return 1;
+        return result.value.failed.length;
+    }
+
+    const committing = new Set<number>();
+
+    async function commitTitle(path: WorkspacePath): Promise<void> {
+        const session = findSession(path);
+        if (!workspace || !session || session.openFailed) return;
+        if (!session.titlePending || committing.has(session.id)) return;
+        const heading = firstHeading(session.text);
+        const current = baseNameOf(path);
+        if (!heading) {
+            patchSession(path, { titlePending: false, titleError: null });
+            return;
+        }
+        if (heading.text === "") {
+            setText(path, setFirstHeading(session.text, current));
+            patchSession(path, { titlePending: false, titleError: null });
+            return;
+        }
+        if (heading.text === current) {
+            patchSession(path, { titlePending: false, titleError: null });
+            return;
+        }
+        committing.add(session.id);
+        try {
+            const renamed = await renameNote(path, heading.text);
+            if (!renamed.ok) {
+                patchSession(path, {
+                    titleError: { error: renamed.error, linksFailed: 0 },
+                });
+                return;
+            }
+            const failed = await rewriteLinksAfterRename(path, renamed.value);
+            patchSession(renamed.value, {
+                titlePending: false,
+                titleError:
+                    failed > 0
+                        ? { error: LINKS_FAILED, linksFailed: failed }
+                        : null,
+            });
+        } finally {
+            committing.delete(session.id);
+        }
+    }
+
+    async function applyTitle(
+        path: WorkspacePath,
+        title: string,
+    ): Promise<Result<WorkspacePath>> {
+        const active = workspace;
+        if (!active) return err(NO_WORKSPACE);
+        const session = findSession(path);
+        if (session && !session.openFailed) {
+            const original = session.text;
+            setText(path, setFirstHeading(original, title));
+            const renamed = await renameNote(path, title);
+            if (!renamed.ok) {
+                setText(path, original);
+                patchSession(path, { titlePending: session.titlePending });
+                return renamed;
+            }
+            patchSession(renamed.value, { titlePending: false });
+            await rewriteLinksAfterRename(path, renamed.value);
+            return renamed;
+        }
+        const flushed = await flushBeforeChange([path]);
+        if (!flushed.ok) return flushed;
+        const directory = path.slice(0, path.lastIndexOf("/") + 1);
+        const expected = toWorkspacePath(`${directory}${title}.md`);
+        const watched = expected.ok ? [path, expected.value] : [path];
+        const renamed = await withBusy(watched, () =>
+            active.operations.renameNoteByTitle({ path, title }),
+        );
+        if (!renamed.ok) return renamed;
+        if (workspace !== active) return err(NO_WORKSPACE);
+        if (findSession(path)) applyPathChange(path, renamed.value.path);
+        await persistTabs();
+        await refreshNotes();
+        await rewriteLinksAfterRename(path, renamed.value.path);
+        return ok(renamed.value.path);
+    }
+
+    async function commitPendingTitles(): Promise<void> {
+        for (const session of store.getState().openNotes) {
+            if (session.titlePending) await commitTitle(session.path);
+        }
     }
 
     async function moveNotes(
@@ -641,12 +806,12 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         hasUnsavedText() {
             return store.getState().openNotes.some(isDirty);
         },
-        updateText(path, text) {
-            const session = findSession(path);
-            const autosave = autosaves.get(path);
-            if (!session || !autosave || session.text === text) return;
-            patchSession(path, { text });
-            autosave.change(text);
+        updateText: setText,
+        commitTitle,
+        applyTitle,
+        commitPendingTitles,
+        dismissTitleError(path) {
+            patchSession(path, { titleError: null });
         },
         async saveNow(path) {
             const autosave = autosaves.get(path);

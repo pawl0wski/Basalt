@@ -95,3 +95,29 @@ describe("setFirstHeading", () => {
         expect(setFirstHeading("## Two", "Name")).toBe("# Name\n\n## Two");
     });
 });
+
+describe("firstHeading with many candidate lines", () => {
+    it("skips hash lines inside code blocks and finds the later real heading", () => {
+        expect(firstHeading("```\n# in code\n```\n\n# Real")?.text).toBe(
+            "Real",
+        );
+    });
+
+    it("finds a heading after more than fifty rejected candidates", () => {
+        const fenced = `\`\`\`\n${Array.from({ length: 60 }, (_, i) => `# c${String(i)}`).join("\n")}\n\`\`\`\n\n# Real`;
+        expect(firstHeading(fenced)?.text).toBe("Real");
+    });
+
+    it("accepts up to three leading spaces and rejects four", () => {
+        expect(firstHeading("   # Spaced")?.text).toBe("Spaced");
+        expect(firstHeading("    # Code")).toBeNull();
+    });
+
+    it("keeps positions in the full text", () => {
+        const text = "para\n\n# Title\nrest";
+        const heading = firstHeading(text);
+        expect(text.slice(heading?.content.from, heading?.content.to)).toBe(
+            "Title",
+        );
+    });
+});
