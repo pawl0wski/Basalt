@@ -86,3 +86,32 @@
         }
     }
 }
+
+@layer components {
+    @keyframes bs-toast-countdown {
+        from {
+            transform: scaleX(1);
+        }
+        to {
+            transform: scaleX(0);
+        }
+    }
+
+    .bs-toast-timer {
+        transform-origin: left;
+        animation-name: bs-toast-countdown;
+        animation-timing-function: linear;
+        animation-fill-mode: forwards;
+    }
+
+    .bs-toast:hover .bs-toast-timer,
+    .bs-toast:focus-within .bs-toast-timer {
+        animation-play-state: paused;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bs-toast-timer {
+            display: none;
+        }
+    }
+}

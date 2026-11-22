@@ -1,4 +1,5 @@
 import type { AppError } from "@basalt/core";
+import type { ToastKind } from "@basalt/ui";
 
 export type ErrorSurface = "toast" | "persistent";
 
@@ -29,5 +30,28 @@ export function errorSurface(error: AppError): ErrorSurface {
         case "unavailable":
         case "unknown":
             return "persistent";
+    }
+}
+
+export function toastKind(error: AppError): ToastKind {
+    switch (error.detail?.kind) {
+        case "move-collision":
+            return "warning";
+        case "move-stopped":
+        case "folder-move-stopped":
+        case "delete-failed":
+        case "title-links-failed":
+            return "danger";
+        case "flush-failed":
+        case undefined:
+            break;
+    }
+    switch (error.code) {
+        case "already-exists":
+        case "not-found":
+        case "invalid-path":
+            return "warning";
+        default:
+            return "danger";
     }
 }

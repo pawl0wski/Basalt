@@ -110,6 +110,22 @@ test.describe("a collision is a toast (AC-08.1, AC-08.8)", () => {
     });
 });
 
+test.describe("a toast names its kind", () => {
+    test("a collision toast is labelled Warning with an icon and a countdown line", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", FILES);
+
+        await collide(page, "Ideas");
+
+        const toast = toasts(page).first();
+        await expect(toast).toHaveAttribute("data-kind", "warning");
+        await expect(toast).toContainText("Warning");
+        await expect(toast.locator("svg").first()).toBeVisible();
+        await expect(toast.getByTestId("toast-timer")).toBeAttached();
+    });
+});
+
 test.describe("stacking and dismissal (AC-08.2, AC-08.6)", () => {
     test("shows at most three toasts, newest last, each with a close button", async ({
         page,

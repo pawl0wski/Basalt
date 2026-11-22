@@ -121,6 +121,11 @@ export function AppContainer() {
         <ToastProvider
             label={t("toasts.regionLabel")}
             dismissLabel={t("toasts.dismissLabel")}
+            kindLabels={{
+                info: t("toasts.kind.info"),
+                warning: t("toasts.kind.warning"),
+                danger: t("toasts.kind.danger"),
+            }}
         >
             <AppContent />
             <SaveFailedDialogContainer />

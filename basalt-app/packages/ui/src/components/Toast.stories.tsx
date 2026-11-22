@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, screen, userEvent, within } from "storybook/test";
 import { Button } from "./Button";
 import { ToastProvider } from "./Toast";
+import type { ToastKind } from "./toastContext";
 import { useToast } from "./toastContext";
 
 const onUndo = fn();
@@ -9,9 +10,11 @@ const onUndo = fn();
 function Demo({
     withAction = false,
     duration,
+    kind,
 }: {
     withAction?: boolean;
     duration?: number;
+    kind?: ToastKind;
 }) {
     const toast = useToast();
     return (
@@ -19,6 +22,7 @@ function Demo({
             variant="secondary"
             onClick={() =>
                 toast({
+                    kind,
                     title: "Note moved to trash",
                     description: "Weekly plan",
                     duration,
@@ -111,5 +115,67 @@ export const StackCap: Story = {
         await expect(
             screen.getAllByRole("button", { name: "Dismiss" }),
         ).toHaveLength(3);
+    },
+};
+
+const KINDS: { kind: ToastKind; word: string }[] = [
+    { kind: "info", word: "Info" },
+    { kind: "warning", word: "Warning" },
+    { kind: "danger", word: "Error" },
+];
+
+function KindMatrix() {
+    const toast = useToast();
+    return (
+        <div className="flex gap-between-groups">
+            {KINDS.map(({ kind, word }) => (
+                <Button
+                    key={kind}
+                    variant="secondary"
+                    onClick={() =>
+                        toast({
+                            kind,
+                            title: "Could not move the note",
+                            description: "Weekly plan",
+                            duration: 60000,
+                        })
+                    }
+                >
+                    {word}
+                </Button>
+            ))}
+        </div>
+    );
+}
+
+export const Kinds: Story = {
+    render: () => (
+        <ToastProvider>
+            <KindMatrix />
+        </ToastProvider>
+    ),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        for (const { word } of KINDS)
+            await userEvent.click(canvas.getByRole("button", { name: word }));
+        const region = screen.getByRole("region", { name: /Notifications/ });
+        for (const { word } of KINDS)
+            await expect(region).toHaveTextContent(word);
+    },
+};
+
+export const LongContent: Story = {
+    render: () => (
+        <ToastProvider>
+            <Demo kind="warning" withAction />
+        </ToastProvider>
+    ),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(
+            within(canvasElement).getByRole("button", { name: "Delete note" }),
+        );
+        await expect(
+            (await screen.findAllByText("Note moved to trash"))[0],
+        ).toBeVisible();
     },
 };
