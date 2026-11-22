@@ -43,3 +43,4 @@ Long-term memory index for AI agents. Each entry links to a full lesson file in 
 - 2026-11-22 — A PR base SHA can lag the base branch tip. Fetch the named base branch before resolving conflicts. [Detail](lessons/2026-11-22-pr-base-sha-can-lag.md)
 - 2026-11-22 — Target each image widget's current alt-text range and share the title commit result across concurrent tab-close and blur events. [Detail](lessons/2026-11-22-bind-editor-actions-to-stable-targets.md)
 - 2026-11-22 — Sandbox `node_modules` is Windows-only: run tests in a scratchpad copy with its own `npm ci` instead of reinstalling in the mounted repo — [detail](lessons/2026-11-22-sandbox-node-modules-are-windows-only.md)
+- 2026-11-22 — Start the QA env with `sh .ai/scripts/test-env-up.sh` (reuses a healthy server, caches `npm ci`); it installs Node 22, silences `UNDICI-EHPA`, and refuses `npm ci` over a Windows-host `node_modules` — [detail](lessons/2026-11-22-test-env-entrypoint.md)

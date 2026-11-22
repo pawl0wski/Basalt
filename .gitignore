@@ -17,3 +17,7 @@ node_modules/
 shim-start.lock
 Thumbs.db
 .DS_Store
+.ai/qa/test-env-build-cache.json
+.ai/qa/test-env.lock/
+.ai/qa/test-env.started
+.ai/qa/test-env-app.log
