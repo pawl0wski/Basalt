@@ -3,6 +3,10 @@ import { listFiles, openWorkspaceWith, readSavedText } from "./support";
 
 const READ_ONLY = "The workspace folder is read-only. Nothing was changed.";
 
+function notifications(page: Page) {
+    return page.getByRole("region", { name: /Notifications/ });
+}
+
 function tree(page: Page) {
     return page.getByRole("tree", { name: "Notes" });
 }
@@ -298,10 +302,15 @@ test.describe("moving a note by dragging (AC-04.5)", () => {
         await dragNoteOnto(page, "Ideas", "projects");
 
         await expect(
-            page.getByText(
+            notifications(page).getByText(
                 '"Ideas.md" already exists in the destination. Nothing was moved.',
             ),
         ).toBeVisible();
+        await expect(
+            page
+                .getByRole("navigation", { name: "Workspace" })
+                .getByRole("status"),
+        ).toHaveCount(0);
         expect(await listFiles(page)).toEqual(before);
         expect(await readSavedText(page, "Ideas.md")).toBe("root");
     });
@@ -532,10 +541,15 @@ test.describe("moving several notes at once (AC-04.13)", () => {
         await dragNoteOnto(page, "Ideas", "projects");
 
         await expect(
-            page.getByText(
+            notifications(page).getByText(
                 '"Notes.md" already exists in the destination. Nothing was moved.',
             ),
         ).toBeVisible();
+        await expect(
+            page
+                .getByRole("navigation", { name: "Workspace" })
+                .getByRole("status"),
+        ).toHaveCount(0);
         expect(await listFiles(page)).toEqual(before);
         await expect(page.getByRole("tab", { name: "Notes" })).toBeVisible();
         await expect(selectedRows(page)).toHaveCount(3);
