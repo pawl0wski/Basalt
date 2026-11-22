@@ -25,7 +25,6 @@ import { NoteBanner } from "../../src/product/NoteBanner";
 import { NoteList } from "../../src/product/NoteList";
 import { NoteSidebar } from "../../src/product/NoteSidebar";
 import { SaveFailedDialog } from "../../src/product/SaveFailedDialog";
-import type { SaveState } from "../../src/product/SaveStatus";
 import { StatusBar } from "../../src/product/StatusBar";
 import { WelcomeScreen } from "../../src/product/WelcomeScreen";
 
@@ -37,7 +36,6 @@ type WorkspaceProps = {
     selectedPath?: string | null;
     notice?: ReactNode;
     banner?: ReactNode;
-    saveState?: SaveState;
     body?: ReactNode;
     counts?: boolean;
     dialogs?: ReactNode;
@@ -71,7 +69,6 @@ function Workspace({
     selectedPath = "Weekly plan.md",
     notice,
     banner,
-    saveState = "saved",
     body,
     counts = true,
     dialogs,
@@ -101,9 +98,7 @@ function Workspace({
                 statusBar={
                     hasNote ? (
                         <StatusBar
-                            wordCount={counts ? 1204 : undefined}
-                            characterCount={counts ? 7311 : undefined}
-                            saveState={saveState}
+                            trailing={counts ? <span>1,204 words</span> : null}
                         />
                     ) : (
                         <StatusBar />
@@ -196,14 +191,6 @@ export const WatcherFallbackNotice: Story = {
     ),
 };
 
-export const Saving: Story = {
-    render: () => <Workspace saveState="saving" />,
-};
-
-export const NotSaved: Story = {
-    render: () => <Workspace saveState="unsaved" />,
-};
-
 export const NewNoteDialogOpen: Story = {
     render: () => (
         <Workspace
@@ -245,7 +232,6 @@ export const NewNoteNameTaken: Story = {
 export const ConflictWithTheFileOnDisk: Story = {
     render: () => (
         <Workspace
-            saveState="unsaved"
             banner={
                 <NoteBanner
                     kind="conflict"
@@ -260,7 +246,6 @@ export const ConflictWithTheFileOnDisk: Story = {
 export const NoteDeletedOnDisk: Story = {
     render: () => (
         <Workspace
-            saveState="unsaved"
             banner={
                 <NoteBanner
                     kind="deleted"
@@ -275,7 +260,6 @@ export const NoteDeletedOnDisk: Story = {
 export const FolderIsReadOnly: Story = {
     render: () => (
         <Workspace
-            saveState="unsaved"
             banner={<NoteBanner kind="permission-denied" onRetry={noop} />}
         />
     ),
@@ -284,7 +268,6 @@ export const FolderIsReadOnly: Story = {
 export const SaveFailedWhenLeavingTheNote: Story = {
     render: () => (
         <Workspace
-            saveState="unsaved"
             dialogs={
                 <SaveFailedDialog
                     open

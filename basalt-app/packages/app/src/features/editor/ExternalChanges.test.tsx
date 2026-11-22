@@ -130,7 +130,9 @@ describe("external changes in the editor", () => {
         expect(banner).toHaveTextContent(en.notes.conflict.message);
         expect(banner).toHaveAttribute("data-variant", "warning");
         expect(viewOf("a").state.doc.toString()).toBe("base mine");
-        expect(screen.getByText(en.saveStatus.notSaved)).toBeInTheDocument();
+        expect(
+            screen.getByRole("tab", { name: "a not saved" }),
+        ).toBeInTheDocument();
         expect(app.harness.scheduler.pending()).toBe(0);
     });
 
@@ -150,7 +152,7 @@ describe("external changes in the editor", () => {
             expect(screen.queryByRole("alert")).toBeNull();
         });
         expect(await diskText(app, "a.md")).toBe("base mine");
-        expect(screen.getByText(en.saveStatus.saved)).toBeInTheDocument();
+        expect(screen.getByRole("tab", { name: "a" })).toBeInTheDocument();
     });
 
     it("asks before loading the disk version: focus and Escape are on Cancel and the text is kept", async () => {
