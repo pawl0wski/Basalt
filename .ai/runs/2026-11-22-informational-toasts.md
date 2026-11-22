@@ -60,4 +60,4 @@ All phases implemented. Gate: format, lint, typecheck, unit (1564), build and e2
 
 Decisions: the rename/new-folder dialog closes in `tree-actions.ts` (`failDialog`) rather than in the container; a partial-failure detail (`move-stopped`, `delete-failed`, `move-collision`) wins over the error code in `errorSurface`; Radix puts the region label on the Viewport, so `label` is applied there.
 
-Open: the Storybook story `StackCap` was added but the stories test run (browser) was not executed here; S04/S05 specs need the follow-up note on the moved collision message (spec follow-up).
+Open: the S04/S05 specs need the follow-up note on the moved collision message (spec follow-up).
