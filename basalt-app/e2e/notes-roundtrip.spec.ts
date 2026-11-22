@@ -64,22 +64,22 @@ test.describe("create, edit and save", () => {
             .getByRole("button", { name: "New note" })
             .click();
         await expect(editor(page, "Untitled")).toBeFocused();
-        await page.keyboard.type("# Heading\n\nbody text");
+        await page.keyboard.type("Heading\n\nbody text");
         await expect(
-            page.getByRole("tab", { name: "Untitled", exact: true }),
+            page.getByRole("tab", { name: "Heading", exact: true }),
         ).toBeVisible({ timeout: 5000 });
 
-        expect(await readSavedBytes(page, "Untitled.md")).toEqual(
+        expect(await readSavedBytes(page, "Heading.md")).toEqual(
             Array.from(encoder.encode("# Heading\n\nbody text")),
         );
         expect(await readSavedText(page, "a.md")).toBe("x");
 
         await page.reload();
 
-        await expect(option(page, "Untitled")).toBeVisible();
-        await expect(editor(page, "Untitled")).toContainText("# Heading");
-        await expect(editor(page, "Untitled")).toContainText("body text");
-        expect(await readSavedBytes(page, "Untitled.md")).toEqual(
+        await expect(option(page, "Heading")).toBeVisible();
+        await expect(editor(page, "Heading")).toContainText("# Heading");
+        await expect(editor(page, "Heading")).toContainText("body text");
+        expect(await readSavedBytes(page, "Heading.md")).toEqual(
             Array.from(encoder.encode("# Heading\n\nbody text")),
         );
     });

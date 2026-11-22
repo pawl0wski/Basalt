@@ -259,3 +259,34 @@ export function pruneSelection(
     if (kept.length === selected.size && anchor === anchorId) return;
     store.setState({ selected: new Set(kept), anchorId: anchor });
 }
+
+function underPrefix(id: string, prefix: string): boolean {
+    return id === prefix || id.startsWith(`${prefix}/`);
+}
+
+export function remapPaths(
+    store: TreeStore,
+    from: WorkspacePath,
+    to: WorkspacePath,
+): void {
+    const map = (id: string): string =>
+        underPrefix(id, from) ? `${to}${id.slice(from.length)}` : id;
+    const { expanded, selected, anchorId, focusedId } = store.getState();
+    store.setState({
+        expanded: new Set([...expanded].map(map)),
+        selected: new Set([...selected].map(map)),
+        anchorId: anchorId === null ? null : map(anchorId),
+        focusedId: focusedId === null ? null : map(focusedId),
+    });
+}
+
+export function prunePaths(store: TreeStore, prefix: WorkspacePath): void {
+    const keep = (id: string): boolean => !underPrefix(id, prefix);
+    const { expanded, selected, anchorId, focusedId } = store.getState();
+    store.setState({
+        expanded: new Set([...expanded].filter(keep)),
+        selected: new Set([...selected].filter(keep)),
+        anchorId: anchorId !== null && keep(anchorId) ? anchorId : null,
+        focusedId: focusedId !== null && keep(focusedId) ? focusedId : null,
+    });
+}

@@ -2,7 +2,7 @@
 date: 2026-11-16
 slug: rename-move-delete-folders
 type: spec
-status: draft
+status: implemented
 tags: [folders, tree, rename, move, delete, drag-and-drop, trash, links, e01]
 ---
 

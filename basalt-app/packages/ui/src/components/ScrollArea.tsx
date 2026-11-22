@@ -6,12 +6,19 @@ type ScrollAreaProps = {
     label: string;
     children: ReactNode;
     className?: string;
+    type?: "always" | "hover" | "scroll";
 };
 
-function ScrollArea({ label, children, className }: ScrollAreaProps) {
+function ScrollArea({
+    label,
+    children,
+    className,
+    type = "always",
+}: ScrollAreaProps) {
     return (
         <ScrollAreaPrimitive.Root
-            className={cn("bs-scroll-area relative overflow-hidden", className)}
+            type={type}
+            className={cn("relative overflow-hidden", className)}
         >
             <ScrollAreaPrimitive.Viewport
                 role="region"
@@ -37,13 +44,13 @@ function ScrollBar({
         <ScrollAreaPrimitive.Scrollbar
             orientation={orientation}
             className={cn(
-                "flex touch-none select-none p-in-group",
+                "flex touch-none select-none",
                 orientation === "vertical"
-                    ? "h-full w-between-groups flex-col"
-                    : "h-between-groups flex-row",
+                    ? "h-full w-scrollbar flex-col"
+                    : "h-scrollbar flex-row",
             )}
         >
-            <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-control bg-border-control" />
+            <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-control bg-scrollbar-thumb hover:bg-scrollbar-thumb-hover" />
         </ScrollAreaPrimitive.Scrollbar>
     );
 }

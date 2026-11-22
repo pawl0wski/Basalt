@@ -36,6 +36,8 @@
     --color-status-danger: var(--bs-status-danger);
     --color-status-warning: var(--bs-status-warning);
     --color-code-block-bg: var(--bs-code-block-bg);
+    --color-scrollbar-thumb: var(--bs-scrollbar-thumb);
+    --color-scrollbar-thumb-hover: var(--bs-scrollbar-thumb-hover);
     --color-button-secondary-bg: var(--bs-button-secondary-bg);
     --color-editor-selection: var(--bs-editor-selection);
     --color-tree-selected: var(--bs-tree-selected);
@@ -55,6 +57,7 @@
     --spacing-status-bar: var(--bs-status-bar-height);
     --spacing-tree-row: var(--bs-tree-row-height);
     --spacing-icon: var(--bs-icon-size);
+    --spacing-scrollbar: var(--bs-scrollbar-size);
     --spacing-activity-icon: var(--bs-activity-icon-size);
     --spacing-activity-button: var(--bs-activity-button-size);
     --spacing-icon-button: var(--bs-icon-button-size);

@@ -47,4 +47,8 @@
     --bs-icon-button-size: 28px;
     /* PROPOSAL: Switch track and thumb need a full radius; not in tokens.md */
     --bs-switch-radius: var(--raw-radius-full);
+    --bs-scrollbar-size: var(--raw-space-2);
+    --bs-scrollbar-thumb: var(--bs-border-control);
+    --bs-scrollbar-thumb-hover: var(--bs-icon-default);
+    --bs-scrollbar-track: transparent;
 }

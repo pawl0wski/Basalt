@@ -154,7 +154,7 @@ describe("createNote in a folder", () => {
             ok: true,
             value: { path: "docs/Untitled.md", name: "Untitled" },
         });
-        expect(await bytesOf(memory, "docs/Untitled.md")).toEqual([]);
+        expect(await bytesOf(memory, "docs/Untitled.md")).toEqual([0x23, 0x20]);
     });
 
     it("allows the same name in the root and in a folder", async () => {
@@ -209,7 +209,7 @@ describe("createNote in a folder", () => {
 });
 
 describe("createNote", () => {
-    it("creates an empty .md file in the workspace root", async () => {
+    it("creates an .md file holding only an empty first heading in the workspace root", async () => {
         const { memory, notes } = setup();
 
         const result = await notes.createNote("Ideas");
@@ -218,7 +218,7 @@ describe("createNote", () => {
             ok: true,
             value: { path: "Ideas.md", name: "Ideas" },
         });
-        expect(await bytesOf(memory, "Ideas.md")).toEqual([]);
+        expect(await bytesOf(memory, "Ideas.md")).toEqual([0x23, 0x20]);
     });
 
     it("rejects a case-only collision without auto-suffixing", async () => {

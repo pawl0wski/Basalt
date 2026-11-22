@@ -100,11 +100,13 @@ describe("inline markers", () => {
         expect(hiddenOf(decorations("x\n*a* and **b**", 4))).toEqual([]);
     });
 
-    it("hides inline code backticks but not fenced code fences", () => {
+    it("hides inline code backticks and the fence markers of a fenced block", () => {
         const doc = "x\n`a`\n```\ncode\n```";
         expect(hiddenOf(decorations(doc, 0))).toEqual([
             [2, 3],
             [4, 5],
+            [6, 9],
+            [15, 18],
         ]);
     });
 
@@ -115,8 +117,163 @@ describe("inline markers", () => {
         );
     });
 
-    it("hides nothing inside a code block that looks like emphasis", () => {
-        expect(hiddenOf(decorations("x\n```\n*a*\n```", 0))).toEqual([]);
+    it("hides only the fence markers of a code block that looks like emphasis", () => {
+        expect(hiddenOf(decorations("x\n```\n*a*\n```", 0))).toEqual([
+            [2, 5],
+            [10, 13],
+        ]);
+    });
+});
+
+describe("fenced code", () => {
+    const fenced = "x\n```js\ncode\n```\ny";
+
+    it("hides the opening marker with its info string and the closing marker", () => {
+        expect(hiddenOf(decorations(fenced, 0))).toEqual([
+            [2, 7],
+            [13, 16],
+        ]);
+    });
+
+    it("hides the space between the marker and the info string", () => {
+        expect(hiddenOf(decorations("x\n``` js\ncode\n```", 0))).toEqual([
+            [2, 8],
+            [14, 17],
+        ]);
+    });
+
+    it("shows the opening fence source on its line and keeps the closing one hidden", () => {
+        expect(hiddenOf(decorations(fenced, 4))).toEqual([[13, 16]]);
+    });
+
+    it("shows the closing fence source on its line and keeps the opening one hidden", () => {
+        expect(hiddenOf(decorations(fenced, 14))).toEqual([[2, 7]]);
+    });
+
+    it("keeps both fences hidden with the cursor on a code line", () => {
+        expect(hiddenOf(decorations(fenced, 9))).toEqual([
+            [2, 7],
+            [13, 16],
+        ]);
+    });
+
+    it("shows every fence line a selection touches", () => {
+        expect(hiddenOf(decorations(fenced, 0, 14))).toEqual([]);
+    });
+
+    it("hides a tilde fence", () => {
+        expect(hiddenOf(decorations("x\n~~~\ncode\n~~~", 0))).toEqual([
+            [2, 5],
+            [11, 14],
+        ]);
+    });
+
+    it("hides only the opening marker of an unclosed fence and keeps the content", () => {
+        const doc = "x\n```\ncode";
+        expect(hiddenOf(decorations(doc, 0))).toEqual([[2, 5]]);
+        expect(hiddenOf(decorations(doc, 3))).toEqual([]);
+    });
+
+    it("hides a closing fence longer than the opening one", () => {
+        expect(hiddenOf(decorations("x\n```\ncode\n`````", 0))).toEqual([
+            [2, 5],
+            [11, 16],
+        ]);
+    });
+
+    it("does not hide a closing fence shorter than the opening one", () => {
+        const doc = "x\n````\ncode\n```";
+        expect(hiddenOf(decorations(doc, 0))).toEqual([[2, 6]]);
+    });
+
+    it("hides both fences of an empty fenced block", () => {
+        expect(hiddenOf(decorations("x\n```\n```", 0))).toEqual([
+            [2, 5],
+            [6, 9],
+        ]);
+    });
+
+    it("keeps the quote marker of a fence inside a blockquote visible", () => {
+        expect(hiddenOf(decorations("x\n> ```\n> code\n> ```", 0))).toEqual([
+            [4, 7],
+            [17, 20],
+        ]);
+    });
+
+    it("keeps the list marker of a fence inside a list item visible", () => {
+        expect(hiddenOf(decorations("x\n- ```\n  code\n  ```", 0))).toEqual([
+            [4, 7],
+            [17, 20],
+        ]);
+    });
+
+    it("keeps styling every line of the block", () => {
+        expect(classesOf(decorations(fenced, 0))).toEqual(
+            Array(3).fill("cm-lp-codeblock"),
+        );
+    });
+
+    it("hides nothing for an indented code block", () => {
+        expect(hiddenOf(decorations("x\n\n    code", 0))).toEqual([]);
+    });
+});
+
+describe("backslash escapes", () => {
+    it.each([
+        ["asterisk", "x\n\\*a\\*"],
+        ["hash", "x\n\\# a"],
+        ["bracket", "x\n\\[a]"],
+        ["backtick", "x\n\\`a"],
+    ])("hides the backslash of an escaped %s off the active line", (_, doc) => {
+        expect(hiddenOf(decorations(doc, 0))[0]).toEqual([2, 3]);
+    });
+
+    it("hides the first backslash of an escaped backslash only", () => {
+        expect(hiddenOf(decorations("x\n\\\\a", 0))).toEqual([[2, 3]]);
+    });
+
+    it("shows the source on the active line", () => {
+        expect(hiddenOf(decorations("x\n\\*a\\*", 4))).toEqual([]);
+    });
+
+    it("shows the source for every line a selection touches", () => {
+        expect(hiddenOf(decorations("\\*a\n\\*b\n\\*c", 0, 5))).toEqual([
+            [8, 9],
+        ]);
+    });
+
+    it("does not hide a backslash before a non-escapable character", () => {
+        expect(hiddenOf(decorations("x\n\\a", 0))).toEqual([]);
+    });
+
+    it("does not hide a trailing backslash", () => {
+        expect(hiddenOf(decorations("x\na\\\nb", 0))).toEqual([]);
+    });
+
+    it("does not hide a backslash inside an inline code span", () => {
+        expect(hiddenOf(decorations("x\n`a\\*b`", 0))).toEqual([
+            [2, 3],
+            [7, 8],
+        ]);
+    });
+
+    it("does not hide a backslash inside a fenced block", () => {
+        expect(hiddenOf(decorations("x\n```\n\\*a\n```", 0))).toEqual([
+            [2, 5],
+            [10, 13],
+        ]);
+    });
+
+    it("renders an escape and inline code on one line together", () => {
+        expect(hiddenOf(decorations("x\n\\*a `b`", 0))).toEqual([
+            [2, 3],
+            [6, 7],
+            [8, 9],
+        ]);
+    });
+
+    it("hides an escape at the start of the document", () => {
+        expect(hiddenOf(decorations("\\*a\nb", 5))).toEqual([[0, 1]]);
     });
 });
 
@@ -190,6 +347,44 @@ describe("in the editor", () => {
             onChange,
         });
         viewOf().dispatch({ selection: { anchor: source.length } });
+        expect(editor.getText()).toBe(source);
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it("hides fence lines off the active line, shows them on it and keeps the source", () => {
+        const source = "x\n```js\n\nTest\n```\ny";
+        const onChange = vi.fn();
+        const editor = createMarkdownEditor(parent, { doc: source, onChange });
+        const view = viewOf();
+        const lines = () =>
+            [...parent.querySelectorAll(".cm-line")].map((l) => l.textContent);
+
+        view.dispatch({ selection: { anchor: 0 } });
+        expect(lines()).toEqual(["x", "", "", "Test", "", "y"]);
+
+        view.dispatch({ selection: { anchor: 4 } });
+        expect(lines()).toEqual(["x", "```js", "", "Test", "", "y"]);
+
+        view.dispatch({ selection: { anchor: source.indexOf("```\ny") } });
+        expect(lines()).toEqual(["x", "", "", "Test", "```", "y"]);
+
+        expect(editor.getText()).toBe(source);
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it("renders an escaped character literally off the active line and keeps the backslash", () => {
+        const source = "\\*literal\\* and \\`tick\nnext";
+        const onChange = vi.fn();
+        const editor = createMarkdownEditor(parent, { doc: source, onChange });
+        const view = viewOf();
+        const firstLine = () => parent.querySelector(".cm-line")?.textContent;
+
+        view.dispatch({ selection: { anchor: 0 } });
+        expect(firstLine()).toBe(source.split("\n")[0]);
+
+        view.dispatch({ selection: { anchor: source.length } });
+        expect(firstLine()).toBe("*literal* and `tick");
+
         expect(editor.getText()).toBe(source);
         expect(onChange).not.toHaveBeenCalled();
     });

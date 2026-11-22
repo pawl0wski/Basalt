@@ -26,6 +26,8 @@ const colors = [
     "button-secondary-bg",
     "editor-selection",
     "tree-selected",
+    "scrollbar-thumb",
+    "scrollbar-thumb-hover",
 ];
 
 const fontSizes = [
@@ -54,6 +56,7 @@ const spacing = [
     "status-bar",
     "tree-row",
     "icon",
+    "scrollbar",
     "activity-icon",
     "activity-button",
     "icon-button",

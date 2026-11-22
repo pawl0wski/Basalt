@@ -5,12 +5,15 @@ import {
     type MarkdownEditor,
 } from "@basalt/editor";
 import { useEffect, useRef } from "react";
+import { createTitleTracker } from "./title-tracker";
 
 export type NoteEditorProps = {
     label: string;
     text: string;
     onChange: (text: string) => void;
     focusRequest?: number;
+    focusPosition?: number | null;
+    onTitleLeave?: () => void;
     readOnly?: boolean;
     images?: NoteEditorImages;
     files?: FileInputOptions;
@@ -26,6 +29,8 @@ export function NoteEditor({
     text,
     onChange,
     focusRequest = 0,
+    focusPosition = null,
+    onTitleLeave,
     readOnly = false,
     images,
     files,
@@ -36,6 +41,9 @@ export function NoteEditor({
     const onChangeRef = useRef(onChange);
     const textRef = useRef(text);
     const focusRef = useRef(focusRequest);
+    const focusPositionRef = useRef(focusPosition);
+    const onTitleLeaveRef = useRef(onTitleLeave);
+    const labelRef = useRef(label);
     const imagesRef = useRef(images);
     const filesRef = useRef(files);
 
@@ -43,6 +51,9 @@ export function NoteEditor({
         onChangeRef.current = onChange;
         textRef.current = text;
         focusRef.current = focusRequest;
+        focusPositionRef.current = focusPosition;
+        onTitleLeaveRef.current = onTitleLeave;
+        labelRef.current = label;
         imagesRef.current = images;
         filesRef.current = files;
     });
@@ -50,6 +61,9 @@ export function NoteEditor({
     useEffect(() => {
         const parent = parentRef.current;
         if (!parent) return;
+        const tracker = createTitleTracker(() => {
+            onTitleLeaveRef.current?.();
+        });
         const editor = createMarkdownEditor(parent, {
             doc: textRef.current,
             onChange: (next) => {
@@ -57,7 +71,14 @@ export function NoteEditor({
                 onChangeRef.current(next);
             },
             readOnly,
-            ariaLabel: label,
+            ariaLabel: labelRef.current,
+            onSelectionChange: (selection) => {
+                const current = editorRef.current;
+                if (current) tracker.update(current.getText(), selection);
+            },
+            onBlur: () => {
+                tracker.blur();
+            },
             images: imagesRef.current?.options,
             files: filesRef.current
                 ? {
@@ -72,13 +93,18 @@ export function NoteEditor({
         });
         knownText.current = textRef.current;
         editorRef.current = editor;
-        if (focusRef.current > 0) editor.focus();
+        if (focusRef.current > 0)
+            editor.focus(focusPositionRef.current ?? undefined);
         return () => {
             unsubscribe?.();
             editor.destroy();
             editorRef.current = null;
         };
-    }, [label, readOnly]);
+    }, [readOnly]);
+
+    useEffect(() => {
+        editorRef.current?.setLabel(label);
+    }, [label]);
 
     useEffect(() => {
         if (text === knownText.current) return;
@@ -87,7 +113,8 @@ export function NoteEditor({
     }, [text]);
 
     useEffect(() => {
-        if (focusRequest > 0) editorRef.current?.focus();
+        if (focusRequest > 0)
+            editorRef.current?.focus(focusPositionRef.current ?? undefined);
     }, [focusRequest]);
 
     return <div ref={parentRef} className="min-h-none flex-1" />;

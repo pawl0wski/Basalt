@@ -20,6 +20,7 @@ function rewriteDestination(
     raw: string,
     oldNote: WorkspacePath,
     newNote: WorkspacePath,
+    remapTarget?: (target: WorkspacePath) => WorkspacePath,
 ): string | null {
     const target = resolveLinkTarget(oldNote, raw);
     if (target.kind !== "workspace") return null;
@@ -28,7 +29,10 @@ function rewriteDestination(
     const cut = inner.search(SUFFIX_START);
     const suffix = cut >= 0 ? inner.slice(cut) : "";
     const oldPath = cut >= 0 ? inner.slice(0, cut) : inner;
-    const newPath = buildRelativeLink(newNote, target.path);
+    const newPath = buildRelativeLink(
+        newNote,
+        remapTarget ? remapTarget(target.path) : target.path,
+    );
     if (newPath === oldPath) return null;
     const rewritten = `${newPath}${suffix}`;
     return bracketed ? `<${rewritten}>` : rewritten;
@@ -38,8 +42,11 @@ export function rewriteRelativeLinks(
     text: string,
     oldNote: WorkspacePath,
     newNote: WorkspacePath,
+    remapTarget?: (target: WorkspacePath) => WorkspacePath,
 ): string {
-    if (directoryOf(oldNote) === directoryOf(newNote)) return text;
+    if (!remapTarget && directoryOf(oldNote) === directoryOf(newNote)) {
+        return text;
+    }
     const replacements: Replacement[] = [];
     markdown.parse(text).iterate({
         enter(node) {
@@ -50,6 +57,61 @@ export function rewriteRelativeLinks(
                 text.slice(url.from, url.to),
                 oldNote,
                 newNote,
+                remapTarget,
+            );
+            if (rewritten !== null) {
+                replacements.push({
+                    from: url.from,
+                    to: url.to,
+                    text: rewritten,
+                });
+            }
+        },
+    });
+    let result = text;
+    for (const replacement of replacements.reverse()) {
+        result =
+            result.slice(0, replacement.from) +
+            replacement.text +
+            result.slice(replacement.to);
+    }
+    return result;
+}
+
+function rewriteDestinationTo(
+    raw: string,
+    notePath: WorkspacePath,
+    oldTarget: WorkspacePath,
+    newTarget: WorkspacePath,
+): string | null {
+    const target = resolveLinkTarget(notePath, raw);
+    if (target.kind !== "workspace" || target.path !== oldTarget) return null;
+    const bracketed = raw.startsWith("<") && raw.endsWith(">");
+    const inner = bracketed ? raw.slice(1, -1) : raw.trim();
+    const cut = inner.search(SUFFIX_START);
+    const suffix = cut >= 0 ? inner.slice(cut) : "";
+    const rewritten = `${buildRelativeLink(notePath, newTarget)}${suffix}`;
+    return bracketed ? `<${rewritten}>` : rewritten;
+}
+
+export function rewriteLinksTo(
+    text: string,
+    notePath: WorkspacePath,
+    oldTarget: WorkspacePath,
+    newTarget: WorkspacePath,
+): string {
+    if (oldTarget === newTarget) return text;
+    const replacements: Replacement[] = [];
+    markdown.parse(text).iterate({
+        enter(node) {
+            if (!LINK_NODES.has(node.name)) return;
+            const url = node.node.getChild("URL");
+            if (!url) return;
+            const rewritten = rewriteDestinationTo(
+                text.slice(url.from, url.to),
+                notePath,
+                oldTarget,
+                newTarget,
             );
             if (rewritten !== null) {
                 replacements.push({

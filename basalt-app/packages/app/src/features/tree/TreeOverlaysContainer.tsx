@@ -74,7 +74,7 @@ export function TreeOverlaysContainer() {
             ];
         }
         const parent = target.kind === "folder" ? target.path : null;
-        return [
+        const entries: MenuEntry[] = [
             {
                 label: t("tree.menu.newNote"),
                 onSelect: choose(() => {
@@ -88,6 +88,23 @@ export function TreeOverlaysContainer() {
                 }),
             },
         ];
+        if (target.kind === "folder") {
+            entries.push(
+                {
+                    label: t("tree.menu.rename"),
+                    onSelect: choose(() => {
+                        treeActions.startRename(target.path);
+                    }),
+                },
+                {
+                    label: t("tree.menu.delete"),
+                    onSelect: choose(() => {
+                        treeActions.requestDelete([target.path]);
+                    }),
+                },
+            );
+        }
+        return entries;
     }, [menu, t, treeActions, selected]);
 
     const dialogParent =
@@ -96,12 +113,16 @@ export function TreeOverlaysContainer() {
             : dialog.kind === "rename"
               ? parentFolder(dialog.path)
               : dialog.parent;
+    const renamedKind =
+        dialog?.kind === "rename"
+            ? (findTreeNode(tree, dialog.path)?.kind ?? "note")
+            : null;
     const problem =
         dialog === null
             ? null
             : validateEntryName({
                   name: dialog.name,
-                  kind: dialog.kind === "rename" ? "note" : "folder",
+                  kind: renamedKind ?? "folder",
                   parent: dialogParent,
                   siblings: childrenOf(tree, dialogParent),
                   own: dialog.kind === "rename" ? dialog.path : undefined,
@@ -114,9 +135,13 @@ export function TreeOverlaysContainer() {
         dialog?.kind === "new-folder" && dialog.parent !== null
             ? (findTreeNode(tree, dialog.parent)?.name ?? dialog.parent)
             : null;
+    const confirmNode =
+        confirm?.paths.length === 1
+            ? findTreeNode(tree, confirm.paths[0])
+            : null;
     const confirmName =
         confirm?.paths.length === 1
-            ? (findTreeNode(tree, confirm.paths[0])?.name ?? confirm.paths[0])
+            ? (confirmNode?.name ?? confirm.paths[0])
             : "";
 
     return (
@@ -143,7 +168,10 @@ export function TreeOverlaysContainer() {
                 <TreeDialogs
                     kind={dialog.kind}
                     texts={{
-                        renameTitle: t("tree.rename.title"),
+                        renameTitle:
+                            renamedKind === "folder"
+                                ? t("tree.rename.folderTitle")
+                                : t("tree.rename.title"),
                         renameSubmit: t("tree.rename.submit"),
                         renamePending: t("tree.rename.pending"),
                         renameNameLabel: t("tree.rename.nameLabel"),
@@ -198,7 +226,9 @@ export function TreeOverlaysContainer() {
                     }
                     description={
                         confirm.paths.length === 1
-                            ? t("tree.delete.description")
+                            ? confirmNode?.kind === "folder"
+                                ? t("tree.delete.folderDescription")
+                                : t("tree.delete.description")
                             : t("tree.delete.descriptionMany", {
                                   count: confirm.paths.length,
                               })

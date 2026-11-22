@@ -105,6 +105,8 @@ function notRegularFile(kind: FileKind): Result<never> {
     });
 }
 
+const NEW_NOTE_TEXT = "# ";
+
 export function createNotes({ fs }: { fs: WorkspaceFileSystem }): NoteService {
     async function listNotes(): Promise<Result<readonly Note[]>> {
         const listing = await fs.list();
@@ -187,7 +189,7 @@ export function createNotes({ fs }: { fs: WorkspaceFileSystem }): NoteService {
                 message: "An entry with this name already exists.",
             });
         }
-        const created = await fs.createExclusive(path.value, "");
+        const created = await fs.createExclusive(path.value, NEW_NOTE_TEXT);
         if (!created.ok) return created;
         return ok({ path: path.value, name });
     }

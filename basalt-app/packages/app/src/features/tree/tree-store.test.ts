@@ -1,4 +1,4 @@
-import { toWorkspacePath } from "@basalt/core";
+import { toWorkspacePath, type WorkspacePath } from "@basalt/core";
 import { describe, expect, it } from "vitest";
 import {
     closeDialog,
@@ -10,7 +10,9 @@ import {
     openMenu,
     openNewFolderDialog,
     openRenameDialog,
+    prunePaths,
     pruneSelection,
+    remapPaths,
     selectRange,
     setDialogError,
     setDialogName,
@@ -315,5 +317,53 @@ describe("selection", () => {
         pruneSelection(store, () => true);
 
         expect(store.getState()).toBe(before);
+    });
+});
+
+describe("remapPaths and prunePaths", () => {
+    function seeded() {
+        const store = createTreeStore();
+        store.setState({
+            expanded: new Set(["a", "a/f", "b"]),
+            selected: new Set(["a/f/n.md", "b/k.md"]),
+            anchorId: "a/f/n.md",
+            focusedId: "a/f",
+        });
+        return store;
+    }
+
+    it("remaps every id under the folder and leaves others and lookalike prefixes alone", () => {
+        const store = seeded();
+        store.setState({ expanded: new Set(["a", "a/f", "a/fx", "b"]) });
+
+        remapPaths(store, "a/f" as WorkspacePath, "z/f" as WorkspacePath);
+
+        const state = store.getState();
+        expect([...state.expanded].sort()).toEqual(["a", "a/fx", "b", "z/f"]);
+        expect([...state.selected].sort()).toEqual(["b/k.md", "z/f/n.md"]);
+        expect(state.anchorId).toBe("z/f/n.md");
+        expect(state.focusedId).toBe("z/f");
+    });
+
+    it("prunes every id under the folder and clears focus and anchor inside it", () => {
+        const store = seeded();
+
+        prunePaths(store, "a/f" as WorkspacePath);
+
+        const state = store.getState();
+        expect([...state.expanded].sort()).toEqual(["a", "b"]);
+        expect([...state.selected]).toEqual(["b/k.md"]);
+        expect(state.anchorId).toBeNull();
+        expect(state.focusedId).toBeNull();
+    });
+
+    it("keeps focus and anchor outside the pruned folder", () => {
+        const store = seeded();
+        store.setState({ focusedId: "b", anchorId: "b/k.md" });
+
+        prunePaths(store, "a" as WorkspacePath);
+
+        expect(store.getState().focusedId).toBe("b");
+        expect(store.getState().anchorId).toBe("b/k.md");
     });
 });

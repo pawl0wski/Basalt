@@ -150,7 +150,29 @@ export function buildLivePreviewDecorations(
                     case "QuoteMark":
                         out.push(quoteMark.range(node.from, node.to));
                         return;
-                    case "FencedCode":
+                    case "FencedCode": {
+                        addLineDecorations(
+                            state,
+                            node.from,
+                            node.to,
+                            codeLine,
+                            out,
+                        );
+                        const info = node.node.getChild("CodeInfo");
+                        let opening = true;
+                        for (
+                            let child = node.node.firstChild;
+                            child;
+                            child = child.nextSibling
+                        ) {
+                            if (child.name !== "CodeMark") continue;
+                            const end = opening && info ? info.to : child.to;
+                            opening = false;
+                            if (!isActive(child.from))
+                                out.push(hidden.range(child.from, end));
+                        }
+                        return;
+                    }
                     case "CodeBlock":
                         addLineDecorations(
                             state,
@@ -159,6 +181,10 @@ export function buildLivePreviewDecorations(
                             codeLine,
                             out,
                         );
+                        return;
+                    case "Escape":
+                        if (!isActive(node.from))
+                            out.push(hidden.range(node.from, node.from + 1));
                         return;
                 }
             },

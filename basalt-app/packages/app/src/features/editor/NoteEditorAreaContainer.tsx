@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { useStore } from "zustand";
 import { useTranslation } from "react-i18next";
 import { useServices } from "../../useServices";
-import { Button, ConfirmDialog } from "@basalt/ui";
+import { Alert, Button, ConfirmDialog } from "@basalt/ui";
 import type { WorkspacePath } from "@basalt/core";
 import { isDirty, type NoteSession } from "../notes/notes-store";
 import { ErrorBanner } from "./ErrorBanner";
@@ -16,6 +16,7 @@ import { NoteSessionEditor } from "./NoteSessionEditor";
 import { NoteOpenError } from "./NoteOpenError";
 import { noteTitle } from "./note-title";
 import { openErrorMessage } from "./open-error-message";
+import { titleErrorText } from "./title-error";
 
 type PendingConfirm = {
     readonly kind: "reload" | "close";
@@ -186,7 +187,7 @@ export function NoteEditorAreaContainer() {
                 const title = noteTitle(session.path);
                 return (
                     <div
-                        key={session.path}
+                        key={session.id}
                         hidden={session.path !== activeNote}
                         className={`mx-auto h-full w-full max-w-note flex-col px-note-x py-between-groups ${session.path === activeNote ? "flex" : "hidden"}`}
                     >
@@ -203,6 +204,23 @@ export function NoteEditorAreaContainer() {
                         ) : (
                             <>
                                 {unavailable ? null : noteBanner(session)}
+                                {session.titleError ? (
+                                    <Alert
+                                        role="status"
+                                        variant="warning"
+                                        onDismiss={() => {
+                                            notesActions.dismissTitleError(
+                                                session.path,
+                                            );
+                                        }}
+                                        dismissLabel={t(
+                                            "notes.titleError.dismiss",
+                                        )}
+                                        className="mb-between-groups"
+                                    >
+                                        {titleErrorText(t, session)}
+                                    </Alert>
+                                ) : null}
                                 <NoteSessionEditor
                                     notePath={session.path}
                                     active={session.path === activeNote}
@@ -213,6 +231,16 @@ export function NoteEditorAreaContainer() {
                                             ? focusRequest.id
                                             : 0
                                     }
+                                    focusPosition={
+                                        focusRequest?.path === session.path
+                                            ? focusRequest.position
+                                            : null
+                                    }
+                                    onTitleLeave={() => {
+                                        void notesActions.commitTitle(
+                                            session.path,
+                                        );
+                                    }}
                                     onChange={(text) => {
                                         notesActions.updateText(
                                             session.path,

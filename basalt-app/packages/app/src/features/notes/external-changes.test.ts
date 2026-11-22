@@ -51,6 +51,8 @@ describe("external changes to open notes", () => {
             baseText: "from disk",
             error: null,
             saveStatus: "saved",
+            titleError: null,
+            titlePending: false,
         });
         expect(isDirty(session(h))).toBe(false);
         expect(h.scheduler.pending()).toBe(0);
@@ -84,6 +86,8 @@ describe("external changes to open notes", () => {
             baseText: "base",
             error: { code: "conflict" },
             saveStatus: "paused",
+            titleError: null,
+            titlePending: false,
         });
         expect(h.scheduler.pending()).toBe(0);
         h.notesActions.updateText(n, "mine more");
@@ -108,6 +112,8 @@ describe("external changes to open notes", () => {
             text: "saved by us",
             error: null,
             saveStatus: "saved",
+            titleError: null,
+            titlePending: false,
         });
     });
 
@@ -151,6 +157,8 @@ describe("external changes to open notes", () => {
             text: "mine",
             error: { code: "not-found" },
             saveStatus: "paused",
+            titleError: null,
+            titlePending: false,
         });
         expect(await diskText(fs)).toBeNull();
     });
@@ -214,6 +222,8 @@ describe("external changes to open notes", () => {
         expect(session(h)).toMatchObject({
             error: { code: "conflict" },
             saveStatus: "paused",
+            titleError: null,
+            titlePending: false,
         });
         expect(await diskText(fs)).toBe("theirs");
     });
@@ -245,6 +255,8 @@ describe("external changes to open notes", () => {
             baseText: "mine",
             error: null,
             saveStatus: "saved",
+            titleError: null,
+            titlePending: false,
         });
         h.notesActions.updateText(n, "mine again");
         h.scheduler.fire();
@@ -318,6 +330,8 @@ describe("external changes to open notes", () => {
             baseText: "theirs",
             error: null,
             saveStatus: "saved",
+            titleError: null,
+            titlePending: false,
         });
         h.scheduler.fire();
         await settle();
@@ -366,6 +380,8 @@ describe("external changes to open notes", () => {
             text: "typed 3",
             error: { code: "conflict" },
             saveStatus: "paused",
+            titleError: null,
+            titlePending: false,
         });
     });
 
@@ -409,6 +425,8 @@ describe("external changes to open notes", () => {
             baseText: "v2",
             error: null,
             saveStatus: "saved",
+            titleError: null,
+            titlePending: false,
         });
     });
 });

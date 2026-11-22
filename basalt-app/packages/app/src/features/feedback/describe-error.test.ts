@@ -66,3 +66,25 @@ describe("describeOperationError", () => {
         ).toBe("Something went wrong. Nothing was changed.");
     });
 });
+
+describe("describeOperationError for a stopped folder move", () => {
+    beforeAll(async () => {
+        await initI18n();
+    });
+
+    it("names the folder, how many notes are left and the reason", () => {
+        const text = describeOperationError(i18next.t, {
+            code: "permission-denied",
+            message: "",
+            detail: {
+                kind: "folder-move-stopped",
+                name: "f",
+                moved: 1,
+                total: 3,
+            },
+        });
+        expect(text).toContain('"f" was moved');
+        expect(text).toContain("2 of its 3 notes");
+        expect(text).toContain("read-only");
+    });
+});

@@ -49,7 +49,7 @@ test.describe("note editor", () => {
         await page.keyboard.type("# Title\n\nplain *text*\nsecond line");
 
         await expect
-            .poll(() => readOnDisk(page, "a.md"), { timeout: 5000 })
+            .poll(() => readOnDisk(page, "Title.md"), { timeout: 5000 })
             .toBe("# Title\n\nplain *text*\nsecond line");
         await expect(page.locator("textarea, input[type=text]")).toHaveCount(0);
     });
@@ -68,7 +68,7 @@ test.describe("note editor", () => {
 
         await expect
             .poll(() => readOnDisk(page, "Untitled.md"), { timeout: 5000 })
-            .toBe("typed at once");
+            .toBe("# typed at once");
     });
 
     test("Ctrl+N opens a note with the cursor in the editor", async ({
@@ -82,7 +82,7 @@ test.describe("note editor", () => {
 
         await expect
             .poll(() => readOnDisk(page, "Untitled.md"), { timeout: 5000 })
-            .toBe("hello");
+            .toBe("# hello");
     });
 });
 
@@ -261,9 +261,15 @@ test.describe("note errors", () => {
         ).toBeVisible();
         await expect(page.locator(".cm-editor")).toHaveCount(0);
         await expect(tab(page, "big")).toBeVisible();
-        expect((await readSavedBytes(page, "big.md"))?.length).toBe(
-            MAX_NOTE_BYTES + 1,
-        );
+        const saved = await page.evaluate(() => {
+            const bytes = window.__basaltTestFs?.readBytes("big.md");
+            const expected = "a".charCodeAt(0);
+            return {
+                length: bytes?.length,
+                unchanged: bytes?.every((byte) => byte === expected),
+            };
+        });
+        expect(saved).toEqual({ length: MAX_NOTE_BYTES + 1, unchanged: true });
     });
 
     test("a note that is not UTF-8 shows the message and is never written", async ({
@@ -343,7 +349,7 @@ test.describe("live preview", () => {
         await expect(page.locator(".cm-lp-code")).toHaveText("code");
         await expect(page.locator(".cm-lp-strong")).toHaveText("strong");
         await expect
-            .poll(() => readOnDisk(page, "a.md"), { timeout: 5000 })
+            .poll(() => readOnDisk(page, "Head.md"), { timeout: 5000 })
             .toBe(source);
     });
 
@@ -359,5 +365,91 @@ test.describe("live preview", () => {
         await expect(page.locator(".cm-line").nth(0)).toHaveText("# Alpha");
         await expect(page.locator(".cm-lp-task")).toHaveCount(2);
         await expect(page.locator(".cm-lp-task-done")).toHaveCount(1);
+    });
+    test("hides fence lines off the active line and shows them on it", async ({
+        page,
+    }) => {
+        const source = "intro\n\n```js\n\nTest\n```\n\nend";
+        await openWorkspaceWith(page, "/work/W", { "a.md": source });
+        await option(page, "a").click();
+        const lines = page.locator(".cm-line");
+        await expect(lines).toHaveCount(8);
+
+        await expect(lines.nth(2)).toHaveText("");
+        await expect(lines.nth(2)).toHaveClass(/cm-lp-codeblock/);
+        await expect(lines.nth(3)).toHaveText("");
+        await expect(lines.nth(4)).toHaveText("Test");
+        await expect(lines.nth(5)).toHaveText("");
+        await expect(editor(page, "a")).not.toContainText("```");
+
+        await lines.nth(2).click();
+        await expect(lines.nth(2)).toHaveText("```js");
+        await expect(lines.nth(5)).toHaveText("");
+
+        await lines.nth(5).click();
+        await expect(lines.nth(5)).toHaveText("```");
+        await expect(lines.nth(2)).toHaveText("");
+
+        await lines.nth(4).click();
+        await expect(lines.nth(2)).toHaveText("");
+        await expect(lines.nth(5)).toHaveText("");
+
+        await expect.poll(() => readOnDisk(page, "a.md")).toBe(source);
+    });
+
+    test("shows the source of every fence line a selection touches", async ({
+        page,
+    }) => {
+        await openWorkspaceWith(page, "/work/W", {
+            "a.md": "~~~\ncode\n~~~\nend",
+        });
+        await option(page, "a").click();
+        const lines = page.locator(".cm-line");
+        await expect(lines.nth(0)).toHaveText("~~~");
+
+        await lines.nth(3).click();
+        await expect(lines.nth(0)).toHaveText("");
+        await expect(lines.nth(2)).toHaveText("");
+
+        await page.keyboard.press("Shift+ArrowUp");
+        await page.keyboard.press("Shift+ArrowUp");
+        await page.keyboard.press("Shift+ArrowUp");
+        await expect(lines.nth(0)).toHaveText("~~~");
+        await expect(lines.nth(2)).toHaveText("~~~");
+    });
+
+    test("keeps the content of an unclosed fence and recovers its source", async ({
+        page,
+    }) => {
+        const source = "intro\n```\nkept text";
+        await openWorkspaceWith(page, "/work/W", { "a.md": source });
+        await option(page, "a").click();
+        const lines = page.locator(".cm-line");
+
+        await expect(lines.nth(1)).toHaveText("");
+        await expect(lines.nth(2)).toHaveText("kept text");
+
+        await lines.nth(1).click();
+        await expect(lines.nth(1)).toHaveText("```");
+        await expect.poll(() => readOnDisk(page, "a.md")).toBe(source);
+    });
+
+    test("renders escaped characters literally off the active line and keeps the backslashes", async ({
+        page,
+    }) => {
+        const source = "intro\n\\*star\\* and \\`tick\n`code \\*kept`\nend";
+        await openWorkspaceWith(page, "/work/W", { "a.md": source });
+        await option(page, "a").click();
+        const lines = page.locator(".cm-line");
+
+        await expect(lines.nth(1)).toHaveText("*star* and `tick");
+        await expect(lines.nth(2)).toHaveText("code \\*kept");
+
+        await lines.nth(1).click();
+        await expect(lines.nth(1)).toHaveText("\\*star\\* and \\`tick");
+
+        await lines.nth(3).click();
+        await expect(lines.nth(1)).toHaveText("*star* and `tick");
+        await expect.poll(() => readOnDisk(page, "a.md")).toBe(source);
     });
 });

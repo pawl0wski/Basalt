@@ -35,10 +35,7 @@ function AppShell({
                         {sidebar}
                     </div>
                 ) : null}
-                <main
-                    tabIndex={0}
-                    className="min-w-none flex-1 overflow-y-auto focus-visible:focus-ring"
-                >
+                <main className="min-w-none flex-1 overflow-hidden">
                     {children}
                 </main>
                 {sidePanel ? (
