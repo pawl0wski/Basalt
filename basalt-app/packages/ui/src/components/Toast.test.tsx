@@ -191,4 +191,112 @@ describe("Toast", () => {
         ).toBeTruthy();
         expect(screen.getByRole("button", { name: "Zamknij" })).toBeTruthy();
     });
+
+    it.each([
+        ["info", "Info"],
+        ["warning", "Warning"],
+        ["danger", "Error"],
+    ] as const)("names the %s kind in words", async (kind, word) => {
+        const user = userEvent.setup();
+        function Kind() {
+            const toast = useToast();
+            return (
+                <button type="button" onClick={() => toast({ kind, title: "T" })}>
+                    Fire
+                </button>
+            );
+        }
+        render(
+            <ToastProvider>
+                <Kind />
+            </ToastProvider>,
+        );
+        await user.click(screen.getByRole("button", { name: "Fire" }));
+
+        const region = screen.getByRole("region", { name: /Notifications/ });
+        await screen.findAllByText("T");
+        expect(region.querySelector("li")?.textContent).toContain(word);
+        expect(region.querySelector("li")?.getAttribute("data-kind")).toBe(
+            kind,
+        );
+        expect(region.querySelector("li svg")).not.toBeNull();
+    });
+
+    it("defaults to the info kind", async () => {
+        const user = userEvent.setup();
+        render(
+            <ToastProvider>
+                <Trigger />
+            </ToastProvider>,
+        );
+        await user.click(screen.getByRole("button", { name: "Delete" }));
+        await screen.findAllByText("Note moved to trash");
+
+        expect(
+            screen
+                .getByRole("region", { name: /Notifications/ })
+                .querySelector("li")
+                ?.getAttribute("data-kind"),
+        ).toBe("info");
+    });
+
+    it("uses the given kind labels", async () => {
+        const user = userEvent.setup();
+        function Kind() {
+            const toast = useToast();
+            return (
+                <button
+                    type="button"
+                    onClick={() => toast({ kind: "warning", title: "T" })}
+                >
+                    Fire
+                </button>
+            );
+        }
+        render(
+            <ToastProvider
+                kindLabels={{
+                    info: "Informacja",
+                    warning: "Ostrzeżenie",
+                    danger: "Błąd",
+                }}
+            >
+                <Kind />
+            </ToastProvider>,
+        );
+        await user.click(screen.getByRole("button", { name: "Fire" }));
+        await screen.findAllByText("T");
+
+        expect(
+            screen
+                .getByRole("region", { name: /Notifications/ })
+                .textContent,
+        ).toContain("Ostrzeżenie");
+    });
+
+    it("runs the countdown line for the toast duration", async () => {
+        const user = userEvent.setup();
+        function Short() {
+            const toast = useToast();
+            return (
+                <button
+                    type="button"
+                    onClick={() => toast({ title: "T", duration: 1234 })}
+                >
+                    Fire
+                </button>
+            );
+        }
+        render(
+            <ToastProvider>
+                <Short />
+            </ToastProvider>,
+        );
+        await user.click(screen.getByRole("button", { name: "Fire" }));
+        await screen.findAllByText("T");
+
+        expect(
+            screen.getAllByTestId("toast-timer")[0].style.animationDuration,
+        ).toBe("1234ms");
+    });
 });

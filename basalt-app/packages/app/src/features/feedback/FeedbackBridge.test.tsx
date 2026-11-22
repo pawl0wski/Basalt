@@ -68,4 +68,29 @@ describe("FeedbackBridge", () => {
         expect(items[0]).toHaveTextContent("could not be found");
         expect(items[1]).toHaveTextContent("not valid");
     });
+
+    it("labels a collision as a warning and a failed delete as an error", async () => {
+        const harness = createHarness({ workspaces: {} });
+        renderBridge(harness);
+
+        act(() => {
+            report(harness.feedbackStore, {
+                code: "already-exists",
+                message: "a",
+                detail: { kind: "move-collision", name: "Plan.md" },
+            });
+            report(harness.feedbackStore, {
+                code: "unknown",
+                message: "b",
+                detail: { kind: "delete-failed", failed: 1, total: 2 },
+            });
+        });
+
+        const region = await screen.findByRole("region", {
+            name: /Notifications/,
+        });
+        const items = region.querySelectorAll("li");
+        expect(items[0]).toHaveTextContent(/Warning/i);
+        expect(items[1]).toHaveTextContent(/Error/i);
+    });
 });
