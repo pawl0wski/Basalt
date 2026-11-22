@@ -10,6 +10,7 @@ type NoteSidebarProps = {
     label?: string;
     newNoteLabel?: string;
     notice?: ReactNode;
+    error?: ReactNode;
     children: ReactNode;
     className?: string;
 };
@@ -20,6 +21,7 @@ function NoteSidebar({
     label = "Workspace",
     newNoteLabel = "New note",
     notice,
+    error,
     children,
     className,
 }: NoteSidebarProps) {
@@ -37,12 +39,15 @@ function NoteSidebar({
                     <FilePlus aria-hidden="true" />
                 </IconButton>
             </div>
-            {notice ? (
-                <div className="p-panel">
-                    <Alert>{notice}</Alert>
+            {notice || error ? (
+                <div className="flex flex-col gap-in-group p-panel">
+                    {notice ? <Alert>{notice}</Alert> : null}
+                    {error ? <Alert variant="warning">{error}</Alert> : null}
                 </div>
             ) : null}
-            <div className="min-h-none flex-1 overflow-y-auto">{children}</div>
+            <div className="scrollbar-thin min-h-none flex-1 overflow-y-auto">
+                {children}
+            </div>
         </nav>
     );
 }

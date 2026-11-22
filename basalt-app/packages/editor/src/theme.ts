@@ -15,6 +15,8 @@ export const basaltTheme = EditorView.theme({
         fontFamily: "inherit",
         lineHeight: "var(--bs-text-size-note-line-height)",
         overflow: "auto",
+        scrollbarWidth: "thin",
+        scrollbarColor: "var(--bs-scrollbar-thumb) var(--bs-scrollbar-track)",
     },
     ".cm-content": {
         caretColor: "var(--bs-text-note)",

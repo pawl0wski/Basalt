@@ -44,7 +44,7 @@ function SidePanel({
             </div>
             <div
                 tabIndex={0}
-                className="min-h-none flex-1 overflow-y-auto focus-visible:focus-ring-inset"
+                className="scrollbar-thin min-h-none flex-1 overflow-y-auto focus-visible:focus-ring-inset"
             >
                 {children}
             </div>

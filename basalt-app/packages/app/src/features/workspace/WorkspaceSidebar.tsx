@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import {
-    Alert,
     Button,
     EmptyState,
     ErrorState,
@@ -87,12 +86,8 @@ export function WorkspaceSidebar({
             newNoteLabel={texts.newNote}
             onNewNote={onNewNote}
             notice={notice}
+            error={createError}
         >
-            {createError ? (
-                <div className="p-panel">
-                    <Alert variant="warning">{createError}</Alert>
-                </div>
-            ) : null}
             {listError !== null ? (
                 <ErrorState
                     title={texts.listErrorTitle}

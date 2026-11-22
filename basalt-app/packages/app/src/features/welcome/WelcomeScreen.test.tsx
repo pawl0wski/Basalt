@@ -55,6 +55,14 @@ describe("WelcomeScreenContainer", () => {
         expect(screen.queryByRole("status")).not.toBeInTheDocument();
     });
 
+    it("makes the welcome view its own keyboard-reachable scroller", () => {
+        const { container } = renderContainer(createHarness());
+
+        const root = container.firstElementChild;
+        expect(root).toHaveClass("overflow-y-auto", "h-full");
+        expect(root).toHaveAttribute("tabindex", "0");
+    });
+
     it("opens the picked workspace through the store", async () => {
         const harness = createHarness({
             workspaces: { [A]: seedFs({ "n.md": "" }) },

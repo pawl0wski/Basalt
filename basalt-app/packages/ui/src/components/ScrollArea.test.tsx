@@ -43,4 +43,40 @@ describe("ScrollArea", () => {
             container.firstElementChild?.classList.contains("h-sidebar"),
         ).toBe(true);
     });
+
+    it("shows its scrollbars up front by default and only on hover when asked", () => {
+        const always = render(
+            <ScrollArea label="A">
+                <p>x</p>
+            </ScrollArea>,
+        );
+        expect(
+            always.container.querySelectorAll("[data-orientation]").length,
+        ).toBeGreaterThan(0);
+        always.unmount();
+
+        const hover = render(
+            <ScrollArea label="A" type="hover">
+                <p>x</p>
+            </ScrollArea>,
+        );
+        expect(
+            hover.container.querySelectorAll("[data-orientation]"),
+        ).toHaveLength(0);
+    });
+
+    it("sizes both scrollbars from the scrollbar token", () => {
+        const { container } = render(
+            <ScrollArea label="A">
+                <p>x</p>
+            </ScrollArea>,
+        );
+
+        const vertical = container.querySelector("[data-orientation=vertical]");
+        const horizontal = container.querySelector(
+            "[data-orientation=horizontal]",
+        );
+        expect(vertical?.classList.contains("w-scrollbar")).toBe(true);
+        expect(horizontal?.classList.contains("h-scrollbar")).toBe(true);
+    });
 });

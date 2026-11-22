@@ -20,6 +20,21 @@ function viewOf(): EditorView {
     return view;
 }
 
+describe("editor scroller", () => {
+    it("is the editor's only scroller and uses the scrollbar tokens", () => {
+        createMarkdownEditor(parent, { doc: "x", onChange: vi.fn() });
+        const css = [...document.querySelectorAll("style")]
+            .map((style) => style.textContent ?? "")
+            .join("\n");
+        const rule = /\.cm-scroller\s*\{[^}]*\}/g;
+        const scroller = (css.match(rule) ?? []).join(" ");
+        expect(scroller).toContain("overflow: auto");
+        expect(scroller).toContain("scrollbar-width: thin");
+        expect(scroller).toContain("var(--bs-scrollbar-thumb)");
+        expect(scroller).toContain("var(--bs-scrollbar-track)");
+    });
+});
+
 describe("createMarkdownEditor", () => {
     it("returns the exact Markdown source", () => {
         const source = "# Title\n\n- a\n- b  \n\n\tcode\n";
