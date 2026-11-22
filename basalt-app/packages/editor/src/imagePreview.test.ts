@@ -18,7 +18,11 @@ function viewOf(): EditorView {
     return view;
 }
 
-const labels = { loading: "Loading…", broken: "Broken" };
+const labels = {
+    loading: "Loading…",
+    broken: "Broken",
+    resize: "Resize image",
+};
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 function imageOptions(

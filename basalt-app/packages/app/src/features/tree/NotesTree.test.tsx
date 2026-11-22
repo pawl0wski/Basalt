@@ -65,7 +65,7 @@ describe("the notes tree context menu", () => {
         ]);
     });
 
-    it("offers New note and New folder on a folder", async () => {
+    it("offers New note, New folder, Rename and Delete on a folder", async () => {
         await openApp({ "docs/a.md": "" });
 
         fireEvent.contextMenu(row("docs"));
@@ -74,6 +74,8 @@ describe("the notes tree context menu", () => {
         expect(menuItems().map((item) => item.textContent)).toEqual([
             en.tree.menu.newNote,
             en.tree.menu.newFolder,
+            en.tree.menu.rename,
+            en.tree.menu.delete,
         ]);
     });
 

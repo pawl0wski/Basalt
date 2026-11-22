@@ -90,12 +90,14 @@
             "title": "Delete \"{name}\"?",
             "titleMany": "Delete {count} notes?",
             "description": "The note is moved to the trash.",
+            "folderDescription": "The folder and everything in it are moved to the trash.",
             "descriptionMany": "The {count} notes are moved to the trash.",
             "confirm": "Delete",
             "partial": "{failed} of {total} notes were not deleted."
         },
         "rename": {
             "title": "Rename note",
+            "folderTitle": "Rename folder",
             "nameLabel": "Name",
             "submit": "Rename",
             "pending": "Renaming…"
@@ -111,10 +113,12 @@
         "move": {
             "collision": "\"{name}\" already exists in the destination. Nothing was moved.",
             "stopped": "Moved {moved} of {total} notes. \"{name}\" could not be moved: {reason}",
+            "folderLinksNotUpdated": "\"{name}\" was moved, but links in {remaining} of its {total} notes were not updated: {reason}",
             "linksNotUpdated": "Moved {moved} of {total} notes. \"{name}\" was moved but its links could not be updated: {reason}"
         },
         "cancel": "Cancel",
         "nameError": {
+            "reserved": "This name is reserved for attachments.",
             "empty": "Enter a name.",
             "traversal": "This name is not valid.",
             "separator": "A name cannot contain / or \\.",
@@ -145,6 +149,14 @@
             "message": "\"{name}\" was deleted or moved. Your unsaved changes will be lost.",
             "confirm": "Close note",
             "cancel": "Cancel"
+        },
+        "titleError": {
+            "invalid": "The heading cannot be used as a note name. The note is still named {name}.",
+            "exists": "A note with this name already exists. The note is still named {name}.",
+            "readOnly": "The workspace folder is read-only. The note is still named {name}.",
+            "generic": "{reason} The note is still named {name}.",
+            "links": "The note was renamed, but links in {count} other notes could not be updated.",
+            "dismiss": "Dismiss"
         },
         "saveError": {
             "title": "Could not save the note",
@@ -193,6 +205,9 @@
         "cancel": "Cancel"
     },
     "attachments": {
+        "resize": {
+            "label": "Resize image"
+        },
         "placeholder": {
             "loading": "Loading image…",
             "missing": "Image not found: {path}",

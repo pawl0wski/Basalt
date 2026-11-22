@@ -9,6 +9,7 @@ import type {
 import { createStore, type StoreApi } from "zustand/vanilla";
 
 export type NoteSession = {
+    readonly id: number;
     readonly path: WorkspacePath;
     readonly text: string;
     readonly baseText: string;
@@ -17,11 +18,19 @@ export type NoteSession = {
     readonly error: AppError | null;
     readonly openFailed: boolean;
     readonly saveStatus: AutosaveStatus;
+    readonly titleError: TitleError | null;
+    readonly titlePending: boolean;
+};
+
+export type TitleError = {
+    readonly error: AppError;
+    readonly linksFailed: number;
 };
 
 export type FocusRequest = {
     readonly path: WorkspacePath;
     readonly id: number;
+    readonly position: number | null;
 };
 
 export type NotesState = {

@@ -1,6 +1,6 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { rewriteRelativeLinks } from "./link-rewrite";
+import { rewriteLinksTo, rewriteRelativeLinks } from "./link-rewrite";
 import { buildRelativeLink, resolveLinkTarget } from "./links";
 import { toWorkspacePath, type WorkspacePath } from "./workspace-path";
 
@@ -25,6 +25,12 @@ describe("rewriteRelativeLinks", () => {
     it("rewrites when the note moves out of a folder to the root", () => {
         expect(move("[x](../a.md) [y](sub/b.md)", "docs/n.md", "n.md")).toBe(
             "[x](a.md) [y](docs/sub/b.md)",
+        );
+    });
+
+    it("keeps the width suffix of an image alt text when the note moves", () => {
+        expect(move("![photo|300](img/x.png)", "a/n.md", "b/n.md")).toBe(
+            "![photo|300](../a/img/x.png)",
         );
     });
 
@@ -222,5 +228,109 @@ describe("rewriteRelativeLinks", () => {
                 }),
             );
         });
+    });
+});
+
+describe("rewriteRelativeLinks with a target remap", () => {
+    const remap = (target: string) =>
+        target.startsWith("a/f/")
+            ? (`b/f/${target.slice("a/f/".length)}` as ReturnType<typeof p>)
+            : p(target);
+
+    it("rebuilds a link into the moved subtree from the new note location", () => {
+        expect(
+            rewriteRelativeLinks(
+                "[x](sub/two.md)",
+                p("a/f/one.md"),
+                p("b/f/one.md"),
+                remap,
+            ),
+        ).toBe("[x](sub/two.md)");
+    });
+
+    it("rebuilds a link that leaves the subtree", () => {
+        expect(
+            rewriteRelativeLinks(
+                "[x](../side.md)",
+                p("a/f/one.md"),
+                p("b/f/one.md"),
+                remap,
+            ),
+        ).toBe("[x](../../a/side.md)");
+    });
+
+    it("rewrites with a remap even when the note keeps its directory", () => {
+        expect(
+            rewriteRelativeLinks(
+                "[x](../x.md)",
+                p("a/f/one.md"),
+                p("a/f/one.md"),
+                () => p("z.md"),
+            ),
+        ).toBe("[x](../../z.md)");
+    });
+
+    it("keeps the existing behavior without a remap for same-folder moves", () => {
+        expect(
+            rewriteRelativeLinks("[x](a.md)", p("d/n.md"), p("d/m.md")),
+        ).toBe("[x](a.md)");
+    });
+});
+
+describe("rewriteLinksTo", () => {
+    const to = (text: string, note: string, from: string, target: string) =>
+        rewriteLinksTo(text, p(note), p(from), p(target));
+
+    it("rewrites links, images and reference definitions that point to the old note", () => {
+        expect(
+            to(
+                "[a](old.md) ![b](old.md) [c][r]\n\n[r]: old.md",
+                "n.md",
+                "old.md",
+                "New.md",
+            ),
+        ).toBe("[a](New.md) ![b](New.md) [c][r]\n\n[r]: New.md");
+    });
+
+    it("leaves links to other notes and unrelated text untouched", () => {
+        const text = "[a](other.md) and old.md and `[x](old.md)`";
+        expect(to(text, "n.md", "old.md", "New.md")).toBe(
+            "[a](other.md) and old.md and `[x](old.md)`",
+        );
+    });
+
+    it("resolves the link from the note's own folder", () => {
+        expect(to("[a](../old.md)", "dir/n.md", "old.md", "New name.md")).toBe(
+            "[a](../New%20name.md)",
+        );
+        expect(to("[a](old.md)", "dir/n.md", "old.md", "New.md")).toBe(
+            "[a](old.md)",
+        );
+    });
+
+    it("keeps the fragment, the query and the angle brackets", () => {
+        expect(to("[a](old.md#sec)", "n.md", "old.md", "New.md")).toBe(
+            "[a](New.md#sec)",
+        );
+        expect(to("[a](<old%20x.md?q=1>)", "n.md", "old x.md", "New.md")).toBe(
+            "[a](<New.md?q=1>)",
+        );
+    });
+
+    it("leaves remote, unsupported and invalid destinations byte for byte", () => {
+        const text =
+            "[a](https://x.test/old.md) [b](mailto:old.md) [c](/old.md) [d]()";
+        expect(to(text, "n.md", "old.md", "New.md")).toBe(text);
+    });
+
+    it("returns the text unchanged when the target does not change", () => {
+        expect(to("[a](old.md)", "n.md", "old.md", "old.md")).toBe(
+            "[a](old.md)",
+        );
+    });
+
+    it("is idempotent", () => {
+        const once = to("[a](old.md)", "n.md", "old.md", "New.md");
+        expect(to(once, "n.md", "old.md", "New.md")).toBe(once);
     });
 });

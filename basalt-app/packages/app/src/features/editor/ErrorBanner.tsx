@@ -15,7 +15,7 @@ export function ErrorBanner({
     action,
 }: ErrorBannerProps) {
     return (
-        <div className="sticky top-none z-10 pb-between-groups">
+        <div className="pb-between-groups">
             <Alert variant={variant} role="alert" title={title} action={action}>
                 {message}
             </Alert>

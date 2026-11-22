@@ -2,7 +2,7 @@
 date: 2026-11-17
 slug: scrolling-model
 type: spec
-status: draft
+status: implemented
 tags: [scrolling, scrollbars, layout, design-system, e01]
 ---
 

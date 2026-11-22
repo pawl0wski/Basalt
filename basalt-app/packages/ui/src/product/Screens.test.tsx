@@ -77,6 +77,54 @@ describe("NoteSidebar", () => {
     });
 });
 
+describe("NoteSidebar notices", () => {
+    function scrollers(container: HTMLElement) {
+        return container.querySelectorAll(".overflow-y-auto");
+    }
+
+    it("keeps the notice and the error in a fixed slot above the only scroller", () => {
+        const { container } = render(
+            <NoteSidebar
+                workspaceName="W"
+                onNewNote={vi.fn()}
+                notice="Watching is off"
+                error="Could not move the note"
+            >
+                <p>tree</p>
+            </NoteSidebar>,
+        );
+
+        const scroller = scrollers(container)[0];
+        expect(scrollers(container)).toHaveLength(1);
+        expect(scroller.contains(screen.getByText("tree"))).toBe(true);
+        expect(scroller.contains(screen.getByText("Watching is off"))).toBe(
+            false,
+        );
+        expect(
+            scroller.contains(screen.getByText("Could not move the note")),
+        ).toBe(false);
+        expect(
+            screen
+                .getByText("Could not move the note")
+                .compareDocumentPosition(screen.getByText("tree")) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+    });
+
+    it("renders no slot without a notice or an error and the tree scroller carries the scrollbar treatment", () => {
+        const { container } = render(
+            <NoteSidebar workspaceName="W" onNewNote={vi.fn()}>
+                <p>tree</p>
+            </NoteSidebar>,
+        );
+
+        expect(screen.queryByRole("alert")).toBeNull();
+        expect(
+            scrollers(container)[0]?.classList.contains("scrollbar-thin"),
+        ).toBe(true);
+    });
+});
+
 describe("ImagePlaceholder", () => {
     it.each([
         ["loading", "Loading image"],

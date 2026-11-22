@@ -19,6 +19,17 @@ export function describeOperationError(t: TFunction, error: AppError): string {
             },
         );
     }
+    if (detail?.kind === "folder-move-stopped") {
+        return t("tree.move.folderLinksNotUpdated", {
+            name: detail.name,
+            remaining: detail.total - detail.moved,
+            total: detail.total,
+            reason: t(`errors.${error.code}`),
+        });
+    }
+    if (detail?.kind === "title-links-failed") {
+        return t("notes.titleError.links", { count: detail.count });
+    }
     if (detail?.kind === "delete-failed") {
         return t("tree.delete.partial", {
             failed: detail.failed,

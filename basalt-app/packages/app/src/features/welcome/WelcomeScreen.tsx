@@ -41,7 +41,10 @@ export function WelcomeScreen({
     onOpenFolder,
 }: WelcomeScreenProps) {
     return (
-        <div className="flex min-h-full flex-col bg-surface-editor text-text-ui">
+        <div
+            className="scrollbar-thin flex h-full flex-col overflow-y-auto bg-surface-editor text-text-ui focus-visible:focus-ring-inset"
+            tabIndex={0}
+        >
             <div className="mx-auto flex w-full max-w-note flex-1 flex-col gap-section px-note-x py-section">
                 <div className="flex flex-col gap-between-groups">
                     <h1 className="text-size-note-h1 text-text-note">

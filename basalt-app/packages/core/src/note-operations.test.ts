@@ -773,3 +773,663 @@ describe("deleteNotes", () => {
         expect(await paths()).toEqual(["a.md"]);
     });
 });
+
+describe("renameNoteByTitle", () => {
+    it("sets the first heading and renames the file", async () => {
+        const { ops, paths, text } = setup({ "Untitled.md": "# \nbody" });
+
+        const result = await ops.renameNoteByTitle({
+            path: p("Untitled.md"),
+            title: "Plan",
+        });
+
+        expect(result.ok && result.value.path).toBe("Plan.md");
+        expect(await paths()).toEqual(["Plan.md"]);
+        expect(await text("Plan.md")).toBe("# Plan\nbody");
+    });
+
+    it("inserts a heading into a note without one", async () => {
+        const { ops, text } = setup({ "a.md": "body" });
+
+        await ops.renameNoteByTitle({ path: p("a.md"), title: "B" });
+
+        expect(await text("B.md")).toBe("# B\n\nbody");
+    });
+
+    it("rewrites the note's own links to itself and keeps the BOM and CRLF", async () => {
+        const { ops, text } = setup({
+            "a.md": "\uFEFF# Old\r\n[self](a.md)\r\n",
+        });
+
+        await ops.renameNoteByTitle({ path: p("a.md"), title: "New" });
+
+        expect(await text("New.md")).toBe("\uFEFF# New\r\n[self](New.md)\r\n");
+    });
+
+    it("renames a case-only change and keeps the heading", async () => {
+        const { ops, paths } = setup({ "test.md": "# test" });
+
+        const result = await ops.renameNoteByTitle({
+            path: p("test.md"),
+            title: "Test",
+        });
+
+        expect(result.ok).toBe(true);
+        expect(await paths()).toEqual(["Test.md"]);
+    });
+
+    it("rejects a colliding title without touching the note", async () => {
+        const { ops, paths, text } = setup({
+            "a.md": "# A",
+            "Taken.md": "x",
+        });
+
+        const result = await ops.renameNoteByTitle({
+            path: p("a.md"),
+            title: "taken",
+        });
+
+        expect(errorOf(result).code).toBe("already-exists");
+        expect(await paths()).toEqual(["Taken.md", "a.md"]);
+        expect(await text("a.md")).toBe("# A");
+    });
+
+    it.each(["a/b", "a:b", "con", ".hidden", "", "x."])(
+        "rejects the invalid title %j",
+        async (title) => {
+            const { ops, text } = setup({ "a.md": "# A" });
+
+            const result = await ops.renameNoteByTitle({
+                path: p("a.md"),
+                title,
+            });
+
+            expect(errorOf(result).code).toBe("invalid-path");
+            expect(await text("a.md")).toBe("# A");
+        },
+    );
+
+    it("reports not-found and invalid-path for a missing or non-note path", async () => {
+        const { ops } = setup({ "pic.png": "x" });
+
+        expect(
+            errorOf(
+                await ops.renameNoteByTitle({ path: p("no.md"), title: "A" }),
+            ).code,
+        ).toBe("not-found");
+        expect(
+            errorOf(
+                await ops.renameNoteByTitle({ path: p("pic.png"), title: "A" }),
+            ).code,
+        ).toBe("invalid-path");
+    });
+
+    it("reports permission-denied in a read-only workspace and changes nothing", async () => {
+        const { ops, text, paths } = setup(
+            { "a.md": "# A" },
+            { readOnly: true },
+        );
+
+        const result = await ops.renameNoteByTitle({
+            path: p("a.md"),
+            title: "B",
+        });
+
+        expect(errorOf(result).code).toBe("permission-denied");
+        expect(await paths()).toEqual(["a.md"]);
+        expect(await text("a.md")).toBe("# A");
+    });
+
+    it("keeps the new heading when the rename fails so the next attempt can retry", async () => {
+        const { ops, text } = setup({ "a.md": "# A" }, {}, (fs) => ({
+            ...fs,
+            rename: async () => ({
+                ok: false,
+                error: { code: "unknown", message: "nope" },
+            }),
+        }));
+
+        const result = await ops.renameNoteByTitle({
+            path: p("a.md"),
+            title: "B",
+        });
+
+        expect(result.ok).toBe(false);
+        expect(await text("a.md")).toBe("# B");
+    });
+
+    it("writes nothing when the heading already matches and only the case changes nothing else", async () => {
+        const { ops, memory } = setup({ "A.md": "# A" });
+        const write = vi.spyOn(memory, "writeTextAtomic");
+
+        const result = await ops.renameNoteByTitle({
+            path: p("A.md"),
+            title: "A",
+        });
+
+        expect(result.ok).toBe(true);
+        expect(write).not.toHaveBeenCalled();
+    });
+});
+
+describe("rewriteIncomingLinks", () => {
+    it("rewrites links in other notes, in folders, and skips the listed notes", async () => {
+        const { ops, text } = setup({
+            "a.md": "[x](Old.md)",
+            "dir/b.md": "[x](../Old.md)",
+            "skipped.md": "[x](Old.md)",
+            "Old.md": "[self](Old.md)",
+            "c.md": "no links",
+        });
+
+        const result = await ops.rewriteIncomingLinks({
+            oldPath: p("Old.md"),
+            newPath: p("New.md"),
+            skip: [p("skipped.md")],
+        });
+
+        expect(result.ok && [...result.value.changed].sort()).toEqual([
+            "a.md",
+            "dir/b.md",
+        ]);
+        expect(await text("a.md")).toBe("[x](New.md)");
+        expect(await text("dir/b.md")).toBe("[x](../New.md)");
+        expect(await text("skipped.md")).toBe("[x](Old.md)");
+        expect(await text("Old.md")).toBe("[self](Old.md)");
+    });
+
+    it("keeps the BOM and writes only changed notes", async () => {
+        const { ops, memory, text } = setup({
+            "a.md": "\uFEFF[x](Old.md)",
+            "b.md": "[x](Other.md)",
+        });
+        const write = vi.spyOn(memory, "writeTextAtomic");
+
+        await ops.rewriteIncomingLinks({
+            oldPath: p("Old.md"),
+            newPath: p("New.md"),
+            skip: [],
+        });
+
+        expect(write).toHaveBeenCalledTimes(1);
+        expect(await text("a.md")).toBe("\uFEFF[x](New.md)");
+    });
+
+    it("is idempotent", async () => {
+        const { ops, memory } = setup({ "a.md": "[x](Old.md)" });
+        const input = {
+            oldPath: p("Old.md"),
+            newPath: p("New.md"),
+            skip: [],
+        };
+        await ops.rewriteIncomingLinks(input);
+        const write = vi.spyOn(memory, "writeTextAtomic");
+
+        const again = await ops.rewriteIncomingLinks(input);
+
+        expect(again.ok && again.value.changed).toEqual([]);
+        expect(write).not.toHaveBeenCalled();
+    });
+
+    it("continues past a note that cannot be written and reports it", async () => {
+        const { ops, text } = setup(
+            { "a.md": "[x](Old.md)", "b.md": "[x](Old.md)" },
+            {},
+            (fs) => ({
+                ...fs,
+                writeTextAtomic: async (path, content) =>
+                    path === "a.md"
+                        ? {
+                              ok: false,
+                              error: { code: "unknown", message: "no" },
+                          }
+                        : fs.writeTextAtomic(path, content),
+            }),
+        );
+
+        const result = await ops.rewriteIncomingLinks({
+            oldPath: p("Old.md"),
+            newPath: p("New.md"),
+            skip: [],
+        });
+
+        expect(result.ok && result.value.changed).toEqual(["b.md"]);
+        expect(result.ok && result.value.failed.map((f) => f.path)).toEqual([
+            "a.md",
+        ]);
+        expect(await text("b.md")).toBe("[x](New.md)");
+    });
+
+    it("ignores dot folders and non-Markdown files", async () => {
+        const { ops, text } = setup({
+            ".hidden/a.md": "[x](Old.md)",
+            "notes.txt": "[x](Old.md)",
+        });
+
+        const result = await ops.rewriteIncomingLinks({
+            oldPath: p("Old.md"),
+            newPath: p("New.md"),
+            skip: [],
+        });
+
+        expect(result.ok && result.value.changed).toEqual([]);
+        expect(await text("notes.txt")).toBe("[x](Old.md)");
+    });
+});
+
+describe("renameFolder", () => {
+    it("renames the directory and everything inside it", async () => {
+        const { ops, paths } = setup({
+            "docs/a.md": "a",
+            "docs/deep/b.md": "b",
+        });
+
+        const result = await ops.renameFolder({
+            path: p("docs"),
+            newName: "Papers",
+        });
+
+        expect(result.ok && result.value.path).toBe("Papers");
+        expect(await paths()).toEqual([
+            "Papers",
+            "Papers/a.md",
+            "Papers/deep",
+            "Papers/deep/b.md",
+        ]);
+    });
+
+    it("allows a case-only change of the folder's own name", async () => {
+        const { ops, paths } = setup({ "docs/a.md": "a" });
+
+        const result = await ops.renameFolder({
+            path: p("docs"),
+            newName: "Docs",
+        });
+
+        expect(result.ok).toBe(true);
+        expect(await paths()).toEqual(["Docs", "Docs/a.md"]);
+    });
+
+    it("rejects a collision with a sibling, even case-only", async () => {
+        const { ops, paths } = setup({ "docs/a.md": "a", "Other/": "" });
+
+        const result = await ops.renameFolder({
+            path: p("docs"),
+            newName: "other",
+        });
+
+        expect(errorOf(result).code).toBe("already-exists");
+        expect(await paths()).toContain("docs");
+    });
+
+    it("rejects a note name colliding with a file of the same name in the parent", async () => {
+        const { ops } = setup({ "docs/a.md": "a", "x.md": "x" });
+
+        const result = await ops.renameFolder({
+            path: p("docs"),
+            newName: "x.md",
+        });
+
+        expect(errorOf(result).code).toBe("already-exists");
+    });
+
+    it.each(["a/b", "con", ".hidden", "", "x."])(
+        "rejects the invalid name %j",
+        async (newName) => {
+            const { ops, paths } = setup({ "docs/a.md": "a" });
+
+            const result = await ops.renameFolder({
+                path: p("docs"),
+                newName,
+            });
+
+            expect(errorOf(result).code).toBe("invalid-path");
+            expect(await paths()).toContain("docs");
+        },
+    );
+
+    it("refuses the reserved root name attachments, in any case", async () => {
+        const { ops } = setup({ "docs/a.md": "a" });
+
+        expect(
+            errorOf(
+                await ops.renameFolder({
+                    path: p("docs"),
+                    newName: "attachments",
+                }),
+            ).code,
+        ).toBe("invalid-path");
+        expect(
+            errorOf(
+                await ops.renameFolder({
+                    path: p("docs"),
+                    newName: "Attachments",
+                }),
+            ).code,
+        ).toBe("invalid-path");
+    });
+
+    it("allows the name attachments below the root", async () => {
+        const { ops, paths } = setup({ "docs/sub/a.md": "a" });
+
+        const result = await ops.renameFolder({
+            path: p("docs/sub"),
+            newName: "attachments",
+        });
+
+        expect(result.ok).toBe(true);
+        expect(await paths()).toContain("docs/attachments");
+    });
+
+    it("refuses to rename the hidden attachments folder, a dot folder, a file and a missing path", async () => {
+        const { ops } = setup({
+            "attachments/img.png": "x",
+            ".git/config": "x",
+            "n.md": "x",
+        });
+
+        for (const path of ["attachments", ".git", "n.md"]) {
+            expect(
+                errorOf(
+                    await ops.renameFolder({ path: p(path), newName: "Zed" }),
+                ).code,
+            ).toBe("invalid-path");
+        }
+        expect(
+            errorOf(await ops.renameFolder({ path: p("nope"), newName: "Zed" }))
+                .code,
+        ).toBe("not-found");
+    });
+
+    it("reports permission-denied in a read-only workspace and changes nothing", async () => {
+        const { ops, paths } = setup({ "docs/a.md": "a" }, { readOnly: true });
+
+        const result = await ops.renameFolder({
+            path: p("docs"),
+            newName: "Zed",
+        });
+
+        expect(errorOf(result).code).toBe("permission-denied");
+        expect(await paths()).toContain("docs");
+    });
+});
+
+describe("moveFolder", () => {
+    it("moves the directory with its notes into another folder and to the root", async () => {
+        const { ops, paths } = setup({
+            "a/inner/n.md": "n",
+            "b/": "",
+        });
+
+        const into = await ops.moveFolder({
+            path: p("a/inner"),
+            destinationFolder: p("b"),
+        });
+        expect(into.ok && into.value.moved).toEqual({
+            from: "a/inner",
+            to: "b/inner",
+        });
+        expect(await paths()).toContain("b/inner/n.md");
+
+        const toRoot = await ops.moveFolder({
+            path: p("b/inner"),
+            destinationFolder: null,
+        });
+        expect(toRoot.ok && toRoot.value.moved?.to).toBe("inner");
+        expect(await paths()).toContain("inner/n.md");
+    });
+
+    it("refuses to move a folder into itself or a descendant", async () => {
+        const { ops, paths } = setup({ "a/b/n.md": "n" });
+
+        for (const destination of ["a", "a/b"]) {
+            const result = await ops.moveFolder({
+                path: p("a"),
+                destinationFolder: p(destination),
+            });
+            expect(errorOf(result).code).toBe("invalid-path");
+        }
+        expect(await paths()).toContain("a/b/n.md");
+    });
+
+    it("refuses a collision at the destination", async () => {
+        const { ops, paths } = setup({ "a/x/n.md": "n", "b/X/m.md": "m" });
+
+        const result = await ops.moveFolder({
+            path: p("a/x"),
+            destinationFolder: p("b"),
+        });
+
+        expect(errorOf(result).detail).toEqual({
+            kind: "move-collision",
+            name: "x",
+        });
+        expect(await paths()).toContain("a/x/n.md");
+    });
+
+    it("is a no-op when the destination is the current parent", async () => {
+        const { ops, memory } = setup({ "a/x/n.md": "n" });
+        const rename = vi.spyOn(memory, "rename");
+
+        const result = await ops.moveFolder({
+            path: p("a/x"),
+            destinationFolder: p("a"),
+        });
+
+        expect(result.ok && result.value.moved).toBeNull();
+        expect(rename).not.toHaveBeenCalled();
+    });
+
+    it("refuses a move that would create a root folder named attachments", async () => {
+        const { ops, paths } = setup({ "a/attachments/n.md": "n" });
+
+        const result = await ops.moveFolder({
+            path: p("a/attachments"),
+            destinationFolder: null,
+        });
+
+        expect(errorOf(result).code).toBe("invalid-path");
+        expect(await paths()).toContain("a/attachments/n.md");
+    });
+
+    it("refuses hidden, dot and non-folder sources and destinations", async () => {
+        const { ops } = setup({
+            "attachments/img.png": "x",
+            ".git/c": "x",
+            "n.md": "x",
+            "ok/": "",
+        });
+
+        for (const path of ["attachments", ".git", "n.md"]) {
+            expect(
+                errorOf(
+                    await ops.moveFolder({
+                        path: p(path),
+                        destinationFolder: p("ok"),
+                    }),
+                ).code,
+            ).toBe("invalid-path");
+        }
+        for (const destination of ["attachments", ".git", "n.md"]) {
+            expect(
+                errorOf(
+                    await ops.moveFolder({
+                        path: p("ok"),
+                        destinationFolder: p(destination),
+                    }),
+                ).code,
+            ).toBe("invalid-path");
+        }
+        expect(
+            errorOf(
+                await ops.moveFolder({
+                    path: p("ok"),
+                    destinationFolder: p("missing"),
+                }),
+            ).code,
+        ).toBe("not-found");
+    });
+
+    it("rewrites links in the moved notes: inside links stay valid, outside links are rebuilt", async () => {
+        const { ops, text } = setup({
+            "a/f/one.md": "[in](two.md) [out](../../root.md) [up](../side.md)",
+            "a/f/sub/two.md": "[back](../one.md)",
+            "a/f/two.md": "x",
+            "a/side.md": "s",
+            "root.md": "r",
+            "b/": "",
+        });
+
+        await ops.moveFolder({ path: p("a/f"), destinationFolder: p("b") });
+
+        expect(await text("b/f/one.md")).toBe(
+            "[in](two.md) [out](../../root.md) [up](../../a/side.md)",
+        );
+        expect(await text("b/f/sub/two.md")).toBe("[back](../one.md)");
+    });
+
+    it("does not touch notes outside the moved folder", async () => {
+        const { ops, text } = setup({
+            "a/f/n.md": "n",
+            "outside.md": "[into](a/f/n.md)",
+            "b/": "",
+        });
+
+        await ops.moveFolder({ path: p("a/f"), destinationFolder: p("b") });
+
+        expect(await text("outside.md")).toBe("[into](a/f/n.md)");
+    });
+
+    it("keeps the BOM of a rewritten note and writes only changed notes", async () => {
+        const { ops, memory, text } = setup({
+            "a/f/one.md": "﻿[out](../x.md)",
+            "a/f/two.md": "no links",
+            "a/x.md": "x",
+            "b/": "",
+        });
+        const write = vi.spyOn(memory, "writeTextAtomic");
+
+        await ops.moveFolder({ path: p("a/f"), destinationFolder: p("b") });
+
+        expect(write).toHaveBeenCalledTimes(1);
+        expect(await text("b/f/one.md")).toBe("﻿[out](../../a/x.md)");
+    });
+
+    it("keeps the folder moved and reports how far it got when a rewrite fails", async () => {
+        const { ops, paths } = setup(
+            {
+                "a/f/one.md": "[x](../x.md)",
+                "a/f/two.md": "[x](../x.md)",
+                "a/x.md": "x",
+                "b/": "",
+            },
+            {},
+            (fs) => ({
+                ...fs,
+                writeTextAtomic: async (path, content) =>
+                    path === "b/f/two.md"
+                        ? {
+                              ok: false,
+                              error: { code: "unknown", message: "no" },
+                          }
+                        : fs.writeTextAtomic(path, content),
+            }),
+        );
+
+        const result = await ops.moveFolder({
+            path: p("a/f"),
+            destinationFolder: p("b"),
+        });
+
+        expect(errorOf(result).detail).toEqual({
+            kind: "folder-move-stopped",
+            name: "f",
+            moved: 1,
+            total: 2,
+        });
+        expect(await paths()).toContain("b/f/two.md");
+    });
+
+    it("reports permission-denied in a read-only workspace and changes nothing", async () => {
+        const { ops, paths } = setup(
+            { "a/f/n.md": "n", "b/": "" },
+            { readOnly: true },
+        );
+
+        const result = await ops.moveFolder({
+            path: p("a/f"),
+            destinationFolder: p("b"),
+        });
+
+        expect(errorOf(result).code).toBe("permission-denied");
+        expect(await paths()).toContain("a/f/n.md");
+    });
+});
+
+describe("deleteFolder", () => {
+    it("moves the directory with its contents to the trash", async () => {
+        const { ops, paths } = setup({
+            "d/a.md": "a",
+            "d/e/b.md": "b",
+            "k.md": "k",
+        });
+
+        const result = await ops.deleteFolder({ path: p("d") });
+
+        expect(result.ok && result.value.path).toBe("d");
+        expect(await paths()).toEqual(["k.md"]);
+    });
+
+    it("changes nothing when the trash fails", async () => {
+        const { ops, paths, trash } = setup({ "d/a.md": "a" });
+        trash.failNext();
+
+        const result = await ops.deleteFolder({ path: p("d") });
+
+        expect(result.ok).toBe(false);
+        expect(await paths()).toEqual(["d", "d/a.md"]);
+    });
+
+    it("refuses a note, the hidden attachments folder, a dot folder and a missing path", async () => {
+        const { ops } = setup({
+            "n.md": "x",
+            "attachments/i.png": "x",
+            ".git/c": "x",
+        });
+
+        for (const path of ["n.md", "attachments", ".git"]) {
+            expect(
+                errorOf(await ops.deleteFolder({ path: p(path) })).code,
+            ).toBe("invalid-path");
+        }
+        expect(errorOf(await ops.deleteFolder({ path: p("nope") })).code).toBe(
+            "not-found",
+        );
+    });
+
+    it("reports permission-denied in a read-only workspace", async () => {
+        const { ops, paths } = setup({ "d/a.md": "a" }, { readOnly: true });
+
+        const result = await ops.deleteFolder({ path: p("d") });
+
+        expect(errorOf(result).code).toBe("permission-denied");
+        expect(await paths()).toEqual(["d", "d/a.md"]);
+    });
+});
+
+describe("createFolder reserved name", () => {
+    it("refuses a root folder named attachments but allows it below the root", async () => {
+        const { ops, paths } = setup({ "docs/": "" });
+
+        expect(
+            errorOf(
+                await ops.createFolder({ parent: null, name: "attachments" }),
+            ).code,
+        ).toBe("invalid-path");
+        expect(
+            (await ops.createFolder({ parent: p("docs"), name: "attachments" }))
+                .ok,
+        ).toBe(true);
+        expect(await paths()).toContain("docs/attachments");
+    });
+});

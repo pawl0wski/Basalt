@@ -33,7 +33,7 @@ Live preview is added to `@basalt/editor` as further CodeMirror 6 extensions pas
 Bounded element list:
 
 1. Headings, emphasis, strong, inline code: markers hidden off the active line.
-2. Links, lists, task lists, blockquotes, fenced code: styling.
+2. Links, lists, task lists, blockquotes, fenced code: styling. Fence markers (and the info string) and backslash escapes hide off the active line (amended 2026-11-17, E01-S10).
 
 Theme tokens for preview styles come from CSS variables like the existing Basalt theme.
 
@@ -60,6 +60,8 @@ Today's e2e coverage only has the negative check (no separate input or source pa
 
 ## Implementation notes
 
-- `packages/editor/src/livePreview.ts`: a view plugin over the visible ranges, built from `buildLivePreviewDecorations(state, ranges)`. Hidden: ATX heading marker (with its space), emphasis and strong marks, inline code backticks. Styled only: links, list and task markers, blockquotes, fenced and indented code, headings.
+- `packages/editor/src/livePreview.ts`: a view plugin over the visible ranges, built from `buildLivePreviewDecorations(state, ranges)`. Hidden: ATX heading marker (with its space), emphasis and strong marks, inline code backticks, the opening fence marker with its info string, the closing fence marker, and the backslash of an escape (all only off the active line). Styled only: links, list and task markers, blockquotes, fenced and indented code, headings.
+
+Amended 2026-11-17 by `.ai/specs/implemented/2026-11-17-live-preview-fences-and-escapes.md` (E01-S10): fence markers and escapes now hide; AC-01.18 stays as written.
 - `markdown()` now uses `markdownLanguage` (GFM base) so task lists parse.
 - Hidden markers leave `textContent`; e2e assertions on non-cursor lines must expect rendered text.

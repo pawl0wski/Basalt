@@ -2,7 +2,7 @@
 date: 2026-11-17
 slug: resize-images-by-dragging
 type: spec
-status: draft
+status: implemented
 tags: [images, live-preview, editor, resize, markdown, e01]
 ---
 

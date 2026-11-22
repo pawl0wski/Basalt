@@ -8,20 +8,21 @@ export function useNoteTabs(): AppWindowTabs {
     const { notesStore, notesActions, leaveActions } = useServices();
     const openNotes = useStore(notesStore, (state) => state.openNotes);
     const activeNote = useStore(notesStore, (state) => state.activeNote);
+    const activeSession = openNotes.find((note) => note.path === activeNote);
 
     return {
         tabs: openNotes.map((session) => ({
-            id: session.path,
+            id: String(session.id),
             name: noteTitle(session.path),
             unsaved: isDirty(session),
         })),
-        activeTabId: activeNote ?? undefined,
+        activeTabId: activeSession && String(activeSession.id),
         onSelectTab: (id) => {
-            const session = openNotes.find((note) => note.path === id);
+            const session = openNotes.find((note) => String(note.id) === id);
             if (session) void notesActions.openNote(session.path);
         },
         onCloseTab: (id) => {
-            const session = openNotes.find((note) => note.path === id);
+            const session = openNotes.find((note) => String(note.id) === id);
             if (session) void leaveActions.closeTab(session.path);
         },
     };

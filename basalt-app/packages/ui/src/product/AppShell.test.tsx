@@ -66,4 +66,17 @@ describe("AppShell", () => {
             "panel",
         ]);
     });
+
+    it("never scrolls the shell: main is not a scroll owner or a tab stop", () => {
+        render(
+            <AppShell sidebar={<nav aria-label="sidebar">sidebar</nav>}>
+                <p>note</p>
+            </AppShell>,
+        );
+
+        const main = screen.getByRole("main");
+        expect(main?.classList.contains("overflow-hidden")).toBe(true);
+        expect(main.classList.contains("overflow-y-auto")).toBe(false);
+        expect(main.hasAttribute("tabindex")).toBe(false);
+    });
 });

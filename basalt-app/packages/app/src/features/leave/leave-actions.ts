@@ -9,6 +9,8 @@ export type LeaveActionsOptions = {
     readonly notes: NotesActions;
     readonly workspace: WorkspaceActions;
     readonly windowChrome: WindowChrome;
+    readonly onFolderDeleted?: (path: WorkspacePath) => void;
+    readonly onDeleteFailed?: (error: AppError) => void;
 };
 
 export type LeaveActions = {
@@ -21,7 +23,14 @@ export type LeaveActions = {
 };
 
 export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
-    const { store, notes, workspace, windowChrome } = options;
+    const {
+        store,
+        notes,
+        workspace,
+        windowChrome,
+        onFolderDeleted,
+        onDeleteFailed,
+    } = options;
 
     function block(pending: PendingLeave, error: AppError): void {
         store.setState({ pending, error });
@@ -34,10 +43,14 @@ export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
     return {
         block,
         async closeTab(path) {
-            const closed = await notes.closeTab(path);
-            if (!closed.ok) block({ kind: "close-tab", path }, closed.error);
+            const currentPath = await notes.commitTitle(path);
+            const closed = await notes.closeTab(currentPath);
+            if (!closed.ok) {
+                block({ kind: "close-tab", path: currentPath }, closed.error);
+            }
         },
         async handleCloseRequest() {
+            await notes.commitPendingTitles();
             const flushed = await notes.flushAll();
             if (flushed.ok) return true;
             block({ kind: "close-window" }, flushed.error);
@@ -52,13 +65,29 @@ export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
                     block(pending, saved.error);
                     return;
                 }
-                const closed = await notes.closeTab(pending.path);
+                const path = await notes.commitTitle(pending.path);
+                const closed = await notes.closeTab(path);
                 if (!closed.ok) {
-                    block(pending, closed.error);
+                    block({ kind: "close-tab", path }, closed.error);
                     return;
                 }
                 clear();
                 await workspace.retryLost();
+                return;
+            }
+            if (pending.kind === "delete-folder") {
+                const deleted = await notes.deleteFolder(pending.path);
+                if (!deleted.ok) {
+                    if (deleted.error.detail?.kind === "flush-failed") {
+                        block(pending, deleted.error);
+                        return;
+                    }
+                    clear();
+                    onDeleteFailed?.(deleted.error);
+                    return;
+                }
+                clear();
+                onFolderDeleted?.(pending.path);
                 return;
             }
             const flushed = await notes.retryAll();
@@ -88,6 +117,14 @@ export function createLeaveActions(options: LeaveActionsOptions): LeaveActions {
                 case "close-tab":
                     await notes.closeTab(pending.path, { discard: true });
                     return;
+                case "delete-folder": {
+                    const deleted = await notes.deleteFolder(pending.path, {
+                        discard: true,
+                    });
+                    if (deleted.ok) onFolderDeleted?.(pending.path);
+                    else onDeleteFailed?.(deleted.error);
+                    return;
+                }
                 case "change-workspace":
                     await workspace.continueOpen({ discard: true });
                     return;

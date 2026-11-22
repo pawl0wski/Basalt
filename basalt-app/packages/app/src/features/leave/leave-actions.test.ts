@@ -27,6 +27,54 @@ function leave(h: Awaited<ReturnType<typeof setup>>["h"]) {
     return h.leaveStore.getState();
 }
 
+describe("committing titles before leaving", () => {
+    it("renames a note whose heading changed before closing its tab", async () => {
+        const { h, fsA } = await setup();
+        h.notesActions.updateText(n, "# Renamed\nbody");
+
+        await h.leaveActions.closeTab(n);
+
+        const listing = await fsA.list();
+        expect(
+            listing.ok && listing.value.map((entry) => entry.path).sort(),
+        ).toEqual(["Renamed.md", "m.md"]);
+        expect(await savedText(fsA, wsPath("Renamed.md"))).toBe(
+            "# Renamed\nbody",
+        );
+        expect(h.notesStore.getState().openNotes.map((s) => s.path)).toEqual([
+            "m.md",
+        ]);
+    });
+
+    it("closes the renamed tab when editor blur already started the title commit", async () => {
+        const { h, fsA } = await setup();
+        h.notesActions.updateText(n, "# Renamed\nbody");
+
+        const committing = h.notesActions.commitTitle(n);
+        await Promise.all([committing, h.leaveActions.closeTab(n)]);
+
+        expect(await savedText(fsA, wsPath("Renamed.md"))).toBe(
+            "# Renamed\nbody",
+        );
+        expect(h.notesStore.getState().openNotes.map((s) => s.path)).toEqual([
+            "m.md",
+        ]);
+    });
+
+    it("renames pending notes before the window closes", async () => {
+        const { h, fsA } = await setup();
+        h.notesActions.updateText(m, "# Other name");
+
+        const closed = await h.leaveActions.handleCloseRequest();
+
+        expect(closed).toBe(true);
+        const listing = await fsA.list();
+        expect(
+            listing.ok && listing.value.map((entry) => entry.path).sort(),
+        ).toEqual(["Other name.md", "n.md"]);
+    });
+});
+
 describe("closing a tab", () => {
     it("closes a dirty tab after flushing and never opens the dialog", async () => {
         const { h, fsA } = await setup();

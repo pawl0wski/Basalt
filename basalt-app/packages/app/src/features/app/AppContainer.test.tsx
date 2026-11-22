@@ -124,6 +124,33 @@ describe("AppContainer", () => {
         expect(screen.getByText("demo")).toBeInTheDocument();
     });
 
+    it("keeps the same close button when an open note is renamed", async () => {
+        const harness = createHarness({
+            workspaces: { [A]: seedFs({ "Old.md": "# Old" }) },
+            picked: A,
+        });
+        renderApp(harness);
+        await userEvent.click(await screen.findByRole("button", OPEN_FOLDER));
+        await userEvent.click(
+            await screen.findByRole("treeitem", { name: "Old" }),
+        );
+        const close = screen.getByRole("button", { name: "Close Old" });
+
+        await act(() =>
+            harness.notesActions.applyTitle(wsPathOf("Old.md"), "New"),
+        );
+
+        expect(screen.getByRole("button", { name: "Close New" })).toBe(close);
+        expect(screen.getByRole("tab", { name: "New" })).toHaveAttribute(
+            "aria-selected",
+            "true",
+        );
+        await userEvent.click(close);
+        await waitFor(() =>
+            expect(screen.queryByRole("tab")).not.toBeInTheDocument(),
+        );
+    });
+
     it("opens the picker on Ctrl+O from welcome and prevents the browser default", async () => {
         const harness = createHarness({ picked: null });
         const open = vi.spyOn(harness.workspaceActions, "openWorkspace");

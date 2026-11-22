@@ -142,4 +142,60 @@ describe("NoteEditor", () => {
             "false",
         );
     });
+
+    it("changes the label without recreating the editor or moving the cursor", () => {
+        const { container, rerender } = render(
+            <NoteEditor label="old" text="# Title\nbody" onChange={vi.fn()} />,
+        );
+        const view = viewIn(container);
+        view.dispatch({ selection: { anchor: 4, head: 6 } });
+
+        rerender(
+            <NoteEditor label="new" text="# Title\nbody" onChange={vi.fn()} />,
+        );
+
+        expect(viewIn(container)).toBe(view);
+        expect(
+            screen.getByRole("textbox", { name: "new" }),
+        ).toBeInTheDocument();
+        expect(view.state.selection.main.from).toBe(4);
+        expect(view.state.selection.main.to).toBe(6);
+    });
+
+    it("calls onTitleLeave when the cursor leaves the heading and on blur", () => {
+        const onTitleLeave = vi.fn();
+        const { container } = render(
+            <NoteEditor
+                label="n"
+                text={"# Title\nbody"}
+                onChange={vi.fn()}
+                onTitleLeave={onTitleLeave}
+            />,
+        );
+        const view = viewIn(container);
+
+        view.dispatch({ selection: { anchor: 3 } });
+        expect(onTitleLeave).not.toHaveBeenCalled();
+
+        view.dispatch({ selection: { anchor: 10 } });
+        expect(onTitleLeave).toHaveBeenCalledTimes(1);
+
+        view.dispatch({ selection: { anchor: 3 } });
+        view.contentDOM.dispatchEvent(new FocusEvent("blur"));
+        expect(onTitleLeave).toHaveBeenCalledTimes(2);
+    });
+
+    it("focuses at the requested position", () => {
+        const { container } = render(
+            <NoteEditor
+                label="n"
+                text="# "
+                onChange={vi.fn()}
+                focusRequest={1}
+                focusPosition={2}
+            />,
+        );
+
+        expect(viewIn(container).state.selection.main.head).toBe(2);
+    });
 });

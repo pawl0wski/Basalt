@@ -2,7 +2,7 @@
 date: 2026-11-17
 slug: live-preview-fences-and-escapes
 type: spec
-status: draft
+status: implemented
 tags: [live-preview, markdown, fences, escapes, editor, e01]
 ---
 

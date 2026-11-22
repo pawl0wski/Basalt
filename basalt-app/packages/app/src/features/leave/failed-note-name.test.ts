@@ -5,6 +5,7 @@ import { failedNoteName } from "./failed-note-name";
 
 function session(path: string, text: string, error = false): NoteSession {
     return {
+        id: 1,
         path: wsPath(path),
         text,
         baseText: "x",
@@ -13,6 +14,8 @@ function session(path: string, text: string, error = false): NoteSession {
         error: error ? { code: "unknown", message: "" } : null,
         openFailed: false,
         saveStatus: "paused",
+        titleError: null,
+        titlePending: false,
     };
 }
 
@@ -40,5 +43,16 @@ describe("failedNoteName", () => {
             ]),
         ).toBe("c");
         expect(failedNoteName({ kind: "close-window" }, [])).toBe("");
+    });
+});
+
+describe("failedNoteName for a folder delete", () => {
+    it("names the folder", () => {
+        expect(
+            failedNoteName(
+                { kind: "delete-folder", path: wsPath("docs/Papers") },
+                [],
+            ),
+        ).toBe("Papers");
     });
 });
