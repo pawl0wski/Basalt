@@ -37,16 +37,12 @@ jobs:
   e2e:
     name: Playwright integration tests
     runs-on: self-hosted
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --ipc=host
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: basalt-app/package-lock.json
       - run: npm ci
-        working-directory: basalt-app
-      - run: npx playwright install --with-deps chromium
         working-directory: basalt-app
       - run: npm run test:e2e
         working-directory: basalt-app
@@ -60,16 +56,12 @@ jobs:
   safety-net:
     name: Design system safety net
     runs-on: self-hosted
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --ipc=host
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: basalt-app/package-lock.json
       - run: npm ci
-        working-directory: basalt-app
-      - run: npx playwright install --with-deps chromium
         working-directory: basalt-app
       - run: npm run safety-net
         working-directory: basalt-app
