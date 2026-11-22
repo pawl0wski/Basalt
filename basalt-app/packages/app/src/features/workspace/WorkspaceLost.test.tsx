@@ -126,7 +126,9 @@ describe("workspace lost", () => {
         ).toBeInTheDocument();
         expect(viewOf("a").state.doc.toString()).toBe("base mine");
         expect(app.harness.workspaceStore.getState().status).toBe("open");
-        expect(screen.getByText(en.saveStatus.notSaved)).toBeInTheDocument();
+        expect(
+            screen.getByRole("tab", { name: "a not saved" }),
+        ).toBeInTheDocument();
     });
 
     it("Retry while the folder is still gone reports it in the Save-failed dialog", async () => {
@@ -206,7 +208,7 @@ describe("workspace lost", () => {
         expect(app.harness.workspaceStore.getState().unavailable).toBe(false);
         const saved = await app.fs.readText("a.md" as never);
         expect(saved.ok && saved.value).toBe("base mine");
-        expect(screen.getByText(en.saveStatus.saved)).toBeInTheDocument();
+        expect(screen.getByRole("tab", { name: "a" })).toBeInTheDocument();
     });
 
     it("Change workspace opens the picker and, after Discard, the other workspace", async () => {

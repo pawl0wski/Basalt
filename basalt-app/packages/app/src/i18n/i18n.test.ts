@@ -37,10 +37,14 @@ describe("i18n", () => {
         }
     });
 
-    it("uses the spec texts for save status and the default note name", () => {
-        expect(i18next.t("saveStatus.saved")).toBe("Saved");
-        expect(i18next.t("saveStatus.saving")).toBe("Saving…");
-        expect(i18next.t("saveStatus.notSaved")).toBe("Not saved");
+    it("uses the spec texts for the word count and the default note name", () => {
+        expect(i18next.t("statusBar.wordsOne")).toBe("1 word");
+        expect(i18next.t("statusBar.wordsMany", { count: "1,204" })).toBe(
+            "1,204 words",
+        );
+        expect(
+            Object.keys(i18next.getResourceBundle("en", "translation")),
+        ).not.toContain("saveStatus");
         expect(i18next.t("notes.untitled")).toBe("Untitled");
     });
 

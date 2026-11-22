@@ -19,8 +19,12 @@ function editor(page: Page, name: string) {
     return page.getByRole("textbox", { name });
 }
 
-function saveState(page: Page) {
-    return page.locator(".bs-save-status");
+function unsavedTab(page: Page) {
+    return page.getByRole("tab", { name: "a not saved", exact: true });
+}
+
+function savedTab(page: Page) {
+    return page.getByRole("tab", { name: "a", exact: true });
 }
 
 async function openAndType(page: Page, files: Record<string, string>) {
@@ -32,52 +36,48 @@ async function openAndType(page: Page, files: Record<string, string>) {
 }
 
 test.describe("save state", () => {
-    test("shows Saved, Not saved while typing, then Saved with the exact bytes on disk", async ({
+    test("the tab goes from saved to not saved while typing and back, with the exact bytes on disk", async ({
         page,
     }) => {
         await openWorkspaceWith(page, "/work/W", { "a.md": "" });
         await option(page, "a").click();
-        await expect(saveState(page)).toHaveText("Saved");
+        await expect(savedTab(page)).toBeVisible();
 
         await editor(page, "a").click();
         await page.keyboard.type("hello world");
 
-        await expect(saveState(page)).toHaveText("Not saved");
-        await expect(saveState(page)).toHaveText("Saved", { timeout: 5000 });
+        await expect(unsavedTab(page)).toBeVisible();
+        await expect(savedTab(page)).toBeVisible({ timeout: 5000 });
         expect(await readSavedBytes(page, "a.md")).toEqual(
             Array.from(new TextEncoder().encode("hello world")),
         );
     });
 
-    test("the status bar has no sync word, no counts and no other save wording", async ({
+    test("the status bar never shows save wording or a sync word while saving", async ({
         page,
     }) => {
         await openWorkspaceWith(page, "/work/W", { "a.md": "x" });
         await option(page, "a").click();
         await editor(page, "a").click();
-        await page.keyboard.type("y");
+        await page.keyboard.type(" y");
 
-        const seen = new Set<string>();
+        const bar = page.locator(".bs-status-bar");
         for (let i = 0; i < 40; i += 1) {
-            seen.add((await saveState(page).textContent())?.trim() ?? "");
+            await expect(bar).not.toContainText(/saved|saving|sync/i);
             await page.waitForTimeout(100);
         }
-
-        for (const text of seen) {
-            expect(["Saved", "Saving…", "Not saved"]).toContain(text);
-        }
-        await expect(page.getByText(/sync|words|characters/i)).toHaveCount(0);
+        await expect(bar).toHaveText("2 words");
     });
 
     test("Ctrl+S saves immediately without the browser dialog", async ({
         page,
     }) => {
         await openAndType(page, { "a.md": "" });
-        await expect(saveState(page)).toHaveText("Not saved");
+        await expect(unsavedTab(page)).toBeVisible();
 
         await page.keyboard.press("Control+s");
 
-        await expect(saveState(page)).toHaveText("Saved", { timeout: 800 });
+        await expect(savedTab(page)).toBeVisible({ timeout: 800 });
         expect(await readSavedText(page, "a.md")).toBe("typed");
     });
 });
@@ -102,7 +102,7 @@ test.describe("save errors", () => {
             timeout: 5000,
         });
         await expect(alert).toContainText(READ_ONLY);
-        await expect(saveState(page)).toHaveText("Not saved");
+        await expect(unsavedTab(page)).toBeVisible();
         await expect(editor(page, "a")).toContainText("base!");
 
         await alert.getByRole("button", { name: "Retry" }).click();
@@ -113,7 +113,7 @@ test.describe("save errors", () => {
         await alert.getByRole("button", { name: "Retry" }).click();
 
         await expect(page.getByRole("alert")).toHaveCount(0);
-        await expect(saveState(page)).toHaveText("Saved");
+        await expect(savedTab(page)).toBeVisible();
         expect(await readSavedText(page, "a.md")).toBe("base!");
     });
 

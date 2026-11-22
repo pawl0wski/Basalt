@@ -1,17 +1,20 @@
-import { SaveStatus, StatusBar, type SaveState } from "@basalt/ui";
+import { StatusBar } from "@basalt/ui";
 
 export type AppStatusBarProps = {
-    saveState: SaveState | null;
-    labels: Record<SaveState, string>;
+    wordCount: number | null;
+    formatWordCount: (count: number) => string;
 };
 
-export function AppStatusBar({ saveState, labels }: AppStatusBarProps) {
+export function AppStatusBar({
+    wordCount,
+    formatWordCount,
+}: AppStatusBarProps) {
     return (
         <StatusBar
             trailing={
-                saveState ? (
-                    <SaveStatus state={saveState} messages={labels} />
-                ) : null
+                wordCount === null ? null : (
+                    <span>{formatWordCount(wordCount)}</span>
+                )
             }
         />
     );
