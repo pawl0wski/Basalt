@@ -10,7 +10,6 @@ tags: [ui, toast, storybook, design-system]
 
 ## Goal
 
-Toasts showed only text. Implement prototype variant A (`prototypes/toasts/toast-proposals.html`): every toast names its kind in words with an icon.
 
 ## Done
 
