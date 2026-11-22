@@ -53,7 +53,7 @@ export { Tabs } from "./components/Tabs";
 export type { TabItem, TabsProps } from "./components/Tabs";
 export { ToastProvider } from "./components/Toast";
 export { useToast } from "./components/toastContext";
-export type { ToastOptions } from "./components/toastContext";
+export type { ToastKind, ToastOptions } from "./components/toastContext";
 export { Tooltip } from "./components/Tooltip";
 export type { TooltipProps } from "./components/Tooltip";
 export { ActivityBar } from "./product/ActivityBar";

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { useServices } from "../../useServices";
 import { describeOperationError } from "./describe-error";
+import { toastKind } from "./error-surface";
 import { TOAST_DURATION_MS } from "./feedback";
 import { drain } from "./feedback-store";
 
@@ -20,6 +21,7 @@ export function FeedbackBridge(): null {
         drain(feedbackStore, last.id);
         for (const message of pending) {
             toast({
+                kind: toastKind(message.error),
                 title: describeOperationError(t, message.error),
                 duration: TOAST_DURATION_MS,
             });

@@ -178,7 +178,12 @@
     },
     "toasts": {
         "regionLabel": "Notifications",
-        "dismissLabel": "Dismiss"
+        "dismissLabel": "Dismiss",
+        "kind": {
+            "info": "Info",
+            "warning": "Warning",
+            "danger": "Error"
+        }
     },
     "errors": {
         "not-found": "The file or folder could not be found. It may have been moved or deleted.",

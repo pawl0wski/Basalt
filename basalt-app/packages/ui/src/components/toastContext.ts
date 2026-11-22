@@ -1,7 +1,10 @@
 import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 
+export type ToastKind = "info" | "warning" | "danger";
+
 export type ToastOptions = {
+    kind?: ToastKind;
     title: ReactNode;
     description?: ReactNode;
     action?: { label: string; onClick: () => void };

@@ -7,7 +7,7 @@ import * as ToastStories from "../../src/components/Toast.stories";
 
 ## 1. What it is for
 
-A toast confirms a short result that does not need a decision, such as "Note moved to trash", and goes away by itself. Approved by the owner in Stage 0.
+A toast reports a short result that does not need a decision, such as "Note moved to trash", and goes away by itself. It always names its kind (Info, Warning or Error) in words with an icon. Approved by the owner in Stage 0; kinds added on 2026-11-22 (proposal A of the toast prototypes).
 
 <Canvas of={ToastStories.WithAction} />
 
@@ -28,16 +28,26 @@ A toast confirms a short result that does not need a decision, such as "Note mov
 ## 4. Anatomy
 
 1. Container: `surface-raised`, 1 px `border-divider`, `rounded-container`, padding `panel`, no shadow.
-2. Title: `font-ui-strong`. Required.
-3. Description: `text-size-ui-small`, `text-muted`. Optional.
-4. Action: a `secondary` Button. Optional, at most one.
-5. Dismiss button: an icon button with `aria-label="Dismiss"`.
+2. Kind icon and kind label (small, uppercase, `font-ui-strong`) in the kind colour. Always shown.
+3. Title: `font-ui-strong`. Required.
+4. Description: `text-size-ui-small`, `text-muted`. Optional.
+5. Action: a `secondary` Button. Optional, at most one.
+6. Dismiss button: an icon button with `aria-label="Dismiss"`.
+7. Countdown line: 2 px at the bottom edge in the kind colour, shrinking over the duration; paused with the timer; hidden with `prefers-reduced-motion`.
 
 Position: bottom right at 768 px and above, full width at the bottom at 320 px (proposal; no source defines it).
 
 ## 5. Variants
 
-One variant. Danger and warning toasts are not provided, on purpose: an error worth showing needs an Alert.
+| Kind      | Label   | Icon          | Colour           | Announced by |
+| --------- | ------- | ------------- | ---------------- | ------------ |
+| `info`    | Info    | Info          | `icon-default`   | polite       |
+| `warning` | Warning | TriangleAlert | `status-warning` | polite       |
+| `danger`  | Error   | CircleAlert   | `status-danger`  | assertive    |
+
+`danger` is for an error that is only reported: the user has nothing to fix on the spot (a failed delete that was already retried, a move that stopped halfway). An error that needs action is still an Alert.
+
+<Canvas of={ToastStories.Kinds} />
 
 <Controls of={ToastStories.Playground} />
 
@@ -78,10 +88,13 @@ One variant. Danger and warning toasts are not provided, on purpose: an error wo
 
 | Option        | Type                 | Default  | Description                    |
 | ------------- | -------------------- | -------- | ------------------------------ |
+| `kind`        | `info`, `warning`, `danger` | `info` | Kind: icon, label and colour. |
 | `title`       | `ReactNode`          | required | Result.                        |
 | `description` | `ReactNode`          |          | Object name.                   |
 | `action`      | `{ label, onClick }` |          | One action.                    |
 | `duration`    | `number`             | `5000`   | Milliseconds before it closes. |
+
+`ToastProvider` also takes `label`, `dismissLabel` and `kindLabels` (`{ info, warning, danger }`) so all text can be translated.
 
 `useToast` throws outside `ToastProvider`.
 
