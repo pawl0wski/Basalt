@@ -107,6 +107,9 @@ export { HIDDEN_ROOT_FOLDERS, buildTree } from "./tree";
 export type { FolderNode, NoteNode, TreeNode } from "./tree";
 export { rewriteRelativeLinks } from "./link-rewrite";
 export { createNoteOperations } from "./note-operations";
+export { firstHeading, setFirstHeading } from "./note-heading";
+export type { NoteHeading } from "./note-heading";
+export { rewriteLinksTo } from "./link-rewrite";
 export type {
     MoveNotesInput,
     NoteMove,
@@ -116,6 +119,9 @@ export type {
     NoteDeleteFailure,
     NoteOperations,
     RenameNoteInput,
+    RenameByTitleInput,
+    RewriteIncomingLinksInput,
+    RewriteIncomingLinksResult,
 } from "./note-operations";
 
 export { countWords } from "./text-stats";

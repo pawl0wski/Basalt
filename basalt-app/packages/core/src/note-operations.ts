@@ -1,4 +1,5 @@
-import { rewriteRelativeLinks } from "./link-rewrite";
+import { rewriteLinksTo, rewriteRelativeLinks } from "./link-rewrite";
+import { setFirstHeading } from "./note-heading";
 import { isMarkdownPath } from "./notes";
 import type { FileEntry, WorkspaceFileSystem, WorkspaceTrash } from "./ports";
 import {
@@ -53,7 +54,29 @@ export interface DeleteNotesResult {
     readonly failed: readonly NoteDeleteFailure[];
 }
 
+export interface RenameByTitleInput {
+    readonly path: WorkspacePath;
+    readonly title: string;
+}
+
+export interface RewriteIncomingLinksInput {
+    readonly oldPath: WorkspacePath;
+    readonly newPath: WorkspacePath;
+    readonly skip: readonly WorkspacePath[];
+}
+
+export interface RewriteIncomingLinksResult {
+    readonly changed: readonly WorkspacePath[];
+    readonly failed: readonly NoteDeleteFailure[];
+}
+
 export interface NoteOperations {
+    renameNoteByTitle(
+        input: RenameByTitleInput,
+    ): Promise<Result<{ path: WorkspacePath }>>;
+    rewriteIncomingLinks(
+        input: RewriteIncomingLinksInput,
+    ): Promise<Result<RewriteIncomingLinksResult>>;
     createFolder(
         input: CreateFolderInput,
     ): Promise<Result<{ path: WorkspacePath }>>;
@@ -141,6 +164,98 @@ export function createNoteOperations({
         const renamed = await fs.rename(path, target.value);
         if (!renamed.ok) return renamed;
         return ok({ path: target.value });
+    }
+
+    async function renameNoteByTitle(
+        input: RenameByTitleInput,
+    ): Promise<Result<{ path: WorkspacePath }>> {
+        const { path, title } = input;
+        const fileName = title + EXTENSION;
+        if (
+            !validateNoteName(title).valid ||
+            !validateNoteName(fileName).valid ||
+            title.startsWith(".")
+        ) {
+            return failure("invalid-path", "The note name is not valid.");
+        }
+        const target = pathOf(directoryOf(path) + fileName);
+        if (!target.ok) return target;
+        const listing = await fs.list();
+        if (!listing.ok) return listing;
+        const source = findNote(listing.value, path);
+        if (!source.ok) return source;
+        const key = pathKey(target.value);
+        const collides = listing.value.some(
+            (entry) => entry.path !== path && pathKey(entry.path) === key,
+        );
+        if (collides) {
+            return failure(
+                "already-exists",
+                "An entry with this name already exists.",
+            );
+        }
+        const raw = await fs.readText(path);
+        if (!raw.ok) return raw;
+        const bom = raw.value.startsWith(BOM);
+        const body = bom ? raw.value.slice(BOM.length) : raw.value;
+        const titled = setFirstHeading(body, title);
+        const rewritten = rewriteLinksTo(titled, path, path, target.value);
+        if (rewritten !== body) {
+            const written = await fs.writeTextAtomic(
+                path,
+                bom ? BOM + rewritten : rewritten,
+            );
+            if (!written.ok) return written;
+        }
+        if (target.value === path) return ok({ path });
+        const renamed = await fs.rename(path, target.value);
+        if (!renamed.ok) return renamed;
+        return ok({ path: target.value });
+    }
+
+    async function rewriteIncomingLinks(
+        input: RewriteIncomingLinksInput,
+    ): Promise<Result<RewriteIncomingLinksResult>> {
+        const listing = await fs.list();
+        if (!listing.ok) return listing;
+        const skipped = new Set<WorkspacePath>([
+            ...input.skip,
+            input.oldPath,
+            input.newPath,
+        ]);
+        const changed: WorkspacePath[] = [];
+        const failed: NoteDeleteFailure[] = [];
+        for (const entry of listing.value) {
+            if (
+                entry.kind !== "file" ||
+                !isMarkdownPath(entry.path) ||
+                isDotEntry(entry.path) ||
+                skipped.has(entry.path)
+            ) {
+                continue;
+            }
+            const raw = await fs.readText(entry.path);
+            if (!raw.ok) {
+                failed.push({ path: entry.path, error: raw.error });
+                continue;
+            }
+            const bom = raw.value.startsWith(BOM);
+            const body = bom ? raw.value.slice(BOM.length) : raw.value;
+            const rewritten = rewriteLinksTo(
+                body,
+                entry.path,
+                input.oldPath,
+                input.newPath,
+            );
+            if (rewritten === body) continue;
+            const written = await fs.writeTextAtomic(
+                entry.path,
+                bom ? BOM + rewritten : rewritten,
+            );
+            if (written.ok) changed.push(entry.path);
+            else failed.push({ path: entry.path, error: written.error });
+        }
+        return ok({ changed, failed });
     }
 
     async function rewriteLinks(move: NoteMove): Promise<Result<void>> {
@@ -283,7 +398,14 @@ export function createNoteOperations({
         return ok({ deleted, failed });
     }
 
-    return { renameNote, moveNotes, createFolder, deleteNotes };
+    return {
+        renameNote,
+        renameNoteByTitle,
+        rewriteIncomingLinks,
+        moveNotes,
+        createFolder,
+        deleteNotes,
+    };
 }
 
 function stopped(

@@ -69,3 +69,57 @@ export function rewriteRelativeLinks(
     }
     return result;
 }
+
+function rewriteDestinationTo(
+    raw: string,
+    notePath: WorkspacePath,
+    oldTarget: WorkspacePath,
+    newTarget: WorkspacePath,
+): string | null {
+    const target = resolveLinkTarget(notePath, raw);
+    if (target.kind !== "workspace" || target.path !== oldTarget) return null;
+    const bracketed = raw.startsWith("<") && raw.endsWith(">");
+    const inner = bracketed ? raw.slice(1, -1) : raw.trim();
+    const cut = inner.search(SUFFIX_START);
+    const suffix = cut >= 0 ? inner.slice(cut) : "";
+    const rewritten = `${buildRelativeLink(notePath, newTarget)}${suffix}`;
+    return bracketed ? `<${rewritten}>` : rewritten;
+}
+
+export function rewriteLinksTo(
+    text: string,
+    notePath: WorkspacePath,
+    oldTarget: WorkspacePath,
+    newTarget: WorkspacePath,
+): string {
+    if (oldTarget === newTarget) return text;
+    const replacements: Replacement[] = [];
+    markdown.parse(text).iterate({
+        enter(node) {
+            if (!LINK_NODES.has(node.name)) return;
+            const url = node.node.getChild("URL");
+            if (!url) return;
+            const rewritten = rewriteDestinationTo(
+                text.slice(url.from, url.to),
+                notePath,
+                oldTarget,
+                newTarget,
+            );
+            if (rewritten !== null) {
+                replacements.push({
+                    from: url.from,
+                    to: url.to,
+                    text: rewritten,
+                });
+            }
+        },
+    });
+    let result = text;
+    for (const replacement of replacements.reverse()) {
+        result =
+            result.slice(0, replacement.from) +
+            replacement.text +
+            result.slice(replacement.to);
+    }
+    return result;
+}

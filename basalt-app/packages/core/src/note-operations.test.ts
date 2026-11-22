@@ -773,3 +773,246 @@ describe("deleteNotes", () => {
         expect(await paths()).toEqual(["a.md"]);
     });
 });
+
+describe("renameNoteByTitle", () => {
+    it("sets the first heading and renames the file", async () => {
+        const { ops, paths, text } = setup({ "Untitled.md": "# \nbody" });
+
+        const result = await ops.renameNoteByTitle({
+            path: p("Untitled.md"),
+            title: "Plan",
+        });
+
+        expect(result.ok && result.value.path).toBe("Plan.md");
+        expect(await paths()).toEqual(["Plan.md"]);
+        expect(await text("Plan.md")).toBe("# Plan\nbody");
+    });
+
+    it("inserts a heading into a note without one", async () => {
+        const { ops, text } = setup({ "a.md": "body" });
+
+        await ops.renameNoteByTitle({ path: p("a.md"), title: "B" });
+
+        expect(await text("B.md")).toBe("# B\n\nbody");
+    });
+
+    it("rewrites the note's own links to itself and keeps the BOM and CRLF", async () => {
+        const { ops, text } = setup({
+            "a.md": "\uFEFF# Old\r\n[self](a.md)\r\n",
+        });
+
+        await ops.renameNoteByTitle({ path: p("a.md"), title: "New" });
+
+        expect(await text("New.md")).toBe("\uFEFF# New\r\n[self](New.md)\r\n");
+    });
+
+    it("renames a case-only change and keeps the heading", async () => {
+        const { ops, paths } = setup({ "test.md": "# test" });
+
+        const result = await ops.renameNoteByTitle({
+            path: p("test.md"),
+            title: "Test",
+        });
+
+        expect(result.ok).toBe(true);
+        expect(await paths()).toEqual(["Test.md"]);
+    });
+
+    it("rejects a colliding title without touching the note", async () => {
+        const { ops, paths, text } = setup({
+            "a.md": "# A",
+            "Taken.md": "x",
+        });
+
+        const result = await ops.renameNoteByTitle({
+            path: p("a.md"),
+            title: "taken",
+        });
+
+        expect(errorOf(result).code).toBe("already-exists");
+        expect(await paths()).toEqual(["Taken.md", "a.md"]);
+        expect(await text("a.md")).toBe("# A");
+    });
+
+    it.each(["a/b", "a:b", "con", ".hidden", "", "x."])(
+        "rejects the invalid title %j",
+        async (title) => {
+            const { ops, text } = setup({ "a.md": "# A" });
+
+            const result = await ops.renameNoteByTitle({
+                path: p("a.md"),
+                title,
+            });
+
+            expect(errorOf(result).code).toBe("invalid-path");
+            expect(await text("a.md")).toBe("# A");
+        },
+    );
+
+    it("reports not-found and invalid-path for a missing or non-note path", async () => {
+        const { ops } = setup({ "pic.png": "x" });
+
+        expect(
+            errorOf(
+                await ops.renameNoteByTitle({ path: p("no.md"), title: "A" }),
+            ).code,
+        ).toBe("not-found");
+        expect(
+            errorOf(
+                await ops.renameNoteByTitle({ path: p("pic.png"), title: "A" }),
+            ).code,
+        ).toBe("invalid-path");
+    });
+
+    it("reports permission-denied in a read-only workspace and changes nothing", async () => {
+        const { ops, text, paths } = setup(
+            { "a.md": "# A" },
+            { readOnly: true },
+        );
+
+        const result = await ops.renameNoteByTitle({
+            path: p("a.md"),
+            title: "B",
+        });
+
+        expect(errorOf(result).code).toBe("permission-denied");
+        expect(await paths()).toEqual(["a.md"]);
+        expect(await text("a.md")).toBe("# A");
+    });
+
+    it("keeps the new heading when the rename fails so the next attempt can retry", async () => {
+        const { ops, text } = setup({ "a.md": "# A" }, {}, (fs) => ({
+            ...fs,
+            rename: async () => ({
+                ok: false,
+                error: { code: "io-error", message: "nope" },
+            }),
+        }));
+
+        const result = await ops.renameNoteByTitle({
+            path: p("a.md"),
+            title: "B",
+        });
+
+        expect(result.ok).toBe(false);
+        expect(await text("a.md")).toBe("# B");
+    });
+
+    it("writes nothing when the heading already matches and only the case changes nothing else", async () => {
+        const { ops, memory } = setup({ "A.md": "# A" });
+        const write = vi.spyOn(memory, "writeTextAtomic");
+
+        const result = await ops.renameNoteByTitle({
+            path: p("A.md"),
+            title: "A",
+        });
+
+        expect(result.ok).toBe(true);
+        expect(write).not.toHaveBeenCalled();
+    });
+});
+
+describe("rewriteIncomingLinks", () => {
+    it("rewrites links in other notes, in folders, and skips the listed notes", async () => {
+        const { ops, text } = setup({
+            "a.md": "[x](Old.md)",
+            "dir/b.md": "[x](../Old.md)",
+            "skipped.md": "[x](Old.md)",
+            "Old.md": "[self](Old.md)",
+            "c.md": "no links",
+        });
+
+        const result = await ops.rewriteIncomingLinks({
+            oldPath: p("Old.md"),
+            newPath: p("New.md"),
+            skip: [p("skipped.md")],
+        });
+
+        expect(result.ok && [...result.value.changed].sort()).toEqual([
+            "a.md",
+            "dir/b.md",
+        ]);
+        expect(await text("a.md")).toBe("[x](New.md)");
+        expect(await text("dir/b.md")).toBe("[x](../New.md)");
+        expect(await text("skipped.md")).toBe("[x](Old.md)");
+        expect(await text("Old.md")).toBe("[self](Old.md)");
+    });
+
+    it("keeps the BOM and writes only changed notes", async () => {
+        const { ops, memory, text } = setup({
+            "a.md": "\uFEFF[x](Old.md)",
+            "b.md": "[x](Other.md)",
+        });
+        const write = vi.spyOn(memory, "writeTextAtomic");
+
+        await ops.rewriteIncomingLinks({
+            oldPath: p("Old.md"),
+            newPath: p("New.md"),
+            skip: [],
+        });
+
+        expect(write).toHaveBeenCalledTimes(1);
+        expect(await text("a.md")).toBe("\uFEFF[x](New.md)");
+    });
+
+    it("is idempotent", async () => {
+        const { ops, memory } = setup({ "a.md": "[x](Old.md)" });
+        const input = {
+            oldPath: p("Old.md"),
+            newPath: p("New.md"),
+            skip: [],
+        };
+        await ops.rewriteIncomingLinks(input);
+        const write = vi.spyOn(memory, "writeTextAtomic");
+
+        const again = await ops.rewriteIncomingLinks(input);
+
+        expect(again.ok && again.value.changed).toEqual([]);
+        expect(write).not.toHaveBeenCalled();
+    });
+
+    it("continues past a note that cannot be written and reports it", async () => {
+        const { ops, text } = setup(
+            { "a.md": "[x](Old.md)", "b.md": "[x](Old.md)" },
+            {},
+            (fs) => ({
+                ...fs,
+                writeTextAtomic: async (path, content) =>
+                    path === "a.md"
+                        ? {
+                              ok: false,
+                              error: { code: "io-error", message: "no" },
+                          }
+                        : fs.writeTextAtomic(path, content),
+            }),
+        );
+
+        const result = await ops.rewriteIncomingLinks({
+            oldPath: p("Old.md"),
+            newPath: p("New.md"),
+            skip: [],
+        });
+
+        expect(result.ok && result.value.changed).toEqual(["b.md"]);
+        expect(result.ok && result.value.failed.map((f) => f.path)).toEqual([
+            "a.md",
+        ]);
+        expect(await text("b.md")).toBe("[x](New.md)");
+    });
+
+    it("ignores dot folders and non-Markdown files", async () => {
+        const { ops, text } = setup({
+            ".hidden/a.md": "[x](Old.md)",
+            "notes.txt": "[x](Old.md)",
+        });
+
+        const result = await ops.rewriteIncomingLinks({
+            oldPath: p("Old.md"),
+            newPath: p("New.md"),
+            skip: [],
+        });
+
+        expect(result.ok && result.value.changed).toEqual([]);
+        expect(await text("notes.txt")).toBe("[x](Old.md)");
+    });
+});
