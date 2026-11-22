@@ -201,7 +201,10 @@ describe("Toast", () => {
         function Kind() {
             const toast = useToast();
             return (
-                <button type="button" onClick={() => toast({ kind, title: "T" })}>
+                <button
+                    type="button"
+                    onClick={() => toast({ kind, title: "T" })}
+                >
                     Fire
                 </button>
             );
@@ -268,9 +271,7 @@ describe("Toast", () => {
         await screen.findAllByText("T");
 
         expect(
-            screen
-                .getByRole("region", { name: /Notifications/ })
-                .textContent,
+            screen.getByRole("region", { name: /Notifications/ }).textContent,
         ).toContain("Ostrzeżenie");
     });
 
