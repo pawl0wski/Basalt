@@ -1,4 +1,9 @@
-import { buildTree, toWorkspacePath, type FileEntry } from "@basalt/core";
+import {
+    buildTree,
+    toWorkspacePath,
+    type FileEntry,
+    type WorkspacePath,
+} from "@basalt/core";
 import { describe, expect, it } from "vitest";
 import { validateEntryName } from "./entry-name";
 
@@ -159,5 +164,36 @@ describe("validateEntryName", () => {
                 own: path("Café.md"),
             }),
         ).toBe("collision");
+    });
+});
+
+describe("reserved folder names", () => {
+    const base = { kind: "folder" as const, siblings: [] };
+
+    it("reserves attachments at the workspace root, in any case", () => {
+        expect(
+            validateEntryName({ ...base, name: "attachments", parent: null }),
+        ).toBe("reserved");
+        expect(
+            validateEntryName({ ...base, name: "Attachments", parent: null }),
+        ).toBe("reserved");
+    });
+
+    it("allows attachments below the root and for notes", () => {
+        expect(
+            validateEntryName({
+                ...base,
+                name: "attachments",
+                parent: "docs" as WorkspacePath,
+            }),
+        ).toBeNull();
+        expect(
+            validateEntryName({
+                kind: "note",
+                name: "attachments",
+                parent: null,
+                siblings: [],
+            }),
+        ).toBeNull();
     });
 });

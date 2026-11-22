@@ -90,12 +90,14 @@
             "title": "Delete \"{name}\"?",
             "titleMany": "Delete {count} notes?",
             "description": "The note is moved to the trash.",
+            "folderDescription": "The folder and everything in it are moved to the trash.",
             "descriptionMany": "The {count} notes are moved to the trash.",
             "confirm": "Delete",
             "partial": "{failed} of {total} notes were not deleted."
         },
         "rename": {
             "title": "Rename note",
+            "folderTitle": "Rename folder",
             "nameLabel": "Name",
             "submit": "Rename",
             "pending": "Renaming…"
@@ -111,10 +113,12 @@
         "move": {
             "collision": "\"{name}\" already exists in the destination. Nothing was moved.",
             "stopped": "Moved {moved} of {total} notes. \"{name}\" could not be moved: {reason}",
+            "folderLinksNotUpdated": "\"{name}\" was moved, but links in {remaining} of its {total} notes were not updated: {reason}",
             "linksNotUpdated": "Moved {moved} of {total} notes. \"{name}\" was moved but its links could not be updated: {reason}"
         },
         "cancel": "Cancel",
         "nameError": {
+            "reserved": "This name is reserved for attachments.",
             "empty": "Enter a name.",
             "traversal": "This name is not valid.",
             "separator": "A name cannot contain / or \\.",

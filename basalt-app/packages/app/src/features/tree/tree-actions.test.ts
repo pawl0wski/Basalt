@@ -213,13 +213,18 @@ describe("rename", () => {
         expect(await paths(fs)).toEqual(["alpha.md"]);
     });
 
-    it("does not open for a folder or a missing note", async () => {
+    it("opens for a folder and does not open for a missing entry", async () => {
         const { h } = await open({ "docs/a.md": "" });
 
-        h.treeActions.startRename(wsPath("docs"));
         h.treeActions.startRename(wsPath("gone.md"));
-
         expect(h.treeStore.getState().dialog).toBeNull();
+
+        h.treeActions.startRename(wsPath("docs"));
+        expect(h.treeStore.getState().dialog).toMatchObject({
+            kind: "rename",
+            path: "docs",
+            name: "docs",
+        });
     });
 });
 

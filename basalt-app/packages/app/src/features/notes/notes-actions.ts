@@ -14,6 +14,7 @@ import {
     type Autosave,
     type AutosaveScheduler,
     type DeleteNotesResult,
+    type FolderMove,
     type Note,
     type NoteMove,
     type NoteOperations,
@@ -80,6 +81,18 @@ export type NotesActions = {
     ): Promise<Result<WorkspacePath>>;
     dismissTitleError(path: WorkspacePath): void;
     commitPendingTitles(): Promise<void>;
+    renameFolder(
+        path: WorkspacePath,
+        newName: string,
+    ): Promise<Result<WorkspacePath>>;
+    moveFolder(
+        path: WorkspacePath,
+        destinationFolder: WorkspacePath | null,
+    ): Promise<Result<FolderMove | null>>;
+    deleteFolder(
+        path: WorkspacePath,
+        options?: { readonly discard?: boolean },
+    ): Promise<Result<void>>;
     moveNotes(
         paths: readonly WorkspacePath[],
         destinationFolder: WorkspacePath | null,
@@ -639,6 +652,153 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         }
     }
 
+    function sessionsUnder(folder: WorkspacePath): WorkspacePath[] {
+        return store
+            .getState()
+            .openNotes.map((session) => session.path)
+            .filter((path) => path.startsWith(`${folder}/`));
+    }
+
+    function remapUnder(
+        from: WorkspacePath,
+        to: WorkspacePath,
+        path: WorkspacePath,
+    ): WorkspacePath {
+        return `${to}${path.slice(from.length)}` as WorkspacePath;
+    }
+
+    function applyFolderChange(from: WorkspacePath, to: WorkspacePath): void {
+        for (const path of sessionsUnder(from)) {
+            applyPathChange(path, remapUnder(from, to, path));
+        }
+    }
+
+    function folderFlushError(error: AppError): AppError {
+        return { ...error, detail: { kind: "flush-failed" } } as AppError;
+    }
+
+    async function renameFolder(
+        path: WorkspacePath,
+        newName: string,
+    ): Promise<Result<WorkspacePath>> {
+        const active = workspace;
+        if (!active) return err(NO_WORKSPACE);
+        const inside = sessionsUnder(path);
+        const flushed = await flushBeforeChange(inside);
+        if (!flushed.ok) return flushed;
+        if (workspace !== active) return err(NO_WORKSPACE);
+        const directory = path.slice(0, path.lastIndexOf("/") + 1);
+        const expected = toWorkspacePath(`${directory}${newName}`);
+        const watched = expected.ok
+            ? [
+                  ...inside,
+                  ...inside.map((note) =>
+                      remapUnder(path, expected.value, note),
+                  ),
+              ]
+            : inside;
+        const renamed = await withBusy(watched, async () => {
+            const result = await active.operations.renameFolder({
+                path,
+                newName,
+            });
+            if (result.ok && workspace === active) {
+                applyFolderChange(path, result.value.path);
+            }
+            return result;
+        });
+        if (!renamed.ok) return renamed;
+        if (workspace !== active) return err(NO_WORKSPACE);
+        await persistTabs();
+        await refreshNotes();
+        return ok(renamed.value.path);
+    }
+
+    async function moveFolder(
+        path: WorkspacePath,
+        destinationFolder: WorkspacePath | null,
+    ): Promise<Result<FolderMove | null>> {
+        const active = workspace;
+        if (!active) return err(NO_WORKSPACE);
+        const inside = sessionsUnder(path);
+        const flushed = await flushBeforeChange(inside);
+        if (!flushed.ok) {
+            store.setState({ createError: flushed.error });
+            return flushed;
+        }
+        if (workspace !== active) return err(NO_WORKSPACE);
+        const prefix =
+            destinationFolder === null ? "" : `${destinationFolder}/`;
+        const expected = toWorkspacePath(
+            prefix + path.slice(path.lastIndexOf("/") + 1),
+        );
+        const watched = expected.ok
+            ? [
+                  ...inside,
+                  ...inside.map((note) =>
+                      remapUnder(path, expected.value, note),
+                  ),
+              ]
+            : inside;
+        let newPaths: WorkspacePath[] = [];
+        const moved = await withBusy(watched, async () => {
+            const result = await active.operations.moveFolder({
+                path,
+                destinationFolder,
+            });
+            const happened =
+                (result.ok && result.value.moved !== null) ||
+                (!result.ok &&
+                    result.error.detail?.kind === "folder-move-stopped");
+            if (happened && expected.ok && workspace === active) {
+                applyFolderChange(path, expected.value);
+                newPaths = inside.map((note) =>
+                    remapUnder(path, expected.value, note),
+                );
+            }
+            return result;
+        });
+        if (workspace !== active) return err(NO_WORKSPACE);
+        if (moved.ok) store.setState({ createError: null });
+        else options.feedback.report(moved.error);
+        await persistTabs();
+        await refreshNotes();
+        if (newPaths.length > 0) await handleExternalChangesFor(newPaths);
+        return moved.ok ? ok(moved.value.moved) : moved;
+    }
+
+    async function handleExternalChangesFor(
+        paths: readonly WorkspacePath[],
+    ): Promise<void> {
+        const active = workspace;
+        if (!active) return;
+        await Promise.all(
+            paths.map((path) => checkExternalChange(active, path, paths)),
+        );
+    }
+
+    async function deleteFolder(
+        path: WorkspacePath,
+        deleteOptions?: { readonly discard?: boolean },
+    ): Promise<Result<void>> {
+        const active = workspace;
+        if (!active) return err(NO_WORKSPACE);
+        const inside = sessionsUnder(path);
+        if (!deleteOptions?.discard) {
+            const flushed = await flushBeforeChange(inside);
+            if (!flushed.ok) return err(folderFlushError(flushed.error));
+        }
+        if (workspace !== active) return err(NO_WORKSPACE);
+        const deleted = await active.operations.deleteFolder({ path });
+        if (workspace !== active) return err(NO_WORKSPACE);
+        if (!deleted.ok) return deleted;
+        for (const note of inside) {
+            await closeTab(note, { discard: true });
+        }
+        await refreshNotes();
+        return ok(undefined);
+    }
+
     async function moveNotes(
         paths: readonly WorkspacePath[],
         destinationFolder: WorkspacePath | null,
@@ -810,6 +970,9 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         commitTitle,
         applyTitle,
         commitPendingTitles,
+        renameFolder,
+        moveFolder,
+        deleteFolder,
         dismissTitleError(path) {
             patchSession(path, { titleError: null });
         },

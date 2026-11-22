@@ -28,6 +28,13 @@ export type AppErrorDetail =
           readonly kind: "delete-failed";
           readonly failed: number;
           readonly total: number;
+      }
+    | { readonly kind: "flush-failed" }
+    | {
+          readonly kind: "folder-move-stopped";
+          readonly name: string;
+          readonly moved: number;
+          readonly total: number;
       };
 
 export type AppError = {

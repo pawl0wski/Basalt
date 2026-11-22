@@ -6,8 +6,10 @@ export function errorSurface(error: AppError): ErrorSurface {
     switch (error.detail?.kind) {
         case "move-collision":
         case "move-stopped":
+        case "folder-move-stopped":
         case "delete-failed":
             return "toast";
+        case "flush-failed":
         case undefined:
             break;
     }

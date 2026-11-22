@@ -7,7 +7,9 @@ export function failedNoteName(
     pending: PendingLeave,
     openNotes: readonly NoteSession[],
 ): string {
-    if (pending.kind === "close-tab") return noteTitle(pending.path);
+    if (pending.kind === "close-tab" || pending.kind === "delete-folder") {
+        return noteTitle(pending.path);
+    }
     const failed =
         openNotes.find((note) => isDirty(note) && note.error) ??
         openNotes.find(isDirty);

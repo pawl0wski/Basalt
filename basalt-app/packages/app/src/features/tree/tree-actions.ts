@@ -25,6 +25,8 @@ import {
     type DropTarget,
     closeMenu,
     expandFolders,
+    prunePaths,
+    remapPaths,
     openMenu,
     openNewFolderDialog,
     openRenameDialog,
@@ -72,8 +74,13 @@ export function createTreeActions(options: {
     readonly notesStore: NotesStore;
     readonly notes: NotesActions;
     readonly feedback: Feedback;
+    readonly onDeleteFolderBlocked: (
+        path: WorkspacePath,
+        error: AppError,
+    ) => void;
 }): TreeActions {
-    const { store, notesStore, notes, feedback } = options;
+    const { store, notesStore, notes, feedback, onDeleteFolderBlocked } =
+        options;
 
     function failDialog(dialog: TreeDialog | null, error: AppError): void {
         const showToast = errorSurface(error) === "toast";
@@ -102,8 +109,31 @@ export function createTreeActions(options: {
         );
     }
 
+    function draggedFolder(): WorkspacePath | null {
+        const { dragging } = store.getState();
+        if (dragging.size !== 1) return null;
+        const [id] = [...dragging];
+        const node = findTreeNode(currentTree(), id);
+        return node?.kind === "folder" ? node.path : null;
+    }
+
+    function intoItself(
+        folder: WorkspacePath,
+        destination: WorkspacePath | null,
+    ) {
+        return (
+            destination !== null &&
+            (destination === folder || destination.startsWith(`${folder}/`))
+        );
+    }
+
     return {
         dragStart: (id) => {
+            if (findTreeNode(currentTree(), id)?.kind === "folder") {
+                clearSelection(store);
+                startDrag(store, new Set([id]));
+                return;
+            }
             const { selected } = store.getState();
             if (!selected.has(id)) clearSelection(store);
             startDrag(store, selected.has(id) ? selected : new Set([id]));
@@ -145,6 +175,24 @@ export function createTreeActions(options: {
             if (!confirm) return;
             const paths = confirm.paths;
             closeConfirm(store);
+            const folder =
+                paths.length === 1
+                    ? findTreeNode(currentTree(), paths[0])
+                    : null;
+            if (folder?.kind === "folder") {
+                const deleted = await notes.deleteFolder(folder.path);
+                if (deleted.ok) {
+                    prunePaths(store, folder.path);
+                    notesStore.setState({ createError: null });
+                    return;
+                }
+                if (deleted.error.detail?.kind === "flush-failed") {
+                    onDeleteFolderBlocked(folder.path, deleted.error);
+                    return;
+                }
+                feedback.report(deleted.error);
+                return;
+            }
             const result = await notes.deleteNotes(paths);
             const existing = new Set<string>(
                 notesStore.getState().notes.map((note) => note.path),
@@ -186,9 +234,12 @@ export function createTreeActions(options: {
                 return;
             }
             const destination = destinationOf(target);
+            const folder = draggedFolder();
             setDropTarget(
                 store,
-                destination !== false && changesFolder(dragging, destination)
+                destination !== false &&
+                    changesFolder(dragging, destination) &&
+                    (folder === null || !intoItself(folder, destination))
                     ? target
                     : null,
             );
@@ -198,10 +249,38 @@ export function createTreeActions(options: {
             expandFolders(store, [id]);
         },
         async drop(target) {
+            const folder = draggedFolder();
             const paths = [...store.getState().dragging] as WorkspacePath[];
             const selected = store.getState().selected;
             endDrag(store);
             const destination = destinationOf(target);
+            if (folder !== null) {
+                if (
+                    destination === false ||
+                    !changesFolder(paths, destination) ||
+                    intoItself(folder, destination)
+                ) {
+                    return;
+                }
+                const moved = await notes.moveFolder(folder, destination);
+                const name = folder.slice(folder.lastIndexOf("/") + 1);
+                const target =
+                    `${destination === null ? "" : `${destination}/`}${name}` as WorkspacePath;
+                const happened =
+                    (moved.ok && moved.value !== null) ||
+                    (!moved.ok &&
+                        moved.error.detail?.kind === "folder-move-stopped");
+                if (!happened) return;
+                remapPaths(store, folder, target);
+                if (destination !== null) {
+                    expandFolders(store, [
+                        ...ancestorFolders(destination),
+                        destination,
+                    ]);
+                }
+                setFocusedRow(store, target);
+                return;
+            }
             if (destination === false || !changesFolder(paths, destination))
                 return;
             const moved = await notes.moveNotes(paths, destination);
@@ -259,7 +338,7 @@ export function createTreeActions(options: {
         },
         startRename(path) {
             const node = findTreeNode(currentTree(), path);
-            if (node?.kind !== "note") return;
+            if (!node) return;
             openRenameDialog(store, path, node.name);
         },
         startNewFolder(parent) {
@@ -275,22 +354,23 @@ export function createTreeActions(options: {
             const { dialog } = store.getState();
             if (!dialog || dialog.pending) return;
             const renaming = dialog.kind === "rename";
-            if (renaming) {
-                const node = findTreeNode(currentTree(), dialog.path);
-                if (node?.kind === "note" && node.name === dialog.name) {
-                    closeDialog(store);
-                    return;
-                }
+            const renamedNode = renaming
+                ? findTreeNode(currentTree(), dialog.path)
+                : null;
+            if (renamedNode && renamedNode.name === dialog.name) {
+                closeDialog(store);
+                return;
             }
 
             const parent = renaming ? parentFolder(dialog.path) : dialog.parent;
             const problem = validateEntryName({
                 name: dialog.name,
-                kind: renaming ? "note" : "folder",
+                kind: renamedNode?.kind ?? "folder",
                 parent,
                 siblings: childrenOf(currentTree(), parent),
                 own: renaming ? dialog.path : undefined,
             });
+            if (problem === "reserved") return;
             if (problem === "collision") {
                 failDialog(dialog, {
                     code: "already-exists",
@@ -302,14 +382,19 @@ export function createTreeActions(options: {
 
             setDialogPending(store, true);
             const pendingDialog = store.getState().dialog;
-            const result = renaming
-                ? await notes.applyTitle(dialog.path, dialog.name)
-                : await notes.createFolder(parent, dialog.name);
+            const result = !renaming
+                ? await notes.createFolder(parent, dialog.name)
+                : renamedNode?.kind === "folder"
+                  ? await notes.renameFolder(dialog.path, dialog.name)
+                  : await notes.applyTitle(dialog.path, dialog.name);
             if (!result.ok) {
                 failDialog(pendingDialog, result.error);
                 return;
             }
             if (store.getState().dialog !== pendingDialog) return;
+            if (renaming && renamedNode?.kind === "folder") {
+                remapPaths(store, dialog.path, result.value);
+            }
             if (!renaming) {
                 expandFolders(store, [
                     ...ancestorFolders(result.value),

@@ -120,6 +120,9 @@ export type {
     NoteOperations,
     RenameNoteInput,
     RenameByTitleInput,
+    RenameFolderInput,
+    MoveFolderInput,
+    FolderMove,
     RewriteIncomingLinksInput,
     RewriteIncomingLinksResult,
 } from "./note-operations";

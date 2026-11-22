@@ -583,12 +583,12 @@ describe("Tree context menu requests", () => {
 });
 
 describe("Tree drag and drop", () => {
-    it("drags note rows only and reports the id", () => {
+    it("drags note and folder rows and reports the id", () => {
         const { onDragStart } = setup();
         const transfer = dataTransfer();
 
         expect(item("Ideas").getAttribute("draggable")).toBe("true");
-        expect(item("projects").hasAttribute("draggable")).toBe(false);
+        expect(item("projects").getAttribute("draggable")).toBe("true");
 
         fireEvent.dragStart(item("Ideas"), { dataTransfer: transfer });
         expect(onDragStart).toHaveBeenCalledWith("Ideas.md");
@@ -597,7 +597,7 @@ describe("Tree drag and drop", () => {
 
         onDragStart.mockClear();
         fireEvent.dragStart(item("empty"), { dataTransfer: dataTransfer() });
-        expect(onDragStart).not.toHaveBeenCalled();
+        expect(onDragStart).toHaveBeenCalledWith("empty");
     });
 
     it("can turn dragging off", () => {

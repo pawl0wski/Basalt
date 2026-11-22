@@ -231,6 +231,52 @@ describe("rewriteRelativeLinks", () => {
     });
 });
 
+describe("rewriteRelativeLinks with a target remap", () => {
+    const remap = (target: string) =>
+        target.startsWith("a/f/")
+            ? (`b/f/${target.slice("a/f/".length)}` as ReturnType<typeof p>)
+            : p(target);
+
+    it("rebuilds a link into the moved subtree from the new note location", () => {
+        expect(
+            rewriteRelativeLinks(
+                "[x](sub/two.md)",
+                p("a/f/one.md"),
+                p("b/f/one.md"),
+                remap,
+            ),
+        ).toBe("[x](sub/two.md)");
+    });
+
+    it("rebuilds a link that leaves the subtree", () => {
+        expect(
+            rewriteRelativeLinks(
+                "[x](../side.md)",
+                p("a/f/one.md"),
+                p("b/f/one.md"),
+                remap,
+            ),
+        ).toBe("[x](../../a/side.md)");
+    });
+
+    it("rewrites with a remap even when the note keeps its directory", () => {
+        expect(
+            rewriteRelativeLinks(
+                "[x](../x.md)",
+                p("a/f/one.md"),
+                p("a/f/one.md"),
+                () => p("z.md"),
+            ),
+        ).toBe("[x](../../z.md)");
+    });
+
+    it("keeps the existing behavior without a remap for same-folder moves", () => {
+        expect(
+            rewriteRelativeLinks("[x](a.md)", p("d/n.md"), p("d/m.md")),
+        ).toBe("[x](a.md)");
+    });
+});
+
 describe("rewriteLinksTo", () => {
     const to = (text: string, note: string, from: string, target: string) =>
         rewriteLinksTo(text, p(note), p(from), p(target));

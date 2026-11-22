@@ -275,8 +275,7 @@ function Tree({
     const handleDragStart = (event: DragEvent<HTMLUListElement>) => {
         const element = treeItemOf(event.target);
         const id = element?.dataset.treeId;
-        if (!element || id === undefined || element.dataset.kind !== "note")
-            return;
+        if (!element || id === undefined) return;
         event.dataTransfer.effectAllowed = "move";
         event.dataTransfer.setData("text/plain", id);
         onDragStart?.(id);
@@ -369,7 +368,7 @@ function Tree({
                             draggingIds.has(node.id) ? "true" : undefined
                         }
                         tabIndex={node.id === tabStop ? 0 : -1}
-                        draggable={!folder && draggable ? true : undefined}
+                        draggable={draggable ? true : undefined}
                         onClick={(event) => activate(node, event)}
                         onFocus={(event) => {
                             if (event.target === event.currentTarget)

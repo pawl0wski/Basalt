@@ -24,6 +24,7 @@ import {
 import {
     createTreeStore,
     emptyTreeState,
+    prunePaths,
     type TreeStore,
 } from "./features/tree/tree-store";
 import {
@@ -96,13 +97,19 @@ export function createServices(
         trash: platform.trash,
         feedback,
     });
+    const leaveStore = createLeaveStore();
     const treeActions = createTreeActions({
         store: treeStore,
         notesStore,
         notes: notesActions,
         feedback,
+        onDeleteFolderBlocked: (path, error) => {
+            leaveStore.setState({
+                pending: { kind: "delete-folder", path },
+                error,
+            });
+        },
     });
-    const leaveStore = createLeaveStore();
     const images = createImageHub();
     const workspaceActions = createWorkspaceActions({
         store: workspaceStore,
@@ -132,6 +139,12 @@ export function createServices(
         notes: notesActions,
         workspace: workspaceActions,
         windowChrome: platform.windowChrome,
+        onFolderDeleted: (path) => {
+            prunePaths(treeStore, path);
+        },
+        onDeleteFailed: (error) => {
+            feedback.report(error);
+        },
     });
     return {
         workspaceStore,

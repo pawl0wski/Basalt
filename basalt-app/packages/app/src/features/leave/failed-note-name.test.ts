@@ -45,3 +45,14 @@ describe("failedNoteName", () => {
         expect(failedNoteName({ kind: "close-window" }, [])).toBe("");
     });
 });
+
+describe("failedNoteName for a folder delete", () => {
+    it("names the folder", () => {
+        expect(
+            failedNoteName(
+                { kind: "delete-folder", path: wsPath("docs/Papers") },
+                [],
+            ),
+        ).toBe("Papers");
+    });
+});
