@@ -11,7 +11,7 @@ permissions:
 jobs:
   frontend:
     name: Frontend checks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
       image: node:22-alpine3.24
     steps:
@@ -36,7 +36,7 @@ jobs:
 
   e2e:
     name: Playwright integration tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -59,7 +59,7 @@ jobs:
 
   safety-net:
     name: Design system safety net
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -76,7 +76,7 @@ jobs:
 
   rust:
     name: Rust checks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
       image: node:22-alpine3.24
     steps:
@@ -87,32 +87,12 @@ jobs:
 
   tauri-build-linux:
     name: Tauri desktop build (Linux/Alpine)
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
       image: node:22-alpine3.24
     steps:
       - run: apk add --no-cache bash build-base cargo cairo-static curl file font-dejavu gcc gcompat git glib-static harfbuzz-static libayatana-appindicator-dev libgcc libstdc++ librsvg-dev openssl-dev openssl-libs-static pkgconf rust rust-clippy rustfmt wayland-static webkit2gtk-4.1-dev wget zlib-static
       - uses: actions/checkout@v4
-      - run: npm ci
-        working-directory: basalt-app
-      - run: npm run tauri build -- --no-bundle
-        working-directory: basalt-app
-
-  tauri-build-native:
-    name: Tauri desktop build (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: basalt-app/package-lock.json
-      - uses: dtolnay/rust-toolchain@stable
       - run: npm ci
         working-directory: basalt-app
       - run: npm run tauri build -- --no-bundle
