@@ -2,7 +2,7 @@
 date: 2026-11-22
 slug: informational-toasts
 type: run
-status: interrupted
+status: completed
 tags: [toasts, errors, feedback, ui, e01]
 ---
 
@@ -38,18 +38,26 @@ Risks: e2e tests that assert `.bs-alert` for collisions must change; rename-coll
 
 ### Phase 2: feedback module
 
-- [ ] 2.1 error-surface.ts classification
-- [ ] 2.2 feedback-store.ts
-- [ ] 2.3 feedback.ts service
-- [ ] 2.4 Move move-error.ts to feedback/describe-error.ts
-- [ ] 2.5 FeedbackBridge.tsx
-- [ ] 2.6 services.ts wiring
+- [x] 2.1 error-surface.ts classification — 2895880
+- [x] 2.2 feedback-store.ts — 2895880
+- [x] 2.3 feedback.ts service — 2895880
+- [x] 2.4 Move move-error.ts to feedback/describe-error.ts — 2895880
+- [x] 2.5 FeedbackBridge.tsx — 2895880
+- [x] 2.6 services.ts wiring — 2895880
 
 ### Phase 3: surfaces
 
-- [ ] 3.1 Mount ToastProvider and FeedbackBridge, i18n keys
-- [ ] 3.2 Dialog closes on informational submit failure
-- [ ] 3.3 notes-actions report through feedback
-- [ ] 3.4 tree-actions confirmDelete reports through feedback
-- [ ] 3.5 Update existing e2e
-- [ ] 3.6 New toasts.spec.ts
+- [x] 3.1 Mount ToastProvider and FeedbackBridge, i18n keys — 2895880
+- [x] 3.2 Dialog closes on informational submit failure — 2895880
+- [x] 3.3 notes-actions report through feedback — 2895880
+- [x] 3.4 tree-actions confirmDelete reports through feedback — 2895880
+- [x] 3.5 Update existing e2e — 2895880
+- [x] 3.6 New toasts.spec.ts — 2895880
+
+## Outcome
+
+All phases implemented. Gate: format, lint, typecheck, unit (1564), build and e2e (183) green; `rust:fmt` and `rust:lint` could not run (cargo fmt/clippy not installed in this environment); no Rust changed.
+
+Decisions: the rename/new-folder dialog closes in `tree-actions.ts` (`failDialog`) rather than in the container; a partial-failure detail (`move-stopped`, `delete-failed`, `move-collision`) wins over the error code in `errorSurface`; Radix puts the region label on the Viewport, so `label` is applied there.
+
+Open: the Storybook story `StackCap` was added but the stories test run (browser) was not executed here; S04/S05 specs need the follow-up note on the moved collision message (spec follow-up).
