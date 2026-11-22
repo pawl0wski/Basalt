@@ -28,6 +28,12 @@ describe("rewriteRelativeLinks", () => {
         );
     });
 
+    it("keeps the width suffix of an image alt text when the note moves", () => {
+        expect(move("![photo|300](img/x.png)", "a/n.md", "b/n.md")).toBe(
+            "![photo|300](../a/img/x.png)",
+        );
+    });
+
     it("rewrites when the note moves between sibling folders", () => {
         expect(move("![i](img/x.png)", "a/n.md", "b/n.md")).toBe(
             "![i](../a/img/x.png)",

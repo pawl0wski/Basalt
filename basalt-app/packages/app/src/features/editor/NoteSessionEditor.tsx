@@ -55,6 +55,7 @@ export function NoteSessionEditor({
                 labels: {
                     loading: t("attachments.placeholder.loading"),
                     broken: t("attachments.placeholder.broken"),
+                    resize: t("attachments.resize.label"),
                 },
             },
             subscribe: noteImages.subscribe,

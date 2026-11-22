@@ -193,6 +193,9 @@
         "cancel": "Cancel"
     },
     "attachments": {
+        "resize": {
+            "label": "Resize image"
+        },
         "placeholder": {
             "loading": "Loading image…",
             "missing": "Image not found: {path}",
