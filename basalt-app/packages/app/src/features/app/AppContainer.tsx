@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
 import { useTranslation } from "react-i18next";
+import { ToastProvider } from "@basalt/ui";
 import { installDropGuard } from "../attachments/drop-guard";
+import { FeedbackBridge } from "../feedback/FeedbackBridge";
 import { useServices } from "../../useServices";
 import { useNoteTabs } from "../editor/useNoteTabs";
 import { useKeymap } from "../keymap/useKeymap";
@@ -114,10 +116,15 @@ function AppContent() {
 }
 
 export function AppContainer() {
+    const { t } = useTranslation();
     return (
-        <>
+        <ToastProvider
+            label={t("toasts.regionLabel")}
+            dismissLabel={t("toasts.dismissLabel")}
+        >
             <AppContent />
             <SaveFailedDialogContainer />
-        </>
+            <FeedbackBridge />
+        </ToastProvider>
     );
 }

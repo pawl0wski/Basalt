@@ -1,7 +1,7 @@
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "./Button";
 import { IconButton } from "./IconButton";
 import type { ToastOptions } from "./toastContext";
@@ -9,14 +9,26 @@ import { ToastContext } from "./toastContext";
 
 type ToastItem = ToastOptions & { id: number };
 
-function ToastProvider({ children }: { children: ReactNode }) {
+type ToastProviderProps = {
+    children: ReactNode;
+    label?: string;
+    dismissLabel?: string;
+};
+
+const MAX_VISIBLE_TOASTS = 3;
+
+function ToastProvider({
+    children,
+    label = "Notifications",
+    dismissLabel = "Dismiss",
+}: ToastProviderProps) {
     const [toasts, setToasts] = useState<ToastItem[]>([]);
+    const nextId = useRef(0);
 
     const toast = useCallback((options: ToastOptions) => {
-        setToasts((current) => [
-            ...current,
-            { ...options, id: Date.now() + current.length },
-        ]);
+        nextId.current += 1;
+        const item = { ...options, id: nextId.current };
+        setToasts((current) => [...current, item].slice(-MAX_VISIBLE_TOASTS));
     }, []);
 
     const remove = (id: number) =>
@@ -24,7 +36,7 @@ function ToastProvider({ children }: { children: ReactNode }) {
 
     return (
         <ToastContext.Provider value={toast}>
-            <ToastPrimitive.Provider duration={5000} label="Notifications">
+            <ToastPrimitive.Provider duration={5000} label={label}>
                 {children}
                 {toasts.map((item) => (
                     <ToastPrimitive.Root
@@ -59,13 +71,19 @@ function ToastProvider({ children }: { children: ReactNode }) {
                             ) : null}
                         </div>
                         <ToastPrimitive.Close asChild>
-                            <IconButton aria-label="Dismiss" tooltip={false}>
+                            <IconButton
+                                aria-label={dismissLabel}
+                                tooltip={false}
+                            >
                                 <X aria-hidden="true" />
                             </IconButton>
                         </ToastPrimitive.Close>
                     </ToastPrimitive.Root>
                 ))}
-                <ToastPrimitive.Viewport className="fixed inset-x-panel bottom-panel m-none flex list-none flex-col gap-in-group p-none tablet:left-auto tablet:w-overlay" />
+                <ToastPrimitive.Viewport
+                    label={`${label} ({hotkey})`}
+                    className="fixed inset-x-panel bottom-panel m-none flex list-none flex-col gap-in-group p-none tablet:left-auto tablet:w-overlay"
+                />
             </ToastPrimitive.Provider>
         </ToastContext.Provider>
     );

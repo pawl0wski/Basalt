@@ -95,3 +95,21 @@ export const NarrowScreen: Story = {
         ).toBeVisible();
     },
 };
+
+export const StackCap: Story = {
+    render: () => (
+        <ToastProvider>
+            <Demo />
+        </ToastProvider>
+    ),
+    play: async ({ canvasElement }) => {
+        const open = within(canvasElement).getByRole("button", {
+            name: "Delete note",
+        });
+        for (let index = 0; index < 4; index += 1) await userEvent.click(open);
+        await screen.findAllByText("Note moved to trash");
+        await expect(
+            screen.getAllByRole("button", { name: "Dismiss" }),
+        ).toHaveLength(3);
+    },
+};

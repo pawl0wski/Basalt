@@ -114,4 +114,81 @@ describe("Toast", () => {
         );
         spy.mockRestore();
     });
+
+    it("keeps at most three toasts and drops the oldest", async () => {
+        const user = userEvent.setup();
+        function Many() {
+            const toast = useToast();
+            return (
+                <button
+                    type="button"
+                    onClick={() => {
+                        for (const name of ["one", "two", "three", "four"])
+                            toast({ title: `Toast ${name}` });
+                    }}
+                >
+                    Fire
+                </button>
+            );
+        }
+        render(
+            <ToastProvider>
+                <Many />
+            </ToastProvider>,
+        );
+        await user.click(screen.getByRole("button", { name: "Fire" }));
+        await screen.findAllByText("Toast four");
+
+        expect(screen.queryByText("Toast one")).toBeNull();
+        expect(screen.getAllByText("Toast two").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("Toast three").length).toBeGreaterThan(0);
+        expect(screen.getAllByRole("button", { name: "Dismiss" })).toHaveLength(
+            3,
+        );
+    });
+
+    it("dismisses only the toast whose close button was used", async () => {
+        const user = userEvent.setup();
+        function Two() {
+            const toast = useToast();
+            return (
+                <button
+                    type="button"
+                    onClick={() => {
+                        toast({ title: "First" });
+                        toast({ title: "Second" });
+                    }}
+                >
+                    Fire
+                </button>
+            );
+        }
+        render(
+            <ToastProvider>
+                <Two />
+            </ToastProvider>,
+        );
+        await user.click(screen.getByRole("button", { name: "Fire" }));
+        await screen.findAllByText("Second");
+        await user.click(screen.getAllByRole("button", { name: "Dismiss" })[0]);
+
+        expect(screen.queryByText("First")).toBeNull();
+        expect(screen.getAllByText("Second").length).toBeGreaterThan(0);
+    });
+
+    it("uses the given region and dismiss labels", async () => {
+        const user = userEvent.setup();
+        render(
+            <ToastProvider label="Powiadomienia" dismissLabel="Zamknij">
+                <Trigger />
+            </ToastProvider>,
+        );
+        await user.click(screen.getByRole("button", { name: "Delete" }));
+        await screen.findAllByText("Note moved to trash");
+
+        expect(
+            screen.getByRole("region", { name: /Powiadomienia/ }),
+        ).toBeTruthy();
+        expect(screen.getByRole("button", { name: "Zamknij" })).toBeTruthy();
+    });
 });

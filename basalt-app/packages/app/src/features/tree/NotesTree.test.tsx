@@ -217,21 +217,23 @@ describe("the new folder dialog", () => {
         ).toBeInTheDocument();
     });
 
-    it("shows a collision inline, disables Create folder and writes nothing", async () => {
+    it("closes the new-folder dialog and toasts a collision without writing", async () => {
         const { user, dialog, fs } = await openDialog(null);
         const before = await paths(fs);
 
         await user.keyboard("DOCS");
 
-        expect(
-            within(dialog).getByText(en.tree.nameError.collision),
-        ).toBeInTheDocument();
-        expect(
+        await user.click(
             within(dialog).getByRole("button", {
                 name: en.tree.newFolder.submit,
             }),
-        ).toBeDisabled();
-        await user.keyboard("{Enter}");
+        );
+
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        const region = screen.getByRole("region", { name: /Notifications/ });
+        expect(
+            await within(region).findByText(en.errors["already-exists"]),
+        ).toBeVisible();
         expect(await paths(fs)).toEqual(before);
     });
 
@@ -306,32 +308,28 @@ describe("the rename dialog", () => {
         expect(screen.queryByRole("dialog")).toBeNull();
     });
 
-    it("shows collisions inline, also for a case-only difference", async () => {
-        const { user, dialog, fs } = await openRename("alpha", {
+    it("closes the rename dialog and toasts a case-only collision", async () => {
+        const { user, fs } = await openRename("alpha", {
             "alpha.md": "",
             "Beta.md": "",
         });
 
-        await user.keyboard("beta");
+        await user.keyboard("beta{Enter}");
 
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        const region = screen.getByRole("region", { name: /Notifications/ });
         expect(
-            within(dialog).getByText(en.tree.nameError.collision),
-        ).toBeInTheDocument();
-        await user.keyboard("{Enter}");
+            await within(region).findByText(en.errors["already-exists"]),
+        ).toBeVisible();
         expect(await paths(fs)).toEqual(["Beta.md", "alpha.md"]);
     });
 
     it("allows a case-only change of its own name", async () => {
-        const { user, dialog, fs } = await openRename("ideas", {
+        const { user, fs } = await openRename("ideas", {
             "ideas.md": "",
         });
 
-        await user.keyboard("Ideas");
-
-        expect(
-            within(dialog).queryByText(en.tree.nameError.collision),
-        ).toBeNull();
-        await user.keyboard("{Enter}");
+        await user.keyboard("Ideas{Enter}");
         await vi.waitFor(async () => {
             expect(await paths(fs)).toEqual(["Ideas.md"]);
         });

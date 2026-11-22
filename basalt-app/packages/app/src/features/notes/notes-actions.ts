@@ -23,6 +23,7 @@ import {
     type WorkspaceRoot,
     type WorkspaceTrash,
 } from "@basalt/core";
+import type { Feedback } from "../feedback/feedback";
 import type { SettingsWriter } from "../settings/settings-writer";
 import {
     emptyNotesState,
@@ -38,6 +39,7 @@ export type NotesActionsOptions = {
     readonly autosaveDelayMs: number;
     readonly untitledName: () => string;
     readonly trash: (root: WorkspaceRoot) => WorkspaceTrash;
+    readonly feedback: Feedback;
 };
 
 export type NotesActions = {
@@ -312,7 +314,7 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
         const created = await active.notes.createNote(name, folder);
         if (workspace !== active) return err(NO_WORKSPACE);
         if (!created.ok) {
-            store.setState({ createError: created.error });
+            options.feedback.report(created.error);
             return created;
         }
         store.setState({ createError: null });
@@ -504,7 +506,8 @@ export function createNotesActions(options: NotesActionsOptions): NotesActions {
             return result;
         });
         if (workspace !== active) return err(NO_WORKSPACE);
-        store.setState({ createError: moved.ok ? null : moved.error });
+        if (moved.ok) store.setState({ createError: null });
+        else options.feedback.report(moved.error);
         await persistTabs();
         await refreshNotes();
         return moved.ok ? ok(moved.value.moved) : moved;
